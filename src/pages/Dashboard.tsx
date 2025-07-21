@@ -5,6 +5,7 @@ import { CreatePost } from '@/components/social/CreatePost';
 import { PostCard } from '@/components/social/PostCard';
 import { FriendRequests } from '@/components/social/FriendRequests';
 import { UserList } from '@/components/social/UserList';
+import { EnhancedSearch } from '@/components/social/EnhancedSearch';
 import { LogOut, User, TreePine } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocial } from '@/contexts/SocialContext';
@@ -103,8 +104,9 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Sidebar - Discover Users */}
+          {/* Right Sidebar - Enhanced Search & Discovery */}
           <div className="space-y-6">
+            <EnhancedSearch />
             <UserList />
           </div>
         </div>

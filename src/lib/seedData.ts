@@ -34,16 +34,22 @@ export const createSeedData = () => {
   postStorage.create({
     userId: testUser2.id,
     content: "Just discovered this amazing platform! Love the nature-inspired design and privacy-first approach. Looking forward to connecting with fellow outdoor enthusiasts! 🌲",
+    privacy: 'public',
+    tags: ['nature', 'introduction'],
   });
 
   postStorage.create({
     userId: testUser3.id,
     content: "Had an incredible hike through the pine forests today. There's something magical about being surrounded by these ancient trees. The quiet, the fresh air, the sense of connection to nature... Under Pines really captures that feeling!",
+    privacy: 'public',
+    tags: ['hiking', 'nature', 'adventure'],
   });
 
   postStorage.create({
     userId: testUser1.id,
-    content: "Welcome to Under Pines! 🎉 This is a demo of our Phase 1 features:\n\n✅ User authentication\n✅ Profile creation\n✅ Simple posting\n✅ Friend management\n\nEverything is stored locally for testing. Try creating your own account and connecting with others!",
+    content: "Welcome to Under Pines! 🎉 This is a demo of our Phase 2 features:\n\n✅ Post interactions (likes, comments)\n✅ Enhanced profiles\n✅ Media sharing\n✅ Privacy settings\n✅ Real-time notifications\n\nEverything is stored locally for testing. Try creating your own account and connecting with others!",
+    privacy: 'public',
+    tags: ['welcome', 'features', 'demo'],
   });
 
   console.log('Seed data created successfully!');

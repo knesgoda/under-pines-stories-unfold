@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Post, User, FriendRequest, postStorage, userStorage, friendRequestStorage, friendshipStorage } from '@/lib/localStorage';
+import { Post, User, FriendRequest, postStorage, userStorage, friendRequestStorage, friendshipStorage, likeStorage } from '@/lib/localStorage';
 import { useAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -8,8 +8,9 @@ interface SocialContextType {
   friends: User[];
   friendRequests: FriendRequest[];
   isLoading: boolean;
-  createPost: (content: string) => Promise<boolean>;
+  createPost: (postData: Partial<Pick<Post, 'content' | 'privacy' | 'media' | 'tags'>>) => Promise<boolean>;
   deletePost: (postId: string) => Promise<boolean>;
+  toggleLike: (postId: string) => Promise<boolean>;
   sendFriendRequest: (toUserId: string) => Promise<boolean>;
   acceptFriendRequest: (requestId: string) => Promise<boolean>;
   rejectFriendRequest: (requestId: string) => Promise<boolean>;
@@ -59,14 +60,17 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     refreshData();
   }, [user]);
 
-  const createPost = async (content: string): Promise<boolean> => {
-    if (!user || !content.trim()) return false;
+  const createPost = async (postData: Partial<Pick<Post, 'content' | 'privacy' | 'media' | 'tags'>>): Promise<boolean> => {
+    if (!user || (!postData.content?.trim() && (!postData.media || postData.media.length === 0))) return false;
 
     try {
       setIsLoading(true);
       postStorage.create({
         userId: user.id,
-        content: content.trim(),
+        content: postData.content?.trim() || '',
+        privacy: postData.privacy || 'public',
+        media: postData.media || [],
+        tags: postData.tags || [],
       });
       
       refreshData();
@@ -86,6 +90,24 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleLike = async (postId: string): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const { liked } = likeStorage.toggle(postId, user.id);
+      refreshData();
+      return true;
+    } catch (error) {
+      console.error('Toggle like error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -247,6 +269,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     isLoading,
     createPost,
     deletePost,
+    toggleLike,
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,

@@ -17,6 +17,18 @@ export interface Post {
   updatedAt: string;
   likes: string[]; // Array of user IDs who liked
   commentCount: number;
+  media?: MediaAttachment[];
+  privacy: 'public' | 'friends' | 'private';
+  tags?: string[];
+}
+
+export interface MediaAttachment {
+  id: string;
+  type: 'image' | 'video' | 'file';
+  url: string;
+  filename: string;
+  size: number;
+  alt?: string;
 }
 
 export interface Comment {
@@ -150,6 +162,8 @@ export const postStorage = {
       updatedAt: new Date().toISOString(),
       likes: [],
       commentCount: 0,
+      privacy: postData.privacy || 'public',
+      media: postData.media || [],
     };
     posts.unshift(newPost);
     saveToStorage(STORAGE_KEYS.POSTS, posts);
