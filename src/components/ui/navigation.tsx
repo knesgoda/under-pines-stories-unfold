@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Trees, User, Home, Search, Bell, Settings, Menu, X } from "lucide-react";
 import underPinesLogo from "@/assets/under-pines-logo.png";
 
-export function Navigation() {
+interface NavigationProps {
+  onAuthClick?: () => void;
+}
+
+export function Navigation({ onAuthClick }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -54,7 +58,7 @@ export function Navigation() {
             <Button variant="ghost" size="icon">
               <Settings className="w-5 h-5" />
             </Button>
-            <Button variant="hero" size="sm">
+            <Button variant="outline" size="sm" onClick={onAuthClick}>
               Sign In
             </Button>
           </div>
@@ -94,7 +98,7 @@ export function Navigation() {
                   <Settings className="w-5 h-5 mr-3" />
                   Settings
                 </Button>
-                <Button variant="hero" className="justify-center">
+                <Button variant="outline" className="justify-center" onClick={onAuthClick}>
                   Sign In
                 </Button>
               </div>

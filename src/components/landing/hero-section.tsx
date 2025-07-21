@@ -2,7 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TreePine, Shield, Users } from "lucide-react";
 import heroImage from "@/assets/hero-forest.jpg";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onGetStarted?: () => void;
+}
+
+export function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -43,8 +47,8 @@ export function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-scale-in">
-            <Button size="lg" variant="hero" className="text-lg px-8 py-4">
-              Request Invite
+            <Button size="lg" variant="default" className="text-lg px-8 py-4" onClick={onGetStarted}>
+              Get Started
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <Button size="lg" variant="pine" className="text-lg px-8 py-4">
