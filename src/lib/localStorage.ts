@@ -73,6 +73,36 @@ export interface FriendRequest {
   createdAt: string;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  avatar?: string;
+  coverImage?: string;
+  privacy: 'public' | 'private';
+  category: string;
+  createdBy: string;
+  createdAt: string;
+  memberCount: number;
+  postCount: number;
+}
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  role: 'admin' | 'moderator' | 'member';
+  joinedAt: string;
+}
+
+export interface GroupJoinRequest {
+  id: string;
+  groupId: string;
+  userId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
 const STORAGE_KEYS = {
   USERS: 'under_pines_users',
   POSTS: 'under_pines_posts',
@@ -81,6 +111,9 @@ const STORAGE_KEYS = {
   NOTIFICATIONS: 'under_pines_notifications',
   FRIENDSHIPS: 'under_pines_friendships',
   FRIEND_REQUESTS: 'under_pines_friend_requests',
+  GROUPS: 'under_pines_groups',
+  GROUP_MEMBERS: 'under_pines_group_members',
+  GROUP_JOIN_REQUESTS: 'under_pines_group_join_requests',
   CURRENT_USER: 'under_pines_current_user',
 } as const;
 
@@ -398,6 +431,231 @@ export const friendshipStorage = {
       f.status === 'accepted' && 
       ((f.userId1 === userId1 && f.userId2 === userId2) || (f.userId1 === userId2 && f.userId2 === userId1))
     );
+  },
+};
+
+// Group management
+export const groupStorage = {
+  getAll: (): Group[] => getFromStorage<Group>(STORAGE_KEYS.GROUPS),
+  
+  getById: (id: string): Group | null => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    return groups.find(group => group.id === id) || null;
+  },
+  
+  getByCategory: (category: string): Group[] => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    return groups.filter(group => group.category === category);
+  },
+  
+  search: (query: string): Group[] => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const searchTerm = query.toLowerCase();
+    return groups.filter(group => 
+      group.name.toLowerCase().includes(searchTerm) ||
+      group.description.toLowerCase().includes(searchTerm) ||
+      group.category.toLowerCase().includes(searchTerm)
+    );
+  },
+  
+  create: (groupData: Omit<Group, 'id' | 'createdAt' | 'memberCount' | 'postCount'>): Group => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const newGroup: Group = {
+      ...groupData,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      memberCount: 1, // Creator is first member
+      postCount: 0,
+    };
+    groups.push(newGroup);
+    saveToStorage(STORAGE_KEYS.GROUPS, groups);
+    
+    // Add creator as admin member
+    groupMemberStorage.create({
+      groupId: newGroup.id,
+      userId: groupData.createdBy,
+      role: 'admin',
+    });
+    
+    return newGroup;
+  },
+  
+  update: (id: string, updates: Partial<Omit<Group, 'id' | 'createdAt' | 'createdBy'>>): Group | null => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const index = groups.findIndex(group => group.id === id);
+    if (index === -1) return null;
+    
+    groups[index] = { ...groups[index], ...updates };
+    saveToStorage(STORAGE_KEYS.GROUPS, groups);
+    return groups[index];
+  },
+  
+  delete: (id: string): boolean => {
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const filteredGroups = groups.filter(group => group.id !== id);
+    if (filteredGroups.length === groups.length) return false;
+    
+    saveToStorage(STORAGE_KEYS.GROUPS, filteredGroups);
+    
+    // Clean up related data
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    const filteredMembers = members.filter(member => member.groupId !== id);
+    saveToStorage(STORAGE_KEYS.GROUP_MEMBERS, filteredMembers);
+    
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    const filteredRequests = requests.filter(request => request.groupId !== id);
+    saveToStorage(STORAGE_KEYS.GROUP_JOIN_REQUESTS, filteredRequests);
+    
+    return true;
+  },
+};
+
+// Group member management
+export const groupMemberStorage = {
+  getAll: (): GroupMember[] => getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS),
+  
+  getByGroupId: (groupId: string): GroupMember[] => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    return members.filter(member => member.groupId === groupId);
+  },
+  
+  getByUserId: (userId: string): GroupMember[] => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    return members.filter(member => member.userId === userId);
+  },
+  
+  getUserGroups: (userId: string): string[] => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    return members
+      .filter(member => member.userId === userId)
+      .map(member => member.groupId);
+  },
+  
+  isMember: (groupId: string, userId: string): boolean => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    return members.some(member => member.groupId === groupId && member.userId === userId);
+  },
+  
+  getMemberRole: (groupId: string, userId: string): GroupMember['role'] | null => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    const member = members.find(m => m.groupId === groupId && m.userId === userId);
+    return member?.role || null;
+  },
+  
+  create: (memberData: Omit<GroupMember, 'id' | 'joinedAt'>): GroupMember => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    const newMember: GroupMember = {
+      ...memberData,
+      id: crypto.randomUUID(),
+      joinedAt: new Date().toISOString(),
+    };
+    members.push(newMember);
+    saveToStorage(STORAGE_KEYS.GROUP_MEMBERS, members);
+    
+    // Update group member count
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const groupIndex = groups.findIndex(g => g.id === memberData.groupId);
+    if (groupIndex !== -1) {
+      groups[groupIndex].memberCount += 1;
+      saveToStorage(STORAGE_KEYS.GROUPS, groups);
+    }
+    
+    return newMember;
+  },
+  
+  updateRole: (groupId: string, userId: string, role: GroupMember['role']): GroupMember | null => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    const index = members.findIndex(m => m.groupId === groupId && m.userId === userId);
+    if (index === -1) return null;
+    
+    members[index] = { ...members[index], role };
+    saveToStorage(STORAGE_KEYS.GROUP_MEMBERS, members);
+    return members[index];
+  },
+  
+  remove: (groupId: string, userId: string): boolean => {
+    const members = getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS);
+    const filteredMembers = members.filter(m => !(m.groupId === groupId && m.userId === userId));
+    if (filteredMembers.length === members.length) return false;
+    
+    saveToStorage(STORAGE_KEYS.GROUP_MEMBERS, filteredMembers);
+    
+    // Update group member count
+    const groups = getFromStorage<Group>(STORAGE_KEYS.GROUPS);
+    const groupIndex = groups.findIndex(g => g.id === groupId);
+    if (groupIndex !== -1) {
+      groups[groupIndex].memberCount = Math.max(0, groups[groupIndex].memberCount - 1);
+      saveToStorage(STORAGE_KEYS.GROUPS, groups);
+    }
+    
+    return true;
+  },
+};
+
+// Group join request management
+export const groupJoinRequestStorage = {
+  getAll: (): GroupJoinRequest[] => getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS),
+  
+  getByGroupId: (groupId: string): GroupJoinRequest[] => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    return requests.filter(req => req.groupId === groupId && req.status === 'pending');
+  },
+  
+  getByUserId: (userId: string): GroupJoinRequest[] => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    return requests.filter(req => req.userId === userId);
+  },
+  
+  hasPendingRequest: (groupId: string, userId: string): boolean => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    return requests.some(req => 
+      req.groupId === groupId && 
+      req.userId === userId && 
+      req.status === 'pending'
+    );
+  },
+  
+  create: (groupId: string, userId: string): GroupJoinRequest => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    const newRequest: GroupJoinRequest = {
+      id: crypto.randomUUID(),
+      groupId,
+      userId,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    requests.push(newRequest);
+    saveToStorage(STORAGE_KEYS.GROUP_JOIN_REQUESTS, requests);
+    return newRequest;
+  },
+  
+  updateStatus: (id: string, status: GroupJoinRequest['status']): GroupJoinRequest | null => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    const index = requests.findIndex(req => req.id === id);
+    if (index === -1) return null;
+    
+    requests[index] = { ...requests[index], status };
+    saveToStorage(STORAGE_KEYS.GROUP_JOIN_REQUESTS, requests);
+    
+    // If approved, add user as member
+    if (status === 'approved') {
+      groupMemberStorage.create({
+        groupId: requests[index].groupId,
+        userId: requests[index].userId,
+        role: 'member',
+      });
+    }
+    
+    return requests[index];
+  },
+  
+  delete: (id: string): boolean => {
+    const requests = getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS);
+    const filteredRequests = requests.filter(req => req.id !== id);
+    if (filteredRequests.length === requests.length) return false;
+    
+    saveToStorage(STORAGE_KEYS.GROUP_JOIN_REQUESTS, filteredRequests);
+    return true;
   },
 };
 
