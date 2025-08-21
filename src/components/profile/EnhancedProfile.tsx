@@ -366,10 +366,10 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                           <Heart className="h-3 w-3" />
                           {post.likes?.length || 0}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-3 w-3" />
-                          {post.comments?.length || 0}
-                        </span>
+                         <span className="flex items-center gap-1">
+                           <MessageCircle className="h-3 w-3" />
+                           {post.commentCount || 0}
+                         </span>
                         <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
                       </div>
                     </div>
@@ -393,17 +393,21 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {userFriends.map((friend) => (
-                    <div key={friend.id} className="flex flex-col items-center p-4 border border-border/50 rounded-lg hover:bg-muted/50 transition-smooth">
-                      <Avatar className="h-12 w-12 mb-2">
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {friend.displayName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <p className="font-medium text-sm text-center">{friend.displayName}</p>
-                      <p className="text-xs text-muted-foreground">@{friend.username}</p>
-                    </div>
-                  ))}
+                  {userFriends.map((friendId) => {
+                    const friend = enhancedUserStorage.getById(friendId);
+                    if (!friend) return null;
+                    return (
+                      <div key={friend.id} className="flex flex-col items-center p-4 border border-border/50 rounded-lg hover:bg-muted/50 transition-smooth">
+                        <Avatar className="h-12 w-12 mb-2">
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {friend.displayName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="font-medium text-sm text-center">{friend.displayName}</p>
+                        <p className="text-xs text-muted-foreground">@{friend.username}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

@@ -44,9 +44,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
         userId: post.userId,
         fromUserId: user.id,
         type: 'like',
-        entityId: post.id,
+        postId: post.id,
         message: `${user.displayName} liked your post`,
-        read: false,
+        isRead: false,
+        priority: 'medium'
       });
     }
   };
@@ -81,9 +82,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
           userId: post.userId,
           fromUserId: user.id,
           type: 'comment',
-          entityId: post.id,
+          postId: post.id,
           message: `${user.displayName} commented on your post`,
-          read: false,
+          isRead: false,
+          priority: 'medium'
         });
       }
 

@@ -1,12 +1,44 @@
 // Local storage service for Under Pines social network
+
+// Enhanced User interface with additional profile fields
 export interface User {
   id: string;
   username: string;
   displayName: string;
   email: string;
-  avatar?: string;
   bio?: string;
+  avatar?: string;
+  interests?: string[];
+  location?: string;
+  website?: string;
+  birthday?: string;
+  isPrivate?: boolean;
+  lastActive?: string;
   createdAt: string;
+}
+
+// Direct Messages
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  messageType: 'text' | 'image' | 'file';
+  mediaUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  isRead: boolean;
+  isEdited?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage?: Message;
+  lastActivity: string;
+  unreadCount: { [userId: string]: number };
 }
 
 export interface Post {
@@ -48,12 +80,16 @@ export interface Like {
 
 export interface Notification {
   id: string;
-  userId: string; // recipient
-  fromUserId: string; // who triggered it
-  type: 'like' | 'comment' | 'friend_request' | 'friend_accepted';
-  entityId: string; // post id, friend request id, etc.
+  userId: string;
+  type: 'like' | 'comment' | 'friend_request' | 'friend_accept' | 'group_invite' | 'group_join' | 'message' | 'mention' | 'group_post';
+  fromUserId: string;
+  postId?: string;
+  groupId?: string;
+  messageId?: string;
   message: string;
-  read: boolean;
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high';
+  actionUrl?: string;
   createdAt: string;
 }
 
@@ -114,6 +150,8 @@ const STORAGE_KEYS = {
   GROUPS: 'under_pines_groups',
   GROUP_MEMBERS: 'under_pines_group_members',
   GROUP_JOIN_REQUESTS: 'under_pines_group_join_requests',
+  MESSAGES: 'under_pines_messages',
+  CONVERSATIONS: 'under_pines_conversations',
   CURRENT_USER: 'under_pines_current_user',
 } as const;
 
@@ -136,7 +174,7 @@ const saveToStorage = <T>(key: string, data: T[]): void => {
 };
 
 // User management
-export const userStorage = {
+const userStorage = {
   getAll: (): User[] => getFromStorage<User>(STORAGE_KEYS.USERS),
   
   getById: (id: string): User | null => {
@@ -177,8 +215,45 @@ export const userStorage = {
   },
 };
 
+// Enhanced user storage with profile features
+const enhancedUserStorage = {
+  ...userStorage,
+  
+  searchUsers: (query: string, currentUserId: string): User[] => {
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const searchTerm = query.toLowerCase();
+    
+    return users
+      .filter(user => 
+        user.id !== currentUserId &&
+        (user.displayName.toLowerCase().includes(searchTerm) ||
+         user.username.toLowerCase().includes(searchTerm) ||
+         (user.bio && user.bio.toLowerCase().includes(searchTerm)) ||
+         (user.interests && user.interests.some(interest => 
+           interest.toLowerCase().includes(searchTerm)
+         )))
+      )
+      .slice(0, 20);
+  },
+  
+  updateProfile: (userId: string, updates: Partial<User>): boolean => {
+    const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex === -1) return false;
+    
+    users[userIndex] = { 
+      ...users[userIndex], 
+      ...updates,
+      lastActive: new Date().toISOString()
+    };
+    saveToStorage(STORAGE_KEYS.USERS, users);
+    return true;
+  }
+};
+
 // Post management
-export const postStorage = {
+const postStorage = {
   getAll: (): Post[] => getFromStorage<Post>(STORAGE_KEYS.POSTS),
   
   getByUserId: (userId: string): Post[] => {
@@ -224,7 +299,7 @@ export const postStorage = {
 };
 
 // Comment management
-export const commentStorage = {
+const commentStorage = {
   getAll: (): Comment[] => getFromStorage<Comment>(STORAGE_KEYS.COMMENTS),
   
   getByPostId: (postId: string): Comment[] => {
@@ -274,7 +349,7 @@ export const commentStorage = {
 };
 
 // Like management
-export const likeStorage = {
+const likeStorage = {
   getAll: (): Like[] => getFromStorage<Like>(STORAGE_KEYS.LIKES),
   
   getByPostId: (postId: string): Like[] => {
@@ -325,7 +400,7 @@ export const likeStorage = {
 };
 
 // Notification management
-export const notificationStorage = {
+const notificationStorage = {
   getAll: (): Notification[] => getFromStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS),
   
   getByUserId: (userId: string): Notification[] => {
@@ -352,7 +427,7 @@ export const notificationStorage = {
     const index = notifications.findIndex(notif => notif.id === id);
     if (index === -1) return false;
     
-    notifications[index].read = true;
+    notifications[index].isRead = true;
     saveToStorage(STORAGE_KEYS.NOTIFICATIONS, notifications);
     return true;
   },
@@ -360,14 +435,131 @@ export const notificationStorage = {
   markAllAsRead: (userId: string): void => {
     const notifications = getFromStorage<Notification>(STORAGE_KEYS.NOTIFICATIONS);
     const updated = notifications.map(notif => 
-      notif.userId === userId ? { ...notif, read: true } : notif
+      notif.userId === userId ? { ...notif, isRead: true } : notif
     );
     saveToStorage(STORAGE_KEYS.NOTIFICATIONS, updated);
   },
 };
 
+// Message storage
+const messageStorage = {
+  getAll: (): Message[] => getFromStorage(STORAGE_KEYS.MESSAGES),
+  
+  create: (messageData: Omit<Message, 'id' | 'createdAt'>): Message => {
+    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
+    const newMessage: Message = {
+      ...messageData,
+      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString()
+    };
+    
+    messages.push(newMessage);
+    saveToStorage(STORAGE_KEYS.MESSAGES, messages);
+    
+    return newMessage;
+  },
+  
+  getConversationMessages: (conversationId: string): Message[] => {
+    const conversation = conversationStorage.getById(conversationId);
+    if (!conversation) return [];
+    
+    return getFromStorage<Message>(STORAGE_KEYS.MESSAGES)
+      .filter(message => 
+        conversation.participants.includes(message.senderId) && 
+        conversation.participants.includes(message.receiverId)
+      )
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  },
+  
+  markAsRead: (messageIds: string[], userId: string): void => {
+    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
+    const updatedMessages = messages.map(message => 
+      messageIds.includes(message.id) && message.receiverId === userId
+        ? { ...message, isRead: true }
+        : message
+    );
+    saveToStorage(STORAGE_KEYS.MESSAGES, updatedMessages);
+  },
+  
+  delete: (messageId: string, userId: string): boolean => {
+    const messages = getFromStorage<Message>(STORAGE_KEYS.MESSAGES);
+    const messageIndex = messages.findIndex(m => m.id === messageId && m.senderId === userId);
+    
+    if (messageIndex === -1) return false;
+    
+    messages.splice(messageIndex, 1);
+    saveToStorage(STORAGE_KEYS.MESSAGES, messages);
+    return true;
+  }
+};
+
+// Conversation storage  
+const conversationStorage = {
+  getAll: (): Conversation[] => getFromStorage(STORAGE_KEYS.CONVERSATIONS),
+  
+  getById: (conversationId: string): Conversation | null => {
+    const conversations = getFromStorage<Conversation>(STORAGE_KEYS.CONVERSATIONS);
+    return conversations.find(c => c.id === conversationId) || null;
+  },
+  
+  getUserConversations: (userId: string): Conversation[] => {
+    return getFromStorage<Conversation>(STORAGE_KEYS.CONVERSATIONS)
+      .filter(conversation => conversation.participants.includes(userId))
+      .sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime());
+  },
+  
+  findOrCreate: (participant1: string, participant2: string): Conversation => {
+    const conversations = getFromStorage<Conversation>(STORAGE_KEYS.CONVERSATIONS);
+    
+    let conversation = conversations.find(c => 
+      c.participants.length === 2 &&
+      c.participants.includes(participant1) &&
+      c.participants.includes(participant2)
+    );
+    
+    if (!conversation) {
+      conversation = {
+        id: `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        participants: [participant1, participant2],
+        lastActivity: new Date().toISOString(),
+        unreadCount: { [participant1]: 0, [participant2]: 0 }
+      };
+      
+      conversations.push(conversation);
+      saveToStorage(STORAGE_KEYS.CONVERSATIONS, conversations);
+    }
+    
+    return conversation;
+  },
+  
+  updateLastMessage: (senderId: string, receiverId: string, message: Message): void => {
+    const conversations = getFromStorage<Conversation>(STORAGE_KEYS.CONVERSATIONS);
+    const conversation = conversations.find(c => 
+      c.participants.includes(senderId) && c.participants.includes(receiverId)
+    );
+    
+    if (conversation) {
+      conversation.lastMessage = message;
+      conversation.lastActivity = message.createdAt;
+      conversation.unreadCount[receiverId] = (conversation.unreadCount[receiverId] || 0) + 1;
+      
+      saveToStorage(STORAGE_KEYS.CONVERSATIONS, conversations);
+    }
+  },
+  
+  markAsRead: (conversationId: string, userId: string): void => {
+    const conversations = getFromStorage<Conversation>(STORAGE_KEYS.CONVERSATIONS);
+    const conversation = conversations.find(c => c.id === conversationId);
+    
+    if (conversation) {
+      conversation.unreadCount[userId] = 0;
+      saveToStorage(STORAGE_KEYS.CONVERSATIONS, conversations);
+    }
+  }
+};
+
 // Friend request management
-export const friendRequestStorage = {
+const friendRequestStorage = {
   getAll: (): FriendRequest[] => getFromStorage<FriendRequest>(STORAGE_KEYS.FRIEND_REQUESTS),
   
   getByUserId: (userId: string): FriendRequest[] => {
@@ -401,7 +593,7 @@ export const friendRequestStorage = {
 };
 
 // Friendship management
-export const friendshipStorage = {
+const friendshipStorage = {
   getAll: (): Friendship[] => getFromStorage<Friendship>(STORAGE_KEYS.FRIENDSHIPS),
   
   getFriends: (userId: string): string[] => {
@@ -435,7 +627,7 @@ export const friendshipStorage = {
 };
 
 // Group management
-export const groupStorage = {
+const groupStorage = {
   getAll: (): Group[] => getFromStorage<Group>(STORAGE_KEYS.GROUPS),
   
   getById: (id: string): Group | null => {
@@ -511,7 +703,7 @@ export const groupStorage = {
 };
 
 // Group member management
-export const groupMemberStorage = {
+const groupMemberStorage = {
   getAll: (): GroupMember[] => getFromStorage<GroupMember>(STORAGE_KEYS.GROUP_MEMBERS),
   
   getByGroupId: (groupId: string): GroupMember[] => {
@@ -593,7 +785,7 @@ export const groupMemberStorage = {
 };
 
 // Group join request management
-export const groupJoinRequestStorage = {
+const groupJoinRequestStorage = {
   getAll: (): GroupJoinRequest[] => getFromStorage<GroupJoinRequest>(STORAGE_KEYS.GROUP_JOIN_REQUESTS),
   
   getByGroupId: (groupId: string): GroupJoinRequest[] => {
@@ -660,7 +852,7 @@ export const groupJoinRequestStorage = {
 };
 
 // Current user session
-export const sessionStorage = {
+const sessionStorage = {
   getCurrentUser: (): User | null => {
     try {
       const userData = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
@@ -681,4 +873,22 @@ export const sessionStorage = {
   clearCurrentUser: (): void => {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
   },
+};
+
+// Export all storage modules
+export { 
+  userStorage, 
+  postStorage, 
+  commentStorage, 
+  likeStorage, 
+  notificationStorage, 
+  friendRequestStorage, 
+  friendshipStorage, 
+  groupStorage, 
+  groupMemberStorage, 
+  groupJoinRequestStorage, 
+  sessionStorage,
+  enhancedUserStorage,
+  messageStorage,
+  conversationStorage
 };

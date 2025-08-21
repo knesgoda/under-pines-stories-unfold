@@ -84,13 +84,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   };
 
   const createNotification = (notificationData: Omit<Notification, 'id' | 'createdAt'>) => {
-    const newNotification = notificationStorage.create(notificationData);
+    const newNotification = notificationStorage.create({
+      ...notificationData,
+      priority: notificationData.priority || 'medium'
+    });
     
     // Show toast for high priority notifications
-    if (notificationData.priority === 'high') {
+    if (newNotification.priority === 'high') {
       toast({
-        title: getNotificationTitle(notificationData.type),
-        description: notificationData.message,
+        title: getNotificationTitle(newNotification.type),
+        description: newNotification.message,
         duration: 5000,
       });
     }
