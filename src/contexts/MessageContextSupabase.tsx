@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -8,37 +8,29 @@ export interface Message {
   conversation_id: string;
   sender_id: string;
   content: string;
-  message_type: 'text' | 'image' | 'file';
-  media_url: string | null;
-  file_name: string | null;
-  file_size: number | null;
-  is_edited: boolean;
+  media_urls: string[] | null;
+  reply_to_id: string | null;
+  is_read: boolean;
   created_at: string;
   updated_at: string;
-  profiles?: {
-    username: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  message_reads?: {
-    user_id: string;
-    read_at: string;
-  }[];
 }
 
 export interface Conversation {
   id: string;
-  participant_ids: string[];
+  type: string;
+  name: string | null;
   last_message_id: string | null;
-  last_activity: string;
+  last_activity_at: string | null;
   created_at: string;
-  messages?: Message[];
-  participants?: {
+  updated_at: string;
+  participants?: Array<{
     id: string;
     username: string;
     display_name: string;
     avatar_url: string | null;
-  }[];
+  }>;
+  messages?: Message[];
+  unread_count?: number;
 }
 
 interface MessageContextType {
@@ -47,12 +39,12 @@ interface MessageContextType {
   messages: Message[];
   isLoading: boolean;
   unreadCount: number;
-  setCurrentConversation: (conversation: Conversation | null) => void;
-  sendMessage: (receiverId: string, content: string, messageType?: 'text' | 'image' | 'file', mediaUrl?: string) => Promise<Message | null>;
-  markConversationAsRead: (conversationId: string) => void;
-  deleteMessage: (messageId: string) => void;
-  startConversation: (userId: string) => Promise<Conversation | null>;
-  refreshConversations: () => void;
+  refreshConversations: () => Promise<void>;
+  loadMessages: (conversationId: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string, media_urls?: string[]) => Promise<boolean>;
+  markConversationAsRead: (conversationId: string) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<boolean>;
+  startConversation: (participantId: string) => Promise<string | null>;
 }
 
 const MessageContext = createContext<MessageContextType | null>(null);
@@ -77,19 +69,14 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (user) {
       refreshConversations();
       
-      // Subscribe to real-time message updates
+      // Subscribe to real-time updates
       const messagesSubscription = supabase
         .channel('messages_changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-          const newMessage = payload.new as Message;
-          
-          // If message is for current conversation, add it to messages
-          if (currentConversation && newMessage.conversation_id === currentConversation.id) {
-            setMessages(prev => [...prev, newMessage]);
-          }
-          
-          // Refresh conversations to update last message
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
           refreshConversations();
+          if (currentConversation) {
+            loadMessages(currentConversation.id);
+          }
         })
         .subscribe();
 
@@ -107,88 +94,93 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user, currentConversation]);
 
-  useEffect(() => {
-    if (currentConversation) {
-      loadMessages(currentConversation.id);
-    } else {
-      setMessages([]);
-    }
-  }, [currentConversation]);
-
   const refreshConversations = async () => {
     if (!user) return;
 
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('conversations')
+      // Get conversations where user is a participant
+      const { data: participantData, error } = await supabase
+        .from('conversation_participants')
         .select(`
-          *,
-          messages!conversations_last_message_id_fkey (
+          conversation_id,
+          conversations (
             id,
-            content,
+            type,
+            name,
+            last_message_id,
+            last_activity_at,
             created_at,
-            sender_id,
-            message_type
+            updated_at
           )
         `)
-        .contains('participant_ids', [user.id])
-        .order('last_activity', { ascending: false });
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error loading conversations:', error);
         return;
       }
 
-      // Get participant details for each conversation
-      const conversationsWithParticipants = await Promise.all(
-        (data || []).map(async (conv) => {
-          const otherParticipantIds = conv.participant_ids.filter(id => id !== user.id);
-          
-          const { data: participants } = await supabase
-            .from('profiles')
-            .select('id, username, display_name, avatar_url')
-            .in('id', otherParticipantIds);
+      const conversationIds = participantData?.map(p => p.conversation_id) || [];
+      const conversationsData: Conversation[] = [];
 
-          return {
-            ...conv,
-            participants: participants || []
-          };
-        })
-      );
+      // Get participants for each conversation
+      for (const convData of participantData || []) {
+        const conversation = convData.conversations as any;
+        
+        // Get other participants
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select(`
+            user_id,
+            profiles (
+              id,
+              username,
+              display_name,
+              avatar_url
+            )
+          `)
+          .eq('conversation_id', conversation.id);
 
-      setConversations(conversationsWithParticipants);
-
-      // Calculate unread count
-      let totalUnread = 0;
-      for (const conv of conversationsWithParticipants) {
-        const { count } = await supabase
+        // Count unread messages
+        const { count: unreadMessages } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', user.id)
-          .not('id', 'in', `(
-            SELECT message_id FROM message_reads WHERE user_id = '${user.id}'
-          )`);
-        
-        totalUnread += count || 0;
+          .eq('conversation_id', conversation.id)
+          .eq('is_read', false)
+          .neq('sender_id', user.id);
+
+        conversationsData.push({
+          ...conversation,
+          participants: participants?.map(p => p.profiles).filter(Boolean) || [],
+          unread_count: unreadMessages || 0,
+        });
       }
+
+      // Sort by last activity
+      conversationsData.sort((a, b) => 
+        new Date(b.last_activity_at || b.created_at).getTime() - 
+        new Date(a.last_activity_at || a.created_at).getTime()
+      );
+
+      setConversations(conversationsData);
+      
+      // Calculate total unread count
+      const totalUnread = conversationsData.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
       setUnreadCount(totalUnread);
 
     } catch (error) {
       console.error('Error refreshing conversations:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const loadMessages = async (conversationId: string) => {
-    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          profiles:sender_id (username, display_name, avatar_url),
-          message_reads (user_id, read_at)
-        `)
+        .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
@@ -198,72 +190,53 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       setMessages(data || []);
+      
+      // Find and set current conversation
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation) {
+        setCurrentConversation(conversation);
+      }
+
     } catch (error) {
       console.error('Error loading messages:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const sendMessage = async (
-    receiverId: string,
-    content: string,
-    messageType: 'text' | 'image' | 'file' = 'text',
-    mediaUrl?: string
-  ): Promise<Message | null> => {
-    if (!user) return null;
+  const sendMessage = async (conversationId: string, content: string, media_urls?: string[]): Promise<boolean> => {
+    if (!user) return false;
 
     try {
-      // Find or create conversation
-      let conversation = await startConversation(receiverId);
-      if (!conversation) return null;
-
-      // Send message
-      const { data, error } = await supabase
+      const { error: messageError } = await supabase
         .from('messages')
         .insert({
-          conversation_id: conversation.id,
+          conversation_id: conversationId,
           sender_id: user.id,
           content,
-          message_type: messageType,
-          media_url: mediaUrl || null,
-        })
-        .select()
-        .single();
+          media_urls: media_urls || null,
+        });
 
-      if (error) {
+      if (messageError) {
         toast({
           title: "Error",
           description: "Failed to send message",
           variant: "destructive",
         });
-        return null;
+        return false;
       }
 
-      // Update conversation's last message and activity
+      // Update conversation's last activity
       await supabase
         .from('conversations')
-        .update({
-          last_message_id: data.id,
-          last_activity: new Date().toISOString(),
-        })
-        .eq('id', conversation.id);
+        .update({ last_activity_at: new Date().toISOString() })
+        .eq('id', conversationId);
 
-      // Create notification for receiver  
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: receiverId,
-          type: 'message',
-          from_user_id: user.id,
-          message_id: data.id,
-          message: `New message from ${user.display_name}`,
-        });
-
-      return data;
+      await refreshConversations();
+      await loadMessages(conversationId);
+      
+      return true;
     } catch (error) {
       console.error('Error sending message:', error);
-      return null;
+      return false;
     }
   };
 
@@ -271,37 +244,22 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!user) return;
 
     try {
-      // Get all unread messages in this conversation
-      const { data: unreadMessages } = await supabase
+      // Mark all unread messages in the conversation as read
+      await supabase
         .from('messages')
-        .select('id')
+        .update({ is_read: true })
         .eq('conversation_id', conversationId)
-        .neq('sender_id', user.id)
-        .not('id', 'in', `(
-          SELECT message_id FROM message_reads WHERE user_id = '${user.id}'
-        )`);
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
 
-      if (unreadMessages && unreadMessages.length > 0) {
-        // Mark messages as read
-        const readRecords = unreadMessages.map(msg => ({
-          message_id: msg.id,
-          user_id: user.id,
-        }));
-
-        await supabase
-          .from('message_reads')
-          .insert(readRecords);
-      }
-
-      // Refresh unread count
-      refreshConversations();
+      await refreshConversations();
     } catch (error) {
       console.error('Error marking conversation as read:', error);
     }
   };
 
-  const deleteMessage = async (messageId: string) => {
-    if (!user) return;
+  const deleteMessage = async (messageId: string): Promise<boolean> => {
+    if (!user) return false;
 
     try {
       const { error } = await supabase
@@ -316,48 +274,71 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
           description: "Failed to delete message",
           variant: "destructive",
         });
-        return;
+        return false;
       }
 
-      // Remove from local state
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      if (currentConversation) {
+        await loadMessages(currentConversation.id);
+      }
+      return true;
     } catch (error) {
       console.error('Error deleting message:', error);
+      return false;
     }
   };
 
-  const startConversation = async (userId: string): Promise<Conversation | null> => {
-    if (!user || userId === user.id) return null;
+  const startConversation = async (participantId: string): Promise<string | null> => {
+    if (!user) return null;
 
     try {
-      // Check if conversation already exists
-      const { data: existingConv } = await supabase
-        .from('conversations')
-        .select('*')
-        .contains('participant_ids', [user.id])
-        .contains('participant_ids', [userId])
-        .single();
+      // Check if conversation already exists between these users
+      const { data: existingParticipants } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .in('user_id', [user.id, participantId]);
 
-      if (existingConv) {
-        return existingConv;
+      // Find conversations with both users
+      const conversationCounts: { [key: string]: number } = {};
+      existingParticipants?.forEach(p => {
+        conversationCounts[p.conversation_id] = (conversationCounts[p.conversation_id] || 0) + 1;
+      });
+
+      const existingConversation = Object.keys(conversationCounts).find(
+        convId => conversationCounts[convId] === 2
+      );
+
+      if (existingConversation) {
+        return existingConversation;
       }
 
       // Create new conversation
-      const { data, error } = await supabase
+      const { data: newConversation, error: convError } = await supabase
         .from('conversations')
         .insert({
-          participant_ids: [user.id, userId],
+          type: 'direct',
         })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating conversation:', error);
-        return null;
+      if (convError) {
+        throw convError;
+      }
+
+      // Add participants
+      const { error: participantsError } = await supabase
+        .from('conversation_participants')
+        .insert([
+          { conversation_id: newConversation.id, user_id: user.id },
+          { conversation_id: newConversation.id, user_id: participantId },
+        ]);
+
+      if (participantsError) {
+        throw participantsError;
       }
 
       await refreshConversations();
-      return data;
+      return newConversation.id;
+
     } catch (error) {
       console.error('Error starting conversation:', error);
       return null;
@@ -370,12 +351,12 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({ child
     messages,
     isLoading,
     unreadCount,
-    setCurrentConversation,
+    refreshConversations,
+    loadMessages,
     sendMessage,
     markConversationAsRead,
     deleteMessage,
     startConversation,
-    refreshConversations,
   };
 
   return (

@@ -1,27 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-// Enhanced interfaces for Supabase integration
 export interface Post {
   id: string;
   user_id: string;
   content: string;
-  privacy: 'public' | 'friends' | 'private';
+  privacy: string;
   tags: string[] | null;
   media_urls: string[] | null;
-  like_count: number;
-  comment_count: number;
+  location: string | null;
+  likes_count: number;
+  comments_count: number;
   created_at: string;
   updated_at: string;
-  profiles?: {
-    username: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  likes?: { user_id: string }[];
-  comments?: Comment[];
+  profiles?: any;
+  likes?: any[];
+  comments?: any[];
 }
 
 export interface Comment {
@@ -29,7 +25,9 @@ export interface Comment {
   post_id: string;
   user_id: string;
   content: string;
+  parent_id: string | null;
   created_at: string;
+  updated_at: string;
   profiles?: {
     username: string;
     display_name: string;
@@ -39,15 +37,12 @@ export interface Comment {
 
 export interface Friendship {
   id: string;
-  user_id_1: string;
-  user_id_2: string;
+  requester_id: string;
+  addressee_id: string;
   status: 'pending' | 'accepted' | 'blocked';
   created_at: string;
-  profiles?: {
-    username: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
+  updated_at: string;
+  profiles?: any;
 }
 
 interface SocialContextType {
@@ -55,14 +50,14 @@ interface SocialContextType {
   friends: Friendship[];
   friendRequests: Friendship[];
   isLoading: boolean;
-  createPost: (content: string, privacy?: 'public' | 'friends' | 'private', tags?: string[], mediaUrls?: string[]) => Promise<boolean>;
+  createPost: (content: string, privacy?: 'public' | 'friends' | 'private', media_urls?: string[]) => Promise<boolean>;
   deletePost: (postId: string) => Promise<boolean>;
   toggleLike: (postId: string) => Promise<void>;
-  addComment: (postId: string, content: string) => Promise<boolean>;
+  addComment: (postId: string, content: string, parentId?: string) => Promise<boolean>;
   deleteComment: (commentId: string) => Promise<boolean>;
   sendFriendRequest: (userId: string) => Promise<boolean>;
-  acceptFriendRequest: (requestId: string) => Promise<boolean>;
-  rejectFriendRequest: (requestId: string) => Promise<boolean>;
+  acceptFriendRequest: (friendshipId: string) => Promise<boolean>;
+  rejectFriendRequest: (friendshipId: string) => Promise<boolean>;
   refreshData: () => Promise<void>;
 }
 
@@ -109,30 +104,34 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         })
         .subscribe();
 
+      const friendshipsSubscription = supabase
+        .channel('friendships_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
+          refreshData();
+        })
+        .subscribe();
+
       return () => {
         postsSubscription.unsubscribe();
         likesSubscription.unsubscribe();
         commentsSubscription.unsubscribe();
+        friendshipsSubscription.unsubscribe();
       };
     }
   }, [user]);
 
   const refreshData = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
-      // Load posts with profiles, likes, and comments
+      // Load posts 
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
-        .select(`
-          *,
-          profiles:user_id (username, display_name, avatar_url),
-          likes (user_id),
-          comments (id, user_id, content, created_at, profiles:user_id (username, display_name, avatar_url))
-        `)
+        .select('*')
         .eq('privacy', 'public')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (postsError) {
         console.error('Error loading posts:', postsError);
@@ -143,11 +142,8 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Load friendships
       const { data: friendshipsData, error: friendshipsError } = await supabase
         .from('friendships')
-        .select(`
-          *,
-          profiles:user_id_2 (username, display_name, avatar_url)
-        `)
-        .or(`user_id_1.eq.${user.id},user_id_2.eq.${user.id}`)
+        .select('*')
+        .eq('requester_id', user.id)
         .eq('status', 'accepted');
 
       if (friendshipsError) {
@@ -159,11 +155,8 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Load friend requests
       const { data: requestsData, error: requestsError } = await supabase
         .from('friendships')
-        .select(`
-          *,
-          profiles:user_id_1 (username, display_name, avatar_url)
-        `)
-        .eq('user_id_2', user.id)
+        .select('*')
+        .eq('addressee_id', user.id)
         .eq('status', 'pending');
 
       if (requestsError) {
@@ -173,27 +166,24 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
 
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      console.error('Error refreshing social data:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const createPost = async (content: string, privacy: 'public' | 'friends' | 'private' = 'public', tags?: string[], mediaUrls?: string[]): Promise<boolean> => {
+  const createPost = async (content: string, privacy: 'public' | 'friends' | 'private' = 'public', media_urls?: string[]): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
           content,
           privacy,
-          tags: tags || null,
-          media_urls: mediaUrls || null,
-        })
-        .select()
-        .single();
+          media_urls: media_urls || null,
+        });
 
       if (error) {
         toast({
@@ -249,11 +239,11 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const toggleLike = async (postId: string): Promise<void> => {
+  const toggleLike = async (postId: string) => {
     if (!user) return;
 
     try {
-      // Check if already liked
+      // Check if user has already liked this post
       const { data: existingLike } = await supabase
         .from('likes')
         .select('id')
@@ -262,13 +252,13 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         .single();
 
       if (existingLike) {
-        // Unlike
+        // Unlike the post
         await supabase
           .from('likes')
           .delete()
           .eq('id', existingLike.id);
       } else {
-        // Like
+        // Like the post
         await supabase
           .from('likes')
           .insert({
@@ -276,7 +266,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             user_id: user.id,
           });
 
-        // Create notification for post author
+        // Create notification for post owner
         const post = posts.find(p => p.id === postId);
         if (post && post.user_id !== user.id) {
           await supabase
@@ -284,9 +274,10 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             .insert({
               user_id: post.user_id,
               type: 'like',
-              from_user_id: user.id,
-              post_id: postId,
-              message: `${user.display_name} liked your post`,
+              title: 'New Like',
+              message: `${user.display_name || user.username} liked your post`,
+              related_user_id: user.id,
+              related_post_id: postId,
             });
         }
       }
@@ -297,7 +288,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const addComment = async (postId: string, content: string): Promise<boolean> => {
+  const addComment = async (postId: string, content: string, parentId?: string): Promise<boolean> => {
     if (!user) return false;
 
     try {
@@ -307,6 +298,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           post_id: postId,
           user_id: user.id,
           content,
+          parent_id: parentId || null,
         });
 
       if (error) {
@@ -318,7 +310,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return false;
       }
 
-      // Create notification for post author
+      // Create notification for post owner
       const post = posts.find(p => p.id === postId);
       if (post && post.user_id !== user.id) {
         await supabase
@@ -326,9 +318,10 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           .insert({
             user_id: post.user_id,
             type: 'comment',
-            from_user_id: user.id,
-            post_id: postId,
-            message: `${user.display_name} commented on your post`,
+            title: 'New Comment',
+            message: `${user.display_name || user.username} commented on your post`,
+            related_user_id: user.id,
+            related_post_id: postId,
           });
       }
 
@@ -368,14 +361,14 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const sendFriendRequest = async (userId: string): Promise<boolean> => {
-    if (!user || userId === user.id) return false;
+    if (!user) return false;
 
     try {
       const { error } = await supabase
         .from('friendships')
         .insert({
-          user_id_1: user.id,
-          user_id_2: userId,
+          requester_id: user.id,
+          addressee_id: userId,
           status: 'pending',
         });
 
@@ -394,8 +387,9 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         .insert({
           user_id: userId,
           type: 'friend_request',
-          from_user_id: user.id,
-          message: `${user.display_name} sent you a friend request`,
+          title: 'Friend Request',
+          message: `${user.display_name || user.username} sent you a friend request`,
+          related_user_id: user.id,
         });
 
       toast({
@@ -411,14 +405,14 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const acceptFriendRequest = async (requestId: string): Promise<boolean> => {
+  const acceptFriendRequest = async (friendshipId: string): Promise<boolean> => {
     if (!user) return false;
 
     try {
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'accepted' })
-        .eq('id', requestId);
+        .eq('id', friendshipId);
 
       if (error) {
         toast({
@@ -427,19 +421,6 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           variant: "destructive",
         });
         return false;
-      }
-
-      // Create notification for requester
-      const request = friendRequests.find(r => r.id === requestId);
-      if (request) {
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: request.user_id_1,
-            type: 'friend_accepted',
-            from_user_id: user.id,
-            message: `${user.display_name} accepted your friend request`,
-          });
       }
 
       toast({
@@ -455,14 +436,14 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const rejectFriendRequest = async (requestId: string): Promise<boolean> => {
+  const rejectFriendRequest = async (friendshipId: string): Promise<boolean> => {
     if (!user) return false;
 
     try {
       const { error } = await supabase
         .from('friendships')
         .delete()
-        .eq('id', requestId);
+        .eq('id', friendshipId);
 
       if (error) {
         toast({
