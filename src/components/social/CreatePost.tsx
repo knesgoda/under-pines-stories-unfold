@@ -99,7 +99,7 @@ export const CreatePost: React.FC = () => {
           <div className="flex space-x-3">
             <Avatar className="h-10 w-10 flex-shrink-0">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {user.displayName.charAt(0).toUpperCase()}
+                {user.display_name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-3">

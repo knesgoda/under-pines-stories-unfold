@@ -108,7 +108,7 @@ export const MessageProvider: React.FC<MessageProviderProps> = ({ children }) =>
         type: 'message',
         fromUserId: user.id,
         messageId: newMessage.id,
-        message: `${user.displayName} sent you a message`,
+        message: `${user.display_name} sent you a message`,
         isRead: false,
         priority: 'high'
       });

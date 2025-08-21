@@ -80,12 +80,12 @@ const Dashboard: React.FC = () => {
                 <Link to="/profile">
                   <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                      {user.displayName.charAt(0).toUpperCase()}
+                      {user.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Link>
                 <span className="text-sm font-medium hidden sm:inline">
-                  {user.displayName}
+                  {user.display_name}
                 </span>
               </div>
               <Button
@@ -113,14 +113,14 @@ const Dashboard: React.FC = () => {
                 <Link to="/profile">
                   <Avatar className="h-16 w-16 cursor-pointer hover:opacity-80 transition-opacity">
                     <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-                      {user.displayName.charAt(0).toUpperCase()}
+                      {user.display_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Link>
                 <div>
                   <Link to="/profile">
                     <h2 className="font-bold text-lg hover:text-primary transition-smooth cursor-pointer">
-                      {user.displayName}
+                      {user.display_name}
                     </h2>
                   </Link>
                   <p className="text-muted-foreground text-sm">@{user.username}</p>

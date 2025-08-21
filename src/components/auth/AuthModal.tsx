@@ -58,7 +58,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setIsLoading(true);
     const success = await register({
       username: registerData.username,
-      displayName: registerData.displayName,
+      display_name: registerData.displayName,
       email: registerData.email,
       password: registerData.password,
       bio: registerData.bio,

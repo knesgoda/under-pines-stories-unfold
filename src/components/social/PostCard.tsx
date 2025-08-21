@@ -45,7 +45,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
         fromUserId: user.id,
         type: 'like',
         postId: post.id,
-        message: `${user.displayName} liked your post`,
+        message: `${user.display_name} liked your post`,
         isRead: false,
         priority: 'medium'
       });
@@ -83,7 +83,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
           fromUserId: user.id,
           type: 'comment',
           postId: post.id,
-          message: `${user.displayName} commented on your post`,
+          message: `${user.display_name} commented on your post`,
           isRead: false,
           priority: 'medium'
         });
@@ -232,7 +232,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
               <div className="flex space-x-3">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                    {user.displayName.charAt(0).toUpperCase()}
+                    {user.display_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 flex space-x-2">
