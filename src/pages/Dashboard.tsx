@@ -6,14 +6,20 @@ import { PostCard } from '@/components/social/PostCard';
 import { FriendRequests } from '@/components/social/FriendRequests';
 import { UserList } from '@/components/social/UserList';
 import { EnhancedSearch } from '@/components/social/EnhancedSearch';
-import { LogOut, User, TreePine } from 'lucide-react';
+import { LogOut, User, TreePine, Bell, MessageCircle, Search, Users, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocial } from '@/contexts/SocialContext';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useMessages } from '@/contexts/MessageContext';
 import { userStorage } from '@/lib/localStorage';
+import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const { posts } = useSocial();
+  const { unreadCount: notificationCount } = useNotifications();
+  const { unreadCount: messageCount } = useMessages();
 
   if (!user) return null;
 
@@ -30,12 +36,54 @@ const Dashboard: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Navigation Icons */}
+              <div className="flex items-center space-x-2">
+                <Link to="/search">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/notifications">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 relative">
+                    <Bell className="h-4 w-4" />
+                    {notificationCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
+                      >
+                        {notificationCount > 9 ? '9+' : notificationCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+                <Link to="/messages">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 relative">
+                    <MessageCircle className="h-4 w-4" />
+                    {messageCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
+                      >
+                        {messageCount > 9 ? '9+' : messageCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+                <Link to="/groups">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Users className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+              
               <div className="flex items-center space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <Link to="/profile">
+                  <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                      {user.displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <span className="text-sm font-medium hidden sm:inline">
                   {user.displayName}
                 </span>
@@ -62,13 +110,19 @@ const Dashboard: React.FC = () => {
             {/* User Profile Card */}
             <div className="card-gradient pine-shadow p-6 rounded-lg">
               <div className="flex flex-col items-center text-center space-y-3">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <Link to="/profile">
+                  <Avatar className="h-16 w-16 cursor-pointer hover:opacity-80 transition-opacity">
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
+                      {user.displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div>
-                  <h2 className="font-bold text-lg">{user.displayName}</h2>
+                  <Link to="/profile">
+                    <h2 className="font-bold text-lg hover:text-primary transition-smooth cursor-pointer">
+                      {user.displayName}
+                    </h2>
+                  </Link>
                   <p className="text-muted-foreground text-sm">@{user.username}</p>
                   {user.bio && (
                     <p className="text-sm mt-2 text-center">{user.bio}</p>
