@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { 
-  User, 
+  User as UserIcon, 
   Edit2, 
   Save, 
   X, 
@@ -24,8 +24,7 @@ import {
   Users,
   Camera
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { enhancedUserStorage, postStorage, friendshipStorage } from '@/lib/localStorage';
+import { useAuth, User } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -37,26 +36,26 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
   const { user: currentUser, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    displayName: '',
+    display_name: '',
     bio: '',
     location: '',
     website: '',
     interests: [] as string[],
-    isPrivate: false
+    is_private: false
   });
 
-  const targetUser = userId ? enhancedUserStorage.getById(userId) : currentUser;
+  const targetUser = userId ? null : currentUser; // For now, only show current user profile
   const isOwnProfile = !userId || userId === currentUser?.id;
 
   React.useEffect(() => {
     if (targetUser) {
       setFormData({
-        displayName: targetUser.displayName || '',
+        display_name: targetUser.display_name || '',
         bio: targetUser.bio || '',
         location: targetUser.location || '',
         website: targetUser.website || '',
         interests: targetUser.interests || [],
-        isPrivate: targetUser.isPrivate || false
+        is_private: targetUser.is_private || false
       });
     }
   }, [targetUser]);
@@ -109,17 +108,16 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
   };
 
   const getUserPosts = () => {
-    return postStorage.getByUserId(targetUser.id);
+    return []; // Will be implemented with Supabase
   };
 
   const getUserFriends = () => {
-    return friendshipStorage.getFriends(targetUser.id);
+    return []; // Will be implemented with Supabase
   };
 
   const userPosts = getUserPosts();
   const userFriends = getUserFriends();
-  const isFriend = currentUser && !isOwnProfile ? 
-    friendshipStorage.areFriends(currentUser.id, targetUser.id) : false;
+  const isFriend = false; // Will be implemented with Supabase
 
   return (
     <div className="space-y-6">
@@ -132,7 +130,7 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
               <div className="relative">
                 <Avatar className="h-24 w-24 md:h-32 md:w-32">
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl md:text-4xl font-bold">
-                    {targetUser.displayName.charAt(0).toUpperCase()}
+                    {targetUser.display_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {isOwnProfile && isEditing && (
@@ -168,13 +166,13 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                 <div>
                   {isEditing ? (
                     <Input
-                      value={formData.displayName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                      value={formData.display_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
                       className="text-2xl font-bold h-auto border-none px-0 bg-transparent"
                       placeholder="Display name"
                     />
                   ) : (
-                    <h1 className="text-2xl md:text-3xl font-bold">{targetUser.displayName}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold">{targetUser.display_name}</h1>
                   )}
                   <p className="text-muted-foreground">@{targetUser.username}</p>
                 </div>
@@ -264,7 +262,7 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                 
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  <span>Joined {formatDistanceToNow(new Date(targetUser.createdAt), { addSuffix: true })}</span>
+                  <span>Joined {formatDistanceToNow(new Date(targetUser.created_at), { addSuffix: true })}</span>
                 </div>
               </div>
 
@@ -291,7 +289,7 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Interests</Label>
                   <div className="flex flex-wrap gap-2">
-                    {formData.interests.map((interest, index) => (
+                     {formData.interests.map((interest, index) => (
                       <Badge 
                         key={index} 
                         variant="secondary" 
@@ -370,7 +368,7 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                            <MessageCircle className="h-3 w-3" />
                            {post.commentCount || 0}
                          </span>
-                        <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                        <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                       </div>
                     </div>
                   ))}
@@ -392,22 +390,18 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                   <p className="text-muted-foreground">No friends yet</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {userFriends.map((friendId) => {
-                    const friend = enhancedUserStorage.getById(friendId);
-                    if (!friend) return null;
-                    return (
-                      <div key={friend.id} className="flex flex-col items-center p-4 border border-border/50 rounded-lg hover:bg-muted/50 transition-smooth">
-                        <Avatar className="h-12 w-12 mb-2">
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {friend.displayName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <p className="font-medium text-sm text-center">{friend.displayName}</p>
-                        <p className="text-xs text-muted-foreground">@{friend.username}</p>
-                      </div>
-                    );
-                  })}
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                   {userFriends.map((friend: any) => (
+                     <div key={friend.id} className="flex flex-col items-center p-4 border border-border/50 rounded-lg hover:bg-muted/50 transition-smooth">
+                       <Avatar className="h-12 w-12 mb-2">
+                         <AvatarFallback className="bg-primary/10 text-primary">
+                           {friend.display_name?.charAt(0).toUpperCase() || 'U'}
+                         </AvatarFallback>
+                       </Avatar>
+                       <p className="font-medium text-sm text-center">{friend.display_name}</p>
+                       <p className="text-xs text-muted-foreground">@{friend.username}</p>
+                     </div>
+                   ))}
                 </div>
               )}
             </CardContent>
@@ -428,8 +422,8 @@ const EnhancedProfile: React.FC<EnhancedProfileProps> = ({ userId }) => {
                   </div>
                   <Switch
                     id="private-profile"
-                    checked={formData.isPrivate}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
+                    checked={formData.is_private}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_private: checked }))}
                   />
                 </div>
               </CardContent>
