@@ -1,18 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ConversationList } from '@/components/messaging/ConversationList';
+import { MessageThread } from '@/components/messaging/MessageThread';
 import { Button } from '@/components/ui/button';
 import { TreePine, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import MessageCenter from '@/components/messaging/MessageCenter';
 
 const Messages: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [selectedConversationId, setSelectedConversationId] = useState<string | undefined>();
+  const [isMobileThreadView, setIsMobileThreadView] = useState(false);
 
   if (!user) {
     navigate('/');
     return null;
   }
+
+  const handleSelectConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+    setIsMobileThreadView(true);
+  };
+
+  const handleBackToList = () => {
+    setIsMobileThreadView(false);
+    setSelectedConversationId(undefined);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -32,7 +45,7 @@ const Messages: React.FC = () => {
               </Button>
               <TreePine className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">
-                Under Pines
+                Messages
               </h1>
             </div>
             <Button
@@ -49,7 +62,37 @@ const Messages: React.FC = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <MessageCenter />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+          {/* Conversation List - Hidden on mobile when thread is open */}
+          <div className={`lg:col-span-1 ${isMobileThreadView ? 'hidden lg:block' : ''}`}>
+            <ConversationList
+              onSelectConversation={handleSelectConversation}
+              selectedConversationId={selectedConversationId}
+            />
+          </div>
+
+          {/* Message Thread - Hidden on mobile when no conversation selected */}
+          <div className={`lg:col-span-2 ${!selectedConversationId && !isMobileThreadView ? 'hidden lg:flex lg:items-center lg:justify-center' : ''}`}>
+            {selectedConversationId ? (
+              <MessageThread
+                conversationId={selectedConversationId}
+                onBack={handleBackToList}
+              />
+            ) : (
+              <div className="hidden lg:flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center">
+                  <TreePine className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Welcome to Messages</h3>
+                  <p className="text-muted-foreground text-sm max-w-md">
+                    Select a conversation from the list to start chatting, or send a friend request to someone new to start a conversation.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );

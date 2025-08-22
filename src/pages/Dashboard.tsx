@@ -6,6 +6,7 @@ import { PostCard } from '@/components/social/PostCard';
 import { FriendRequests } from '@/components/social/FriendRequests';
 import { UserList } from '@/components/social/UserList';
 import { EnhancedSearch } from '@/components/social/EnhancedSearch';
+import { BetaFeedbackButton } from '@/components/feedback/BetaFeedbackButton';
 import { LogOut, User, TreePine, Bell, MessageCircle, Search, Users, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocial } from '@/contexts/SocialContextSupabase';
@@ -161,6 +162,8 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <BetaFeedbackButton />
     </div>
   );
 };
