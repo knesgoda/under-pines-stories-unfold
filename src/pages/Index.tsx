@@ -3,7 +3,6 @@ import { Navigation } from "@/components/ui/navigation";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -26,19 +25,9 @@ const Index = () => {
   const { unreadCount: notificationCount } = useNotifications();
   const { unreadCount: messageCount } = useMessages();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-
-  const handleWelcomeComplete = () => {
-    setShowWelcomeModal(false);
-  };
 
   // Show dashboard content if user is logged in
   if (user) {
-    // Check if this is a new user and show welcome modal
-    const isNewUser = !user.bio;
-    if (isNewUser && !showWelcomeModal) {
-      setShowWelcomeModal(true);
-    }
 
     return (
       <div className="min-h-screen bg-gradient-subtle">
@@ -181,7 +170,6 @@ const Index = () => {
         </main>
 
         <BetaFeedbackButton />
-        <WelcomeModal isOpen={showWelcomeModal} onClose={handleWelcomeComplete} />
       </div>
     );
   }
