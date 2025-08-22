@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Trees, User, Home, Search, Bell, Settings, Menu, X } from "lucide-react";
-import underPinesLogo from "@/assets/under-pines-logo.png";
+import { User, Home, Search, Bell, Settings, Menu, X } from "lucide-react";
 
 interface NavigationProps {
   onAuthClick?: () => void;
@@ -27,8 +26,12 @@ export function Navigation({ onAuthClick }: NavigationProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-8 h-8 rounded-lg under-pines-gradient flex items-center justify-center group-hover:pine-glow transition-smooth">
-              <Trees className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-full overflow-hidden group-hover:pine-glow transition-smooth">
+              <img 
+                src="/lovable-uploads/01ef865b-7509-418c-a4d5-4bbf436dcc21.png" 
+                alt="Under Pines Logo" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="font-bold text-xl text-foreground group-hover:text-primary transition-smooth">
               Under Pines
