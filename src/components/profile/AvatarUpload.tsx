@@ -28,6 +28,8 @@ export function AvatarUpload({
     const file = event.target.files?.[0]
     if (!file) return
 
+    console.log('File selected:', file.name, file.type, file.size)
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -49,9 +51,11 @@ export function AvatarUpload({
     }
 
     setIsUploading(true)
+    console.log('Starting upload...')
 
     try {
       const url = await uploadAvatar(file)
+      console.log('Upload successful, URL:', url)
       onAvatarChange(url)
       toast({
         title: "Avatar updated!",
@@ -66,6 +70,10 @@ export function AvatarUpload({
       })
     } finally {
       setIsUploading(false)
+      // Clear the input value so the same file can be selected again
+      if (event.target) {
+        event.target.value = ''
+      }
     }
   }
 
@@ -91,8 +99,20 @@ export function AvatarUpload({
     }
   }
 
-  const handleAvatarClick = () => {
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (canEdit && !isUploading) {
+      console.log('Avatar clicked, triggering file input')
+      fileInputRef.current?.click()
+    }
+  }
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (canEdit && !isUploading) {
+      console.log('Button clicked, triggering file input')
       fileInputRef.current?.click()
     }
   }
@@ -116,7 +136,7 @@ export function AvatarUpload({
               size="sm"
               variant="secondary"
               className="rounded-full h-10 w-10"
-              onClick={handleAvatarClick}
+              onClick={handleButtonClick}
               disabled={isUploading}
             >
               {isUploading ? (
@@ -134,7 +154,7 @@ export function AvatarUpload({
           <Button
             variant="outline"
             size="sm"
-            onClick={handleAvatarClick}
+            onClick={handleButtonClick}
             disabled={isUploading}
           >
             {isUploading ? (

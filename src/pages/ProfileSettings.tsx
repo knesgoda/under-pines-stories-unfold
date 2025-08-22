@@ -51,6 +51,7 @@ export default function ProfileSettings() {
   }
 
   const handleAvatarChange = (url: string | null) => {
+    console.log('Avatar changed to:', url)
     setFormData(prev => ({ ...prev, avatar_url: url || '' }))
   }
 
@@ -58,6 +59,7 @@ export default function ProfileSettings() {
     e.preventDefault()
     if (!user) return
 
+    console.log('Form submitted manually, form data:', formData)
     setIsSaving(true)
 
     try {
