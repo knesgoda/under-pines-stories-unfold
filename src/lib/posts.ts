@@ -34,7 +34,7 @@ export async function createPost(text: string): Promise<Post> {
       like_count,
       share_count,
       is_deleted,
-      profiles (
+      profiles!posts_author_id_fkey (
         username,
         display_name,
         avatar_url
@@ -64,7 +64,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
       like_count,
       share_count,
       is_deleted,
-      profiles (
+      profiles!posts_author_id_fkey (
         username,
         display_name,
         avatar_url
