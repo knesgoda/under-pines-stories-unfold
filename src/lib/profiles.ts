@@ -2,12 +2,12 @@ import { supabase } from "@/integrations/supabase/client"
 import type { User } from "@/contexts/AuthContext"
 
 export interface ProfileUpdateData {
-  display_name?: string;
-  bio?: string;  
-  hobbies?: string[];
-  interests?: string[];
-  places_lived?: string[];
-  avatar_url?: string;
+  display_name?: string
+  bio?: string
+  hobbies?: string[]
+  interests?: string[]
+  places_lived?: string[]
+  avatar_url?: string
 }
 
 export async function getProfileByUsername(username: string): Promise<User | null> {
@@ -48,40 +48,45 @@ export async function uploadAvatar(file: File): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
 
-  // Delete old avatar if exists
-  const { data: existingFiles } = await supabase.storage
-    .from('avatars')
-    .list(user.id)
-
-  if (existingFiles && existingFiles.length > 0) {
-    await supabase.storage
-      .from('avatars')
-      .remove(existingFiles.map(file => `${user.id}/${file.name}`))
-  }
-
-  // Upload new avatar
   const fileExt = file.name.split('.').pop()
-  const fileName = `avatar.${fileExt}`
-  const filePath = `${user.id}/${fileName}`
+  const fileName = `${user.id}/avatar.${fileExt}`
 
-  const { error: uploadError } = await supabase.storage
+  // Delete existing avatar first
+  await supabase.storage
     .from('avatars')
-    .upload(filePath, file)
+    .remove([`${user.id}/avatar.jpg`, `${user.id}/avatar.jpeg`, `${user.id}/avatar.png`, `${user.id}/avatar.gif`])
 
-  if (uploadError) {
-    console.error('Error uploading avatar:', uploadError)
-    throw uploadError
+  const { data, error } = await supabase.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true })
+
+  if (error) {
+    console.error('Error uploading avatar:', error)
+    throw error
   }
 
-  // Get public URL
-  const { data } = supabase.storage
+  const { data: publicUrl } = supabase.storage
     .from('avatars')
-    .getPublicUrl(filePath)
+    .getPublicUrl(fileName)
 
-  return data.publicUrl
+  return publicUrl.publicUrl
 }
 
-export function getAvatarUrl(avatarUrl?: string): string {
-  if (!avatarUrl) return '/placeholder.svg'
-  return avatarUrl
+export async function deleteAvatar(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  const { error } = await supabase.storage
+    .from('avatars')
+    .remove([
+      `${user.id}/avatar.jpg`, 
+      `${user.id}/avatar.jpeg`, 
+      `${user.id}/avatar.png`, 
+      `${user.id}/avatar.gif`
+    ])
+
+  if (error) {
+    console.error('Error deleting avatar:', error)
+    throw error
+  }
 }

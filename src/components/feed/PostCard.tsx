@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { toZonedTime, format } from 'date-fns-tz'
 import { Card, CardContent } from '@/components/ui/card'
@@ -101,21 +102,29 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex gap-3">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={post.profiles.avatar_url} />
-            <AvatarFallback>
-              {displayName[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <Link to={`/${post.profiles.username}`}>
+            <Avatar className="h-10 w-10 flex-shrink-0 hover:opacity-80 transition-opacity">
+              <AvatarImage src={post.profiles.avatar_url} />
+              <AvatarFallback>
+                {displayName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-foreground">
+              <Link 
+                to={`/${post.profiles.username}`}
+                className="font-semibold text-foreground hover:underline"
+              >
                 {displayName}
-              </span>
-              <span className="text-muted-foreground">
+              </Link>
+              <Link 
+                to={`/${post.profiles.username}`}
+                className="text-muted-foreground hover:underline"
+              >
                 @{username}
-              </span>
+              </Link>
               <span className="text-muted-foreground">•</span>
               <span 
                 className="text-muted-foreground hover:underline cursor-help" 

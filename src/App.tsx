@@ -3,8 +3,8 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { Toaster } from '@/components/ui/toaster'
 import Home from '@/pages/Home'
 import PostDetail from '@/pages/PostDetail'
-import { ProfilePage } from '@/components/profile/ProfilePage'
-import { ProfileEditPage } from '@/components/profile/ProfileEditPage'
+import Profile from '@/pages/Profile'
+import ProfileSettings from '@/pages/ProfileSettings'
 
 function App() {
   return (
@@ -14,8 +14,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/post/:id" element={<PostDetail />} />
-            <Route path="/settings/profile" element={<ProfileEditPage />} />
-            <Route path="/:username" element={<ProfilePage />} />
+            <Route path="/settings/profile" element={<ProfileSettings />} />
+            <Route path="/:username" element={<Profile />} />
           </Routes>
           <Toaster />
         </div>

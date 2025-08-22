@@ -117,9 +117,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: userId,
           username,
           display_name: username,
+          bio: null,
           hobbies: [],
           interests: [],
-          places_lived: []
+          places_lived: [],
         })
         .select()
         .single();

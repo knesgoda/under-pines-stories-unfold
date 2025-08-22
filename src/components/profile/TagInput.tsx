@@ -1,91 +1,78 @@
-import { useState, KeyboardEvent } from 'react'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { X, Plus } from 'lucide-react'
 
 interface TagInputProps {
-  label: string
   tags: string[]
-  onChange: (tags: string[]) => void
+  onTagsChange: (tags: string[]) => void
   placeholder?: string
-  maxTags?: number
+  label?: string
 }
 
-export function TagInput({ label, tags, onChange, placeholder, maxTags = 10 }: TagInputProps) {
+export function TagInput({ tags, onTagsChange, placeholder = "Add a tag...", label }: TagInputProps) {
   const [inputValue, setInputValue] = useState('')
 
   const addTag = () => {
     const trimmedValue = inputValue.trim()
-    if (trimmedValue && !tags.includes(trimmedValue) && tags.length < maxTags) {
-      onChange([...tags, trimmedValue])
+    if (trimmedValue && !tags.includes(trimmedValue)) {
+      onTagsChange([...tags, trimmedValue])
       setInputValue('')
     }
   }
 
   const removeTag = (tagToRemove: string) => {
-    onChange(tags.filter(tag => tag !== tagToRemove))
+    onTagsChange(tags.filter(tag => tag !== tagToRemove))
   }
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       addTag()
-    } else if (e.key === 'Backspace' && inputValue === '' && tags.length > 0) {
-      removeTag(tags[tags.length - 1])
     }
   }
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      {label && (
+        <label className="text-sm font-medium text-foreground">{label}</label>
+      )}
       
-      {/* Existing tags */}
+      <div className="flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder={placeholder}
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          onClick={addTag}
+          disabled={!inputValue.trim() || tags.includes(inputValue.trim())}
+          size="sm"
+          variant="outline"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
-            <Badge key={index} variant="secondary" className="flex items-center gap-1">
+          {tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
               {tag}
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 hover:bg-transparent"
                 onClick={() => removeTag(tag)}
+                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
               >
                 <X className="h-3 w-3" />
-              </Button>
+              </button>
             </Badge>
           ))}
         </div>
-      )}
-
-      {/* Input for new tags */}
-      {tags.length < maxTags && (
-        <div className="flex gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || `Add ${label.toLowerCase()}...`}
-            className="flex-1"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={addTag}
-            disabled={!inputValue.trim() || tags.includes(inputValue.trim())}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {tags.length >= maxTags && (
-        <p className="text-xs text-muted-foreground">
-          Maximum of {maxTags} {label.toLowerCase()} reached
-        </p>
       )}
     </div>
   )
