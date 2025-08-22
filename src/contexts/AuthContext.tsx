@@ -199,6 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Create user account
+      console.log('Attempting signup with:', { email: userData.email, username: userData.username });
+      
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,
@@ -211,7 +213,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
+      console.log('Signup response:', { data, error });
+
       if (error) {
+        console.error('Signup error:', error);
         toast({
           title: "Registration Failed",
           description: error.message,
@@ -221,11 +226,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-
-        toast({
-          title: "Welcome to Under Pines!",
-          description: "Account created successfully",
-        });
+        // Check if email confirmation is required
+        if (data.user && !data.user.email_confirmed_at) {
+          toast({
+            title: "Check Your Email!",
+            description: "Please check your email and click the confirmation link to complete registration.",
+          });
+        } else {
+          toast({
+            title: "Welcome to Under Pines!",
+            description: "Account created successfully",
+          });
+        }
         return true;
       }
 
