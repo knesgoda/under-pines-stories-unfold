@@ -35,7 +35,7 @@ export function MobileNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-bg-pine border-t border-ink-muted safe-bottom md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-background-panel border-t border-ink safe-bottom md:hidden">
       <nav className="flex items-center justify-around px-4 py-2">
         {navigation.map((item) => {
           const href = item.isProfile ? `/${user.username}` : item.href
@@ -49,7 +49,7 @@ export function MobileNav() {
                 key={item.name}
                 onClick={handleCreateClick}
                 size="sm"
-                className="bg-accent-warm hover:bg-accent-warm/90 text-bg-dark p-3 rounded-full shadow-glow"
+                className="bg-accent-warm hover:bg-accent-glow text-black p-3 rounded-full shadow-glow"
               >
                 <item.icon className="h-5 w-5" />
                 <span className="sr-only">{item.name}</span>
@@ -71,7 +71,7 @@ export function MobileNav() {
               {item.isProfile ? (
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback className="text-xs bg-accent-warm text-bg-dark">
+                  <AvatarFallback className="text-xs bg-accent-warm text-black">
                     {(user.display_name || user.username)[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

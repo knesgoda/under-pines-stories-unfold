@@ -30,10 +30,10 @@ export function Sidebar() {
   if (!user) return null
 
   return (
-    <div className="fixed left-0 top-0 h-full w-60 bg-bg-pine border-r border-ink-muted slide-in-left">
+    <div className="fixed left-0 top-0 h-full w-60 bg-background-panel border-r border-ink slide-in-left">
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="p-4 border-b border-ink-muted">
+        <div className="p-4 border-b border-ink">
           <Link to="/" className="flex items-center gap-3 group">
             <img 
               src="/lovable-uploads/d686f771-cade-4bce-8c91-d54aa84ae0f5.png" 
@@ -42,7 +42,7 @@ export function Sidebar() {
             />
             <div className="flex items-center gap-2">
               <span className="text-xl font-semibold text-text-light">Under Pines</span>
-              <Badge variant="secondary" className="bg-accent-warm text-xs px-2 py-0.5">
+              <Badge variant="secondary" className="bg-accent-warm text-black text-xs px-2 py-0.5">
                 BETA
               </Badge>
             </div>
@@ -60,7 +60,7 @@ export function Sidebar() {
                     to={item.href}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all",
-                      "hover:bg-ink-muted/20 hover:text-accent-glow interactive-glow",
+                      "hover:bg-ink/20 hover:text-accent-glow interactive-glow",
                       isActive
                         ? "bg-accent-warm/20 text-accent-glow border-l-2 border-accent-warm"
                         : "text-text-light/80"
@@ -76,14 +76,14 @@ export function Sidebar() {
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-ink-muted">
+        <div className="p-4 border-t border-ink">
           <Link
             to={`/${user.username}`}
-            className="flex items-center gap-3 p-3 rounded-md hover:bg-ink-muted/20 transition-all interactive-glow"
+            className="flex items-center gap-3 p-3 rounded-md hover:bg-ink/20 transition-all interactive-glow"
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatar_url} />
-              <AvatarFallback className="bg-accent-warm text-bg-dark">
+              <AvatarFallback className="bg-accent-warm text-black">
                 {(user.display_name || user.username)[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -91,13 +91,13 @@ export function Sidebar() {
               <p className="text-sm font-medium text-text-light truncate">
                 {user.display_name || user.username}
               </p>
-              <p className="text-xs text-text-light/60 truncate">@{user.username}</p>
+              <p className="text-xs text-text-muted truncate">@{user.username}</p>
             </div>
           </Link>
           
           <Link
             to="/settings/profile"
-            className="flex items-center gap-3 p-3 mt-2 rounded-md hover:bg-ink-muted/20 transition-all interactive-glow text-text-light/80"
+            className="flex items-center gap-3 p-3 mt-2 rounded-md hover:bg-ink/20 transition-all interactive-glow text-text-light/80"
           >
             <Settings className="h-4 w-4" />
             <span className="text-sm">Settings</span>

@@ -9,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "under-pines-gradient text-primary-foreground hover:opacity-90 pine-shadow",
+        default: "bg-accent-warm hover:bg-accent-glow text-black rounded-md pine-shadow",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-background-panel text-text-light hover:bg-background-panel/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        hero: "glass-effect border border-primary/20 text-primary hover:under-pines-gradient hover:text-primary-foreground pine-glow",
-        pine: "bg-primary-light text-primary-foreground hover:bg-primary hover:pine-glow transition-bounce",
+        link: "text-accent-warm hover:text-accent-glow",
+        hero: "glass-effect border border-accent-warm/20 text-accent-warm hover:bg-accent-warm hover:text-black pine-glow",
+        pine: "bg-background-panel text-text-light hover:bg-accent-warm hover:text-black transition-bounce",
       },
       size: {
         default: "h-10 px-4 py-2",

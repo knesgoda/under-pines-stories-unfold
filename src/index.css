@@ -4,33 +4,34 @@
 
 :root {
   /* Under Pines Brand Colors */
-  --color-bg-dark: 11 28 19;        /* #0B1C13 */
-  --color-bg-pine: 31 51 39;        /* #1F3327 */
-  --color-bg-panel: 245 230 211;    /* #F5E6D3 */
-  --color-text-light: 247 245 242;  /* #F7F5F2 */
-  --color-accent-warm: 242 140 56;  /* #F28C38 */
-  --color-accent-glow: 255 213 128; /* #FFD580 */
-  --color-ink-muted: 53 75 62;      /* #354B3E */
+  --color-bg-dark: 11 28 19;        /* #0B1C13 - deep forest */
+  --color-bg-panel: 31 51 39;       /* #1F3327 - pine green */
+  --color-bg-sand: 245 230 211;     /* #F5E6D3 - light tan card */
+  --color-text-light: 247 245 242;  /* #F7F5F2 - almost white */
+  --color-text-muted: 201 197 189;  /* #C9C5BD - soft gray */
+  --color-accent-warm: 242 140 56;  /* #F28C38 - sunset orange */
+  --color-accent-glow: 255 213 128; /* #FFD580 - firelight yellow */
+  --color-ink: 53 75 62;            /* #354B3E - muted green-gray */
 
-  /* Semantic Color Mapping */
+  /* Semantic Color Mapping for shadcn components */
   --background: var(--color-bg-dark);
   --foreground: var(--color-text-light);
-  --card: var(--color-bg-panel);
+  --card: var(--color-bg-sand);
   --card-foreground: var(--color-bg-dark);
-  --popover: var(--color-bg-panel);
+  --popover: var(--color-bg-sand);
   --popover-foreground: var(--color-bg-dark);
   --primary: var(--color-accent-warm);
   --primary-foreground: var(--color-text-light);
-  --secondary: var(--color-bg-pine);
+  --secondary: var(--color-bg-panel);
   --secondary-foreground: var(--color-text-light);
-  --muted: var(--color-ink-muted);
-  --muted-foreground: var(--color-text-light);
+  --muted: var(--color-ink);
+  --muted-foreground: var(--color-text-muted);
   --accent: var(--color-accent-glow);
   --accent-foreground: var(--color-bg-dark);
   --destructive: 239 68 68;
   --destructive-foreground: var(--color-text-light);
-  --border: var(--color-ink-muted);
-  --input: var(--color-bg-pine);
+  --border: var(--color-ink);
+  --input: var(--color-bg-panel);
   --ring: var(--color-accent-warm);
 
   /* Design Tokens */
@@ -40,9 +41,9 @@
   --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.25);
   --shadow-glow: 0 0 20px rgba(242, 140, 56, 0.3);
 
-  /* Gradients */
-  --gradient-sunset: linear-gradient(135deg, rgb(31, 51, 39), rgb(242, 140, 56));
-  --gradient-panel: linear-gradient(180deg, rgb(245, 230, 211), rgb(235, 220, 201));
+  /* Brand Gradients */
+  --gradient-sunset: linear-gradient(135deg, #1F3327, #F28C38);
+  --gradient-panel: linear-gradient(180deg, #F5E6D3, #E5DCC9);
 }
 
 * {
@@ -62,38 +63,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--color-bg-pine));
+  background: hsl(var(--color-bg-panel));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--color-ink-muted));
+  background: hsl(var(--color-ink));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--color-accent-warm));
-}
-
-/* Animations */
-@keyframes glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(242, 140, 56, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(242, 140, 56, 0.4); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scale-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-
-@keyframes slide-in-left {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
 }
 
 /* Component Styles */
@@ -167,159 +146,51 @@ body {
 /* Under Pines Design System - Nature-inspired social networking */
 
 @layer base {
-  :root {
-    /* Nature-inspired color palette */
-    --background: 35 20% 98%;
-    --foreground: 150 25% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 150 25% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 25% 15%;
-
-    /* Pine green primary palette */
-    --primary: 150 40% 25%;
-    --primary-foreground: 0 0% 98%;
-    --primary-light: 150 35% 35%;
-    --primary-glow: 150 45% 60%;
-
-    /* Earth tone secondary */
-    --secondary: 25 30% 85%;
-    --secondary-foreground: 150 25% 20%;
-
-    /* Muted forest tones */
-    --muted: 35 15% 92%;
-    --muted-foreground: 150 15% 45%;
-
-    /* Accent sage green */
-    --accent: 120 25% 80%;
-    --accent-foreground: 150 30% 20%;
-
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 150 15% 88%;
-    --input: 150 15% 95%;
-    --ring: 150 40% 25%;
-
-    /* Under Pines brand gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(150 40% 25%), hsl(150 35% 35%));
-    --gradient-hero: linear-gradient(135deg, hsl(150 40% 25%) 0%, hsl(120 35% 30%) 50%, hsl(90 30% 35%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(35 15% 98%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(35 20% 98%) 0%, hsl(150 10% 96%) 100%);
-
-    /* Elegant shadows with nature theme */
-    --shadow-soft: 0 4px 20px hsl(150 40% 25% / 0.08);
-    --shadow-medium: 0 8px 30px hsl(150 40% 25% / 0.12);
-    --shadow-strong: 0 15px 50px hsl(150 40% 25% / 0.15);
-    --shadow-glow: 0 0 30px hsl(150 45% 60% / 0.3);
-
-    /* Smooth transitions */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    --radius: 0.75rem;
-
-    /* Typography scale */
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-    --font-size-3xl: 1.875rem;
-    --font-size-4xl: 2.25rem;
-  }
-
-  .dark {
-    /* Dark forest theme */
-    --background: 150 15% 8%;
-    --foreground: 35 20% 95%;
-
-    --card: 150 12% 12%;
-    --card-foreground: 35 20% 95%;
-
-    --popover: 150 12% 12%;
-    --popover-foreground: 35 20% 95%;
-
-    --primary: 150 45% 60%;
-    --primary-foreground: 150 15% 8%;
-    --primary-light: 150 40% 70%;
-    --primary-glow: 150 50% 75%;
-
-    --secondary: 150 8% 18%;
-    --secondary-foreground: 35 20% 85%;
-
-    --muted: 150 8% 15%;
-    --muted-foreground: 150 10% 65%;
-
-    --accent: 120 20% 25%;
-    --accent-foreground: 35 20% 90%;
-
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 150 10% 20%;
-    --input: 150 8% 18%;
-    --ring: 150 45% 60%;
-
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(150 45% 60%), hsl(150 40% 70%));
-    --gradient-hero: linear-gradient(135deg, hsl(150 15% 8%) 0%, hsl(150 12% 12%) 50%, hsl(120 10% 15%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(150 12% 12%) 0%, hsl(150 8% 10%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(150 8% 10%) 0%, hsl(150 15% 8%) 100%);
-
-    /* Dark mode shadows */
-    --shadow-soft: 0 4px 20px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 8px 30px hsl(0 0% 0% / 0.4);
-    --shadow-strong: 0 15px 50px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 30px hsl(150 50% 75% / 0.2);
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background: var(--gradient-subtle);
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
+  /* Animations */
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(242, 140, 56, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(242, 140, 56, 0.4); }
   }
-  
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 4px;
+
+  @keyframes scale-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
   }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+
+  @keyframes slide-in-left {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
   }
 }
 
 @layer components {
   /* Under Pines component styles */
   .under-pines-gradient {
-    background: var(--gradient-primary);
+    background: var(--gradient-sunset);
   }
   
   .hero-gradient {
-    background: var(--gradient-hero);
+    background: var(--gradient-sunset);
   }
   
   .card-gradient {
-    background: var(--gradient-card);
+    background: var(--gradient-panel);
   }
   
   .glass-effect {
@@ -332,19 +203,11 @@ body {
     box-shadow: var(--shadow-soft);
   }
   
-  .pine-shadow-medium {
-    box-shadow: var(--shadow-medium);
-  }
-  
   .pine-glow {
     box-shadow: var(--shadow-glow);
   }
   
   .transition-smooth {
-    transition: var(--transition-smooth);
-  }
-  
-  .transition-bounce {
-    transition: var(--transition-bounce);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
