@@ -8,7 +8,12 @@ export interface User {
   username: string;
   display_name?: string;
   avatar_url?: string;
+  bio?: string;
+  hobbies: string[];
+  interests: string[];
+  places_lived: string[];
   created_at: string;
+  updated_at?: string;
 }
 
 interface AuthContextType {
@@ -112,6 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: userId,
           username,
           display_name: username,
+          hobbies: [],
+          interests: [],
+          places_lived: []
         })
         .select()
         .single();

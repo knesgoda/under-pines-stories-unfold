@@ -41,9 +41,13 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.href = `/${user.username}`}>
                   <User className="mr-2 h-4 w-4" />
-                  Profile
+                  View Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.location.href = '/settings/profile'}>
+                  <User className="mr-2 h-4 w-4" />
+                  Edit Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
