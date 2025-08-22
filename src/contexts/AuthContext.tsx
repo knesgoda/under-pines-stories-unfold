@@ -67,10 +67,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setSupabaseUser(session.user);
-        await loadUserProfile(session.user.id);
+        // Defer Supabase calls to prevent authentication deadlock
+        setTimeout(() => {
+          loadUserProfile(session.user.id);
+        }, 0);
       } else {
         setSupabaseUser(null);
         setUser(null);
