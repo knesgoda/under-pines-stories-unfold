@@ -1,27 +1,10 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { NewPostForm } from './NewPostForm'
 import { PostCard } from './PostCard'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
-
-interface Post {
-  id: string
-  author_id: string
-  body: string
-  created_at: string
-  like_count: number
-  share_count: number
-  is_deleted: boolean
-  profiles: {
-    username: string
-    display_name?: string
-    avatar_url?: string
-  }
-  liked_by_user: boolean
-}
+import { fetchFeed, type Post } from '@/lib/posts'
 
 export function FeedView() {
   const { user } = useAuth()
@@ -33,11 +16,7 @@ export function FeedView() {
 
   const fetchPosts = async (cursorValue?: string) => {
     try {
-      const params = new URLSearchParams()
-      if (cursorValue) params.append('cursor', cursorValue)
-      
-      const response = await fetch(`/api/feed?${params}`)
-      const newPosts = await response.json()
+      const newPosts = await fetchFeed(cursorValue)
 
       if (cursorValue) {
         setPosts(prev => [...prev, ...newPosts])

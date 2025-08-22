@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { toZonedTime, format } from 'date-fns-tz'
@@ -9,22 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Heart, Share, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
-
-interface Post {
-  id: string
-  author_id: string
-  body: string
-  created_at: string
-  like_count: number
-  share_count: number
-  is_deleted: boolean
-  profiles: {
-    username: string
-    display_name?: string
-    avatar_url?: string
-  }
-  liked_by_user: boolean
-}
+import { toggleLike, sharePost, type Post } from '@/lib/posts'
 
 interface PostCardProps {
   post: Post
@@ -48,15 +31,7 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
     setIsLiking(true)
     
     try {
-      const response = await fetch(`/api/posts/${post.id}/like`, {
-        method: 'POST',
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to toggle like')
-      }
-      
-      const { like_count, liked } = await response.json()
+      const { like_count, liked } = await toggleLike(post.id)
       onLikeToggle(post.id, like_count, liked)
       
       console.info('Like toggled:', { postId: post.id, liked })
@@ -84,18 +59,14 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
         await navigator.clipboard.writeText(shareUrl)
         
         // Update share count on server
-        const response = await fetch(`/api/posts/${post.id}/share`, {
-          method: 'POST',
-        })
+        await sharePost(post.id)
         
-        if (response.ok) {
-          console.info('Post shared:', { postId: post.id })
-          
-          toast({
-            title: "Link copied!",
-            description: "Post link has been copied to clipboard.",
-          })
-        }
+        console.info('Post shared:', { postId: post.id })
+        
+        toast({
+          title: "Link copied!",
+          description: "Post link has been copied to clipboard.",
+        })
       } else {
         // Fallback for browsers without clipboard API
         toast({

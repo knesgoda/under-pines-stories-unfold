@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -8,22 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-
-interface Post {
-  id: string
-  author_id: string
-  body: string
-  created_at: string
-  like_count: number
-  share_count: number
-  is_deleted: boolean
-  profiles: {
-    username: string
-    display_name?: string
-    avatar_url?: string
-  }
-  liked_by_user: boolean
-}
+import { createPost, type Post } from '@/lib/posts'
 
 interface NewPostFormProps {
   onPostCreated: (post: Post) => void
@@ -42,28 +25,9 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: content.trim() }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create post')
-      }
-
-      const newPost = await response.json()
+      const newPost = await createPost(content.trim())
       
-      // Add liked_by_user property
-      const postWithLike = {
-        ...newPost,
-        liked_by_user: false
-      }
-      
-      onPostCreated(postWithLike)
+      onPostCreated(newPost)
       setContent('')
       
       console.info('Post created successfully')
