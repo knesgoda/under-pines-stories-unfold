@@ -125,10 +125,31 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     setIsLoading(true);
     try {
-      // Load posts 
+      // Load posts with profile information
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            display_name,
+            avatar_url
+          ),
+          likes (
+            user_id
+          ),
+          comments (
+            id,
+            content,
+            user_id,
+            created_at,
+            profiles:user_id (
+              username,
+              display_name,
+              avatar_url
+            )
+          )
+        `)
         .eq('privacy', 'public')
         .order('created_at', { ascending: false })
         .limit(50);
@@ -139,10 +160,17 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setPosts(postsData || []);
       }
 
-      // Load friendships
+      // Load friendships with profile information
       const { data: friendshipsData, error: friendshipsError } = await supabase
         .from('friendships')
-        .select('*')
+        .select(`
+          *,
+          profiles:addressee_id (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
         .eq('requester_id', user.id)
         .eq('status', 'accepted');
 
@@ -152,10 +180,17 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setFriends(friendshipsData || []);
       }
 
-      // Load friend requests
+      // Load friend requests with profile information
       const { data: requestsData, error: requestsError } = await supabase
         .from('friendships')
-        .select('*')
+        .select(`
+          *,
+          profiles:requester_id (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
         .eq('addressee_id', user.id)
         .eq('status', 'pending');
 
