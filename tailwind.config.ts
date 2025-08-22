@@ -22,23 +22,7 @@ const config = {
         sans: ['Quicksand', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
-        // Under Pines Brand Colors
-        background: {
-          dark: '#0B1C13',    // deep forest
-          panel: '#1F3327',   // pine green
-          sand: '#F5E6D3',    // light tan card
-        },
-        text: {
-          light: '#F7F5F2',   // almost white
-          muted: '#C9C5BD',   // soft gray
-        },
-        accent: {
-          warm: '#F28C38',    // sunset orange
-          glow: '#FFD580',    // firelight yellow
-        },
-        ink: '#354B3E',        // muted green-gray
-        
-        // Semantic Colors (keeping for shadcn compatibility)
+        // Semantic Colors for shadcn compatibility
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

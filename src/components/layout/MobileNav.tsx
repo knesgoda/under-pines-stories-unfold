@@ -35,7 +35,7 @@ export function MobileNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background-panel border-t border-ink safe-bottom md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-secondary border-t border-border safe-bottom md:hidden">
       <nav className="flex items-center justify-around px-4 py-2">
         {navigation.map((item) => {
           const href = item.isProfile ? `/${user.username}` : item.href
@@ -49,7 +49,7 @@ export function MobileNav() {
                 key={item.name}
                 onClick={handleCreateClick}
                 size="sm"
-                className="bg-accent-warm hover:bg-accent-glow text-black p-3 rounded-full shadow-glow"
+                className="bg-primary hover:bg-accent text-primary-foreground p-3 rounded-full shadow-glow"
               >
                 <item.icon className="h-5 w-5" />
                 <span className="sr-only">{item.name}</span>
@@ -64,14 +64,14 @@ export function MobileNav() {
               className={cn(
                 "flex flex-col items-center gap-1 p-2 min-w-[44px] min-h-[44px] rounded-md transition-colors",
                 isActive
-                  ? "text-accent-glow"
-                  : "text-text-light/60 hover:text-text-light"
+                  ? "text-accent"
+                  : "text-secondary-foreground/60 hover:text-secondary-foreground"
               )}
             >
               {item.isProfile ? (
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback className="text-xs bg-accent-warm text-black">
+                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                     {(user.display_name || user.username)[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
