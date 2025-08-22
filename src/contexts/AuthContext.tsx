@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error loading profile:', error);
@@ -88,9 +88,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         setUser(profile);
+      } else {
+        // Create profile if it doesn't exist
+        console.log('Profile not found, creating one...');
+        await createUserProfile(userId);
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
+    }
+  };
+
+  const createUserProfile = async (userId: string) => {
+    try {
+      const { data: authUser } = await supabase.auth.getUser();
+      if (!authUser.user) return;
+
+      const email = authUser.user.email;
+      const username = email ? email.split('@')[0] : `user_${userId.slice(0, 8)}`;
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          username,
+          display_name: username,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating profile:', error);
+        return;
+      }
+
+      if (profile) {
+        setUser(profile);
+        console.log('Profile created successfully');
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
     }
   };
 
