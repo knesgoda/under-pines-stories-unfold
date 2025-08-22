@@ -2,6 +2,168 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Under Pines Brand Colors */
+  --color-bg-dark: 11 28 19;        /* #0B1C13 */
+  --color-bg-pine: 31 51 39;        /* #1F3327 */
+  --color-bg-panel: 245 230 211;    /* #F5E6D3 */
+  --color-text-light: 247 245 242;  /* #F7F5F2 */
+  --color-accent-warm: 242 140 56;  /* #F28C38 */
+  --color-accent-glow: 255 213 128; /* #FFD580 */
+  --color-ink-muted: 53 75 62;      /* #354B3E */
+
+  /* Semantic Color Mapping */
+  --background: var(--color-bg-dark);
+  --foreground: var(--color-text-light);
+  --card: var(--color-bg-panel);
+  --card-foreground: var(--color-bg-dark);
+  --popover: var(--color-bg-panel);
+  --popover-foreground: var(--color-bg-dark);
+  --primary: var(--color-accent-warm);
+  --primary-foreground: var(--color-text-light);
+  --secondary: var(--color-bg-pine);
+  --secondary-foreground: var(--color-text-light);
+  --muted: var(--color-ink-muted);
+  --muted-foreground: var(--color-text-light);
+  --accent: var(--color-accent-glow);
+  --accent-foreground: var(--color-bg-dark);
+  --destructive: 239 68 68;
+  --destructive-foreground: var(--color-text-light);
+  --border: var(--color-ink-muted);
+  --input: var(--color-bg-pine);
+  --ring: var(--color-accent-warm);
+
+  /* Design Tokens */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 20px rgba(242, 140, 56, 0.3);
+
+  /* Gradients */
+  --gradient-sunset: linear-gradient(135deg, rgb(31, 51, 39), rgb(242, 140, 56));
+  --gradient-panel: linear-gradient(180deg, rgb(245, 230, 211), rgb(235, 220, 201));
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--color-bg-pine));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--color-ink-muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-accent-warm));
+}
+
+/* Animations */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(242, 140, 56, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(242, 140, 56, 0.4); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Component Styles */
+.btn-glow:hover {
+  animation: glow 2s infinite;
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.scale-pop {
+  animation: scale-pop 0.2s ease-out;
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.3s ease-out;
+}
+
+/* Utility Classes */
+.bg-gradient-sunset {
+  background: var(--gradient-sunset);
+}
+
+.bg-gradient-panel {
+  background: var(--gradient-panel);
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Post Images */
+.post-image {
+  border-radius: var(--radius-md);
+  max-width: 100%;
+  height: auto;
+}
+
+/* Interactive Elements */
+.interactive-glow {
+  transition: all 0.2s ease;
+}
+
+.interactive-glow:hover {
+  box-shadow: 0 0 15px rgba(255, 213, 128, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Focus States */
+*:focus-visible {
+  outline: 2px solid hsl(var(--color-accent-warm));
+  outline-offset: 2px;
+}
+
+/* Safe Areas for Mobile */
+@supports (padding: max(0px)) {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
 /* Under Pines Design System - Nature-inspired social networking */
 
 @layer base {

@@ -89,6 +89,7 @@ export function FeedView() {
               onClick={loadMore} 
               disabled={isLoadingMore}
               variant="outline"
+              className="border-ink-muted text-card-foreground hover:bg-ink-muted/20"
             >
               {isLoadingMore ? (
                 <>
@@ -103,16 +104,28 @@ export function FeedView() {
         )}
         
         {!hasMore && posts.length > 0 && (
-          <div className="text-center py-4 text-muted-foreground">
-            You've reached the end of your feed
+          <div className="text-center py-6 text-card-foreground/60">
+            <div className="flex items-center justify-center gap-2">
+              <span>🌲</span>
+              <span>You've reached the end of your feed</span>
+              <span>🌲</span>
+            </div>
           </div>
         )}
         
-        {posts.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No posts yet. Be the first to share something!</p>
-          </div>
-        )}
+              {posts.length === 0 && (
+                <div className="text-center py-12 text-card-foreground/60">
+                  <div className="mb-6">
+                    <img 
+                      src="/lovable-uploads/d686f771-cade-4bce-8c91-d54aa84ae0f5.png" 
+                      alt="Under Pines" 
+                      className="w-16 h-16 mx-auto mb-4 rounded-full opacity-60"
+                    />
+                    <p className="text-lg mb-2">Welcome to Under Pines</p>
+                    <p>Share something to get the fire going 🔥</p>
+                  </div>
+                </div>
+              )}
       </div>
     </div>
   )

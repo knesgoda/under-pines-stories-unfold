@@ -5,6 +5,7 @@ import Home from '@/pages/Home'
 import PostDetail from '@/pages/PostDetail'
 import Profile from '@/pages/Profile'
 import ProfileSettings from '@/pages/ProfileSettings'
+import Discovery from '@/pages/Discovery'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <div className="min-h-screen bg-background">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/discovery" element={<Discovery />} />
             <Route path="/post/:id" element={<PostDetail />} />
             <Route path="/settings/profile" element={<ProfileSettings />} />
             <Route path="/:username" element={<Profile />} />

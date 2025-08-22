@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Header } from '@/components/layout/Header'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { MobileNav } from '@/components/layout/MobileNav'
 import { AvatarUpload } from '@/components/profile/AvatarUpload'
 import { TagInput } from '@/components/profile/TagInput'
 import { Button } from '@/components/ui/button'
@@ -97,39 +98,40 @@ export default function ProfileSettings() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-6">
-          <div className="max-w-2xl mx-auto">
+        <Sidebar />
+        <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+          <div className="max-w-2xl mx-auto px-4 py-6">
             <div className="text-center py-12">
-              <p>Please log in to edit your profile.</p>
+              <p className="text-text-light">Please log in to edit your profile.</p>
             </div>
           </div>
         </main>
+        <MobileNav />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
+      <Sidebar />
+      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+        <div className="max-w-2xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => navigate(`/${user.username}`)}
-              className="p-2"
+              className="p-2 text-text-light hover:bg-ink-muted/20"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-2xl font-bold">Edit Profile</h1>
+            <h1 className="text-2xl font-semibold text-text-light">Edit Profile</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Card>
+            <Card className="bg-card border-ink-muted shadow-soft">
               <CardHeader>
-                <CardTitle>Profile Picture</CardTitle>
+                <CardTitle className="text-card-foreground">Profile Picture</CardTitle>
               </CardHeader>
               <CardContent>
                 <AvatarUpload
@@ -142,27 +144,28 @@ export default function ProfileSettings() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card border-ink-muted shadow-soft">
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle className="text-card-foreground">Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="display_name">Display Name</Label>
+                  <Label htmlFor="display_name" className="text-card-foreground">Display Name</Label>
                   <Input
                     id="display_name"
                     value={formData.display_name}
                     onChange={(e) => handleInputChange('display_name', e.target.value)}
                     placeholder="Your display name"
                     maxLength={50}
+                    className="bg-bg-pine border-ink-muted text-text-light placeholder:text-text-light/40"
                   />
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-card-foreground/60 mt-1">
                     This is how your name will appear to others
                   </p>
                 </div>
 
                 <div>
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio" className="text-card-foreground">Bio</Label>
                   <Textarea
                     id="bio"
                     value={formData.bio}
@@ -170,17 +173,18 @@ export default function ProfileSettings() {
                     placeholder="Tell people a bit about yourself..."
                     rows={4}
                     maxLength={500}
+                    className="bg-bg-pine border-ink-muted text-text-light placeholder:text-text-light/40"
                   />
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-card-foreground/60 mt-1">
                     {formData.bio.length}/500 characters
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card border-ink-muted shadow-soft">
               <CardHeader>
-                <CardTitle>Interests & Hobbies</CardTitle>
+                <CardTitle className="text-card-foreground">Interests & Hobbies</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <TagInput
@@ -199,9 +203,9 @@ export default function ProfileSettings() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card border-ink-muted shadow-soft">
               <CardHeader>
-                <CardTitle>Places I've Lived</CardTitle>
+                <CardTitle className="text-card-foreground">Places I've Lived</CardTitle>
               </CardHeader>
               <CardContent>
                 <TagInput
@@ -209,7 +213,7 @@ export default function ProfileSettings() {
                   onTagsChange={(tags) => handleArrayChange('places_lived', tags)}
                   placeholder="Add a place (e.g., New York, London, Tokyo)"
                 />
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-card-foreground/60 mt-2">
                   Add places in chronological order - the first one will be shown as "current"
                 </p>
               </CardContent>
@@ -223,13 +227,14 @@ export default function ProfileSettings() {
                 variant="outline"
                 onClick={() => navigate(`/${user.username}`)}
                 disabled={isSaving}
+                className="border-ink-muted text-text-light hover:bg-ink-muted/20"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSaving}
-                className="flex-1"
+                className="flex-1 bg-accent-warm hover:bg-accent-warm/90 text-bg-dark"
               >
                 {isSaving ? (
                   <>
@@ -247,6 +252,7 @@ export default function ProfileSettings() {
           </form>
         </div>
       </main>
+      <MobileNav />
     </div>
   )
 }

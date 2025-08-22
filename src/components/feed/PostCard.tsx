@@ -99,13 +99,13 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
   ))
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="bg-card border-ink-muted shadow-soft hover:shadow-glow transition-all duration-200 fade-in">
       <CardContent className="p-4">
         <div className="flex gap-3">
           <Link to={`/${post.profiles.username}`}>
             <Avatar className="h-10 w-10 flex-shrink-0 hover:opacity-80 transition-opacity">
               <AvatarImage src={post.profiles.avatar_url} />
-              <AvatarFallback>
+              <AvatarFallback className="bg-accent-warm text-bg-dark">
                 {displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -115,26 +115,26 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
             <div className="flex items-center gap-2 flex-wrap">
               <Link 
                 to={`/${post.profiles.username}`}
-                className="font-semibold text-foreground hover:underline"
+                className="font-semibold text-card-foreground hover:text-accent-warm transition-colors"
               >
                 {displayName}
               </Link>
               <Link 
                 to={`/${post.profiles.username}`}
-                className="text-muted-foreground hover:underline"
+                className="text-card-foreground/60 hover:text-accent-warm transition-colors"
               >
                 @{username}
               </Link>
-              <span className="text-muted-foreground">•</span>
+              <span className="text-card-foreground/40">•</span>
               <span 
-                className="text-muted-foreground hover:underline cursor-help" 
+                className="text-card-foreground/60 hover:underline cursor-help" 
                 title={absoluteTime}
               >
                 {relativeTime}
               </span>
             </div>
             
-            <div className="mt-2 text-foreground leading-relaxed break-words">
+            <div className="mt-3 text-card-foreground leading-relaxed break-words">
               {formattedBody}
             </div>
             
@@ -145,17 +145,17 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
                 onClick={handleLike}
                 disabled={isLiking}
                 className={cn(
-                  "flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors",
+                  "flex items-center gap-2 text-card-foreground/60 hover:text-red-500 transition-colors p-2 -ml-2",
                   post.liked_by_user && "text-red-500"
                 )}
               >
                 <Heart 
                   className={cn(
-                    "h-4 w-4",
-                    post.liked_by_user && "fill-current"
+                    "h-4 w-4 transition-transform hover:scale-110",
+                    post.liked_by_user && "fill-current scale-pop"
                   )} 
                 />
-                <span>{post.like_count}</span>
+                <span className="font-medium">{post.like_count}</span>
               </Button>
               
               <Button
@@ -163,19 +163,19 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
                 size="sm"
                 onClick={handleShare}
                 disabled={isSharing}
-                className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors"
+                className="flex items-center gap-2 text-card-foreground/60 hover:text-blue-500 transition-colors p-2"
               >
-                <Share className="h-4 w-4" />
-                <span>{post.share_count}</span>
+                <Share className="h-4 w-4 transition-transform hover:scale-110" />
+                <span className="font-medium">{post.share_count}</span>
               </Button>
               
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center gap-2 text-muted-foreground hover:text-green-500 transition-colors"
+                className="flex items-center gap-2 text-card-foreground/60 hover:text-green-500 transition-colors p-2"
               >
-                <MessageCircle className="h-4 w-4" />
-                <span>Comment</span>
+                <MessageCircle className="h-4 w-4 transition-transform hover:scale-110" />
+                <span className="font-medium">Comment</span>
               </Button>
             </div>
           </div>
