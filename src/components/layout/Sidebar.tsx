@@ -30,7 +30,7 @@ export function Sidebar() {
   if (!user) return null
 
   return (
-    <div className="fixed left-0 top-0 h-full w-60 bg-secondary border-r border-border slide-in-left">
+    <div className="fixed left-0 top-0 h-full w-60 bg-secondary border-r border-border slide-in-left hidden md:block">
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="p-4 border-b border-border">
