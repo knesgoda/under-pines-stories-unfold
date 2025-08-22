@@ -442,6 +442,9 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          interests: string[] | null
+          is_private: boolean | null
+          last_active: string | null
           location: string | null
           privacy_level: string | null
           updated_at: string
@@ -456,6 +459,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          interests?: string[] | null
+          is_private?: boolean | null
+          last_active?: string | null
           location?: string | null
           privacy_level?: string | null
           updated_at?: string
@@ -470,6 +476,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          interests?: string[] | null
+          is_private?: boolean | null
+          last_active?: string | null
           location?: string | null
           privacy_level?: string | null
           updated_at?: string
