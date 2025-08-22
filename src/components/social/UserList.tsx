@@ -4,30 +4,54 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Search, UserPlus } from 'lucide-react';
-import { User, userStorage, friendshipStorage } from '@/lib/localStorage';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSocial } from '@/contexts/SocialContext';
+import { useSocial } from '@/contexts/SocialContextSupabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export const UserList: React.FC = () => {
   const { user } = useAuth();
-  const { sendFriendRequest, isLoading } = useSocial();
+  const { sendFriendRequest, friends, isLoading } = useSocial();
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   useEffect(() => {
-    // Load all users except current user
-    const allUsers = userStorage.getAll().filter(u => u.id !== user?.id);
-    setUsers(allUsers);
+    loadUsers();
   }, [user]);
 
+  const loadUsers = async () => {
+    if (!user) return;
+    
+    setIsLoadingUsers(true);
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .neq('id', user.id)
+        .limit(10);
+
+      if (error) {
+        console.error('Error loading users:', error);
+        return;
+      }
+
+      setUsers(profiles || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
   const filteredUsers = users.filter(u => 
-    u.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
+    u.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const isAlreadyFriend = (userId: string): boolean => {
-    if (!user) return false;
-    return friendshipStorage.areFriends(user.id, userId);
+    return friends.some(f => 
+      (f.requester_id === userId || f.addressee_id === userId) && f.status === 'accepted'
+    );
   };
 
   if (!user) return null;
@@ -47,7 +71,9 @@ export const UserList: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {filteredUsers.length === 0 ? (
+        {isLoadingUsers ? (
+          <p className="text-center text-muted-foreground text-sm py-4">Loading users...</p>
+        ) : filteredUsers.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-4">
             {searchTerm ? 'No users found' : 'No other users yet'}
           </p>
@@ -57,11 +83,11 @@ export const UserList: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {targetUser.displayName.charAt(0).toUpperCase()}
+                    {targetUser.display_name?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold text-sm">{targetUser.displayName}</p>
+                  <p className="font-semibold text-sm">{targetUser.display_name}</p>
                   <p className="text-xs text-muted-foreground">@{targetUser.username}</p>
                   {targetUser.bio && (
                     <p className="text-xs text-muted-foreground mt-1 max-w-[200px] truncate">

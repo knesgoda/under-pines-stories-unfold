@@ -4,29 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Post, User, Comment } from '@/lib/localStorage';
-import { Trash2, TreePine, Heart, MessageCircle, Share, Globe, Users, Lock, MoreHorizontal } from 'lucide-react';
+import { Trash2, TreePine, Heart, MessageCircle, Share, Globe, Users, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSocial } from '@/contexts/SocialContext';
+import { useSocial } from '@/contexts/SocialContextSupabase';
 import { formatDistanceToNow } from 'date-fns';
-import { commentStorage, notificationStorage, userStorage } from '@/lib/localStorage';
 import { toast } from '@/hooks/use-toast';
+import type { Post } from '@/contexts/SocialContextSupabase';
 
 interface PostCardProps {
   post: Post;
-  author: User;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
+export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const { user } = useAuth();
-  const { deletePost, toggleLike, refreshData } = useSocial();
+  const { deletePost, toggleLike, addComment } = useSocial();
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isAddingComment, setIsAddingComment] = useState(false);
 
-  const isLiked = user ? post.likes.includes(user.id) : false;
-  const canDelete = user?.id === post.userId;
+  const isLiked = user && post.likes ? post.likes.some((like: any) => like.user_id === user.id) : false;
+  const canDelete = user?.id === post.user_id;
+  const author = post.profiles || { username: 'unknown', display_name: 'Unknown User', avatar_url: null };
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this post?')) {
@@ -36,69 +34,34 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
 
   const handleLike = async () => {
     if (!user) return;
-    const success = await toggleLike(post.id);
-    
-    if (success && !isLiked && user.id !== post.userId) {
-      // Create notification for post author
-      notificationStorage.create({
-        userId: post.userId,
-        fromUserId: user.id,
-        type: 'like',
-        postId: post.id,
-        message: `${user.display_name} liked your post`,
-        isRead: false,
-        priority: 'medium'
-      });
-    }
+    await toggleLike(post.id);
   };
 
   const loadComments = async () => {
-    if (!showComments) {
-      setIsLoadingComments(true);
-      const postComments = commentStorage.getByPostId(post.id);
-      setComments(postComments);
-      setIsLoadingComments(false);
-    }
     setShowComments(!showComments);
   };
 
   const handleAddComment = async () => {
     if (!user || !newComment.trim()) return;
 
+    setIsAddingComment(true);
     try {
-      const comment = commentStorage.create({
-        postId: post.id,
-        userId: user.id,
-        content: newComment.trim(),
-      });
-
-      setComments(prev => [...prev, comment]);
-      setNewComment('');
-      refreshData();
-
-      // Create notification for post author
-      if (user.id !== post.userId) {
-        notificationStorage.create({
-          userId: post.userId,
-          fromUserId: user.id,
-          type: 'comment',
-          postId: post.id,
-          message: `${user.display_name} commented on your post`,
-          isRead: false,
-          priority: 'medium'
+      const success = await addComment(post.id, newComment.trim());
+      if (success) {
+        setNewComment('');
+        toast({
+          title: "Comment added",
+          description: "Your comment has been posted",
         });
       }
-
-      toast({
-        title: "Comment added",
-        description: "Your comment has been posted",
-      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add comment",
         variant: "destructive",
       });
+    } finally {
+      setIsAddingComment(false);
     }
   };
 
@@ -117,15 +80,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
           <div className="flex items-center space-x-3">
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {author.displayName.charAt(0).toUpperCase()}
+                {author.display_name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold text-sm">{author.displayName}</p>
+              <p className="font-semibold text-sm">{author.display_name}</p>
               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <span>@{author.username}</span>
                 <span>•</span>
-                <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+                <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
                 <span>•</span>
                 <div className="flex items-center space-x-1">
                   {getPrivacyIcon()}
@@ -165,21 +128,15 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
         </div>
 
         {/* Media */}
-        {post.media && post.media.length > 0 && (
+        {post.media_urls && post.media_urls.length > 0 && (
           <div className="grid grid-cols-2 gap-2">
-            {post.media.map((media) => (
-              <div key={media.id} className="rounded-lg overflow-hidden">
-                {media.type === 'image' ? (
-                  <img
-                    src={media.url}
-                    alt={media.alt || media.filename}
-                    className="w-full h-48 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-48 bg-muted flex items-center justify-center rounded-lg">
-                    <span className="text-sm font-medium">{media.filename}</span>
-                  </div>
-                )}
+            {post.media_urls.map((url, index) => (
+              <div key={index} className="rounded-lg overflow-hidden">
+                <img
+                  src={url}
+                  alt={`Post media ${index + 1}`}
+                  className="w-full h-48 object-cover"
+                />
               </div>
             ))}
           </div>
@@ -195,7 +152,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
               className={`h-8 px-3 transition-smooth ${isLiked ? 'text-red-500 hover:text-red-600' : ''}`}
             >
               <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} />
-              {post.likes.length}
+              {post.likes_count || 0}
             </Button>
             
             <Button
@@ -205,7 +162,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
               className="h-8 px-3 transition-smooth"
             >
               <MessageCircle className="h-4 w-4 mr-1" />
-              {post.commentCount}
+              {post.comments_count || 0}
             </Button>
             
             <Button
@@ -246,42 +203,35 @@ export const PostCard: React.FC<PostCardProps> = ({ post, author }) => {
                   <Button
                     size="sm"
                     onClick={handleAddComment}
-                    disabled={!newComment.trim()}
+                    disabled={!newComment.trim() || isAddingComment}
                   >
-                    Post
+                    {isAddingComment ? 'Posting...' : 'Post'}
                   </Button>
                 </div>
               </div>
             )}
 
             {/* Comments List */}
-            {isLoadingComments ? (
-              <p className="text-sm text-muted-foreground">Loading comments...</p>
-            ) : comments.length > 0 ? (
+            {post.comments && post.comments.length > 0 ? (
               <div className="space-y-3">
-                {comments.map((comment) => {
-                  const commentAuthor = userStorage.getById(comment.userId);
-                  if (!commentAuthor) return null;
-
-                  return (
-                    <div key={comment.id} className="flex space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                          {commentAuthor.displayName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="bg-muted rounded-lg p-3">
-                          <p className="font-semibold text-sm">{commentAuthor.displayName}</p>
-                          <p className="text-sm mt-1">{comment.content}</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                        </p>
+                {post.comments.map((comment: any) => (
+                  <div key={comment.id} className="flex space-x-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {comment.profiles?.display_name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="bg-muted rounded-lg p-3">
+                        <p className="font-semibold text-sm">{comment.profiles?.display_name || 'Unknown User'}</p>
+                        <p className="text-sm mt-1">{comment.content}</p>
                       </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                      </p>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">

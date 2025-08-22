@@ -8,10 +8,9 @@ import { UserList } from '@/components/social/UserList';
 import { EnhancedSearch } from '@/components/social/EnhancedSearch';
 import { LogOut, User, TreePine, Bell, MessageCircle, Search, Users, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSocial } from '@/contexts/SocialContext';
-import { useNotifications } from '@/contexts/NotificationContext';
-import { useMessages } from '@/contexts/MessageContext';
-import { userStorage } from '@/lib/localStorage';
+import { useSocial } from '@/contexts/SocialContextSupabase';
+import { useNotifications } from '@/contexts/NotificationContextSupabase';
+import { useMessages } from '@/contexts/MessageContextSupabase';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 
@@ -148,12 +147,9 @@ const Dashboard: React.FC = () => {
                   </p>
                 </div>
               ) : (
-                posts.map((post) => {
-                  const author = userStorage.getById(post.userId);
-                  return author ? (
-                    <PostCard key={post.id} post={post} author={author} />
-                  ) : null;
-                })
+                posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))
               )}
             </div>
           </div>

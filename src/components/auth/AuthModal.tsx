@@ -17,7 +17,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [loginData, setLoginData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -32,15 +32,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginData.username || !loginData.password) return;
+    if (!loginData.email || !loginData.password) return;
 
     setIsLoading(true);
-    const success = await login(loginData.username, loginData.password);
+    const success = await login(loginData.email, loginData.password);
     setIsLoading(false);
 
     if (success) {
       onClose();
-      setLoginData({ username: '', password: '' });
+      setLoginData({ email: '', password: '' });
     }
   };
 
@@ -96,13 +96,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <TabsContent value="login" className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login-username">Username</Label>
+                <Label htmlFor="login-email">Email</Label>
                 <Input
-                  id="login-username"
-                  type="text"
-                  value={loginData.username}
-                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  placeholder="Enter your username"
+                  id="login-email"
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  placeholder="Enter your email"
                   required
                 />
               </div>
@@ -120,7 +120,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !loginData.username || !loginData.password}
+                disabled={isLoading || !loginData.email || !loginData.password}
               >
                 {isLoading ? 'Logging in...' : 'Login'}
               </Button>

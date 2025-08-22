@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Check, X, Users } from 'lucide-react';
-import { useSocial } from '@/contexts/SocialContext';
-import { userStorage } from '@/lib/localStorage';
+import { useSocial } from '@/contexts/SocialContextSupabase';
 
 export const FriendRequests: React.FC = () => {
   const { friendRequests, acceptFriendRequest, rejectFriendRequest, isLoading } = useSocial();
@@ -23,20 +22,19 @@ export const FriendRequests: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         {friendRequests.map((request) => {
-          const fromUser = userStorage.getById(request.fromUserId);
-          if (!fromUser) return null;
-
+          const requester = request.profiles;
+          
           return (
             <div key={request.id} className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/50">
               <div className="flex items-center space-x-3">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {fromUser.displayName.charAt(0).toUpperCase()}
+                    {requester?.display_name?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold text-sm">{fromUser.displayName}</p>
-                  <p className="text-xs text-muted-foreground">@{fromUser.username}</p>
+                  <p className="font-semibold text-sm">{requester?.display_name || 'Unknown'}</p>
+                  <p className="text-xs text-muted-foreground">@{requester?.username}</p>
                 </div>
               </div>
               <div className="flex space-x-2">
