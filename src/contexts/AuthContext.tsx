@@ -6,18 +6,9 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 export interface User {
   id: string;
   username: string;
-  display_name: string;
-  email: string;
-  bio?: string;
+  display_name?: string;
   avatar_url?: string;
-  interests?: string[];
-  location?: string;
-  website?: string;
-  birthday?: string;
-  is_private?: boolean;
-  last_active?: string;
   created_at: string;
-  updated_at: string;
 }
 
 interface AuthContextType {
@@ -27,15 +18,14 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
-  updateProfile: (updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>) => Promise<boolean>;
+  updateProfile: (updates: Partial<Omit<User, 'id' | 'created_at'>>) => Promise<boolean>;
 }
 
 interface RegisterData {
   username: string;
-  display_name: string;
+  display_name?: string;
   email: string;
   password: string;
-  bio?: string;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -185,13 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        // Update profile with additional data
-        if (userData.bio) {
-          await supabase
-            .from('profiles')
-            .update({ bio: userData.bio })
-            .eq('id', data.user.id);
-        }
 
         toast({
           title: "Welcome to Under Pines!",
@@ -228,16 +211,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateProfile = async (updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<boolean> => {
+  const updateProfile = async (updates: Partial<Omit<User, 'id' | 'created_at'>>): Promise<boolean> => {
     if (!user || !supabaseUser) return false;
 
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .update({
-          ...updates,
-          last_active: new Date().toISOString(),
-        })
+        .update(updates)
         .eq('id', user.id)
         .select()
         .single();

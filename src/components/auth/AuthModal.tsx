@@ -61,7 +61,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       display_name: registerData.displayName,
       email: registerData.email,
       password: registerData.password,
-      bio: registerData.bio,
     });
     setIsLoading(false);
 

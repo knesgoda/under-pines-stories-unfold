@@ -14,40 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      comments: {
+      beta_testers: {
         Row: {
-          content: string
-          created_at: string
-          id: string
-          parent_id: string | null
-          post_id: string
-          updated_at: string
+          invited_at: string | null
+          note: string | null
           user_id: string
         }
         Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          parent_id?: string | null
-          post_id: string
-          updated_at?: string
+          invited_at?: string | null
+          note?: string | null
           user_id: string
         }
         Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          parent_id?: string | null
-          post_id?: string
-          updated_at?: string
+          invited_at?: string | null
+          note?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "comments_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: "beta_testers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string | null
+          id: string
+          is_deleted: boolean | null
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "comments"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -59,431 +82,131 @@ export type Database = {
           },
         ]
       }
-      conversation_participants: {
+      follows: {
         Row: {
-          conversation_id: string
-          id: string
-          joined_at: string
-          user_id: string
+          created_at: string | null
+          followee_id: string
+          follower_id: string
         }
         Insert: {
-          conversation_id: string
-          id?: string
-          joined_at?: string
-          user_id: string
+          created_at?: string | null
+          followee_id: string
+          follower_id: string
         }
         Update: {
-          conversation_id?: string
-          id?: string
-          joined_at?: string
-          user_id?: string
+          created_at?: string | null
+          followee_id?: string
+          follower_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "conversation_participants_conversation_id_fkey"
-            columns: ["conversation_id"]
+            foreignKeyName: "follows_followee_id_fkey"
+            columns: ["followee_id"]
             isOneToOne: false
-            referencedRelation: "conversations"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      conversations: {
+      post_likes: {
         Row: {
-          created_at: string
-          id: string
-          last_activity_at: string | null
-          last_message_id: string | null
-          name: string | null
-          type: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_activity_at?: string | null
-          last_message_id?: string | null
-          name?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_activity_at?: string | null
-          last_message_id?: string | null
-          name?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      friendships: {
-        Row: {
-          addressee_id: string
-          created_at: string
-          id: string
-          requester_id: string
-          status: Database["public"]["Enums"]["friendship_status"]
-          updated_at: string
-        }
-        Insert: {
-          addressee_id: string
-          created_at?: string
-          id?: string
-          requester_id: string
-          status?: Database["public"]["Enums"]["friendship_status"]
-          updated_at?: string
-        }
-        Update: {
-          addressee_id?: string
-          created_at?: string
-          id?: string
-          requester_id?: string
-          status?: Database["public"]["Enums"]["friendship_status"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      group_members: {
-        Row: {
-          group_id: string
-          id: string
-          joined_at: string
-          role: Database["public"]["Enums"]["member_role"]
-          user_id: string
-        }
-        Insert: {
-          group_id: string
-          id?: string
-          joined_at?: string
-          role?: Database["public"]["Enums"]["member_role"]
-          user_id: string
-        }
-        Update: {
-          group_id?: string
-          id?: string
-          joined_at?: string
-          role?: Database["public"]["Enums"]["member_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_members_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      groups: {
-        Row: {
-          avatar_url: string | null
-          banner_url: string | null
-          category: string | null
-          created_at: string
-          description: string | null
-          id: string
-          member_count: number | null
-          name: string
-          owner_id: string
-          privacy: string | null
-          tags: string[] | null
-          type: Database["public"]["Enums"]["group_type"]
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          banner_url?: string | null
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          member_count?: number | null
-          name: string
-          owner_id: string
-          privacy?: string | null
-          tags?: string[] | null
-          type?: Database["public"]["Enums"]["group_type"]
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          banner_url?: string | null
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          member_count?: number | null
-          name?: string
-          owner_id?: string
-          privacy?: string | null
-          tags?: string[] | null
-          type?: Database["public"]["Enums"]["group_type"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      likes: {
-        Row: {
-          created_at: string
-          id: string
+          created_at: string | null
           post_id: string
           user_id: string
         }
         Insert: {
-          created_at?: string
-          id?: string
+          created_at?: string | null
           post_id: string
           user_id: string
         }
         Update: {
-          created_at?: string
-          id?: string
+          created_at?: string | null
           post_id?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "likes_post_id_fkey"
+            foreignKeyName: "post_likes_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      message_reads: {
-        Row: {
-          id: string
-          message_id: string
-          read_at: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          read_at?: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          message_id?: string
-          read_at?: string
-          user_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "message_reads_message_id_fkey"
-            columns: ["message_id"]
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          content: string
-          conversation_id: string
-          created_at: string
-          id: string
-          is_read: boolean | null
-          media_urls: string[] | null
-          reply_to_id: string | null
-          sender_id: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          conversation_id: string
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          media_urls?: string[] | null
-          reply_to_id?: string | null
-          sender_id: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          media_urls?: string[] | null
-          reply_to_id?: string | null
-          sender_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_reply_to_id_fkey"
-            columns: ["reply_to_id"]
-            isOneToOne: false
-            referencedRelation: "messages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          is_read: boolean | null
-          message: string
-          priority: Database["public"]["Enums"]["notification_priority"] | null
-          related_group_id: string | null
-          related_post_id: string | null
-          related_user_id: string | null
-          title: string
-          type: Database["public"]["Enums"]["notification_type"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          message: string
-          priority?: Database["public"]["Enums"]["notification_priority"] | null
-          related_group_id?: string | null
-          related_post_id?: string | null
-          related_user_id?: string | null
-          title: string
-          type: Database["public"]["Enums"]["notification_type"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          priority?: Database["public"]["Enums"]["notification_priority"] | null
-          related_group_id?: string | null
-          related_post_id?: string | null
-          related_user_id?: string | null
-          title?: string
-          type?: Database["public"]["Enums"]["notification_type"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_related_group_id_fkey"
-            columns: ["related_group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_related_post_id_fkey"
-            columns: ["related_post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       posts: {
         Row: {
-          comments_count: number | null
-          content: string
-          created_at: string
+          author_id: string
+          body: string
+          created_at: string | null
           id: string
-          likes_count: number | null
-          location: string | null
-          media_urls: string[] | null
-          privacy: string | null
-          tags: string[] | null
-          updated_at: string
-          user_id: string
+          is_deleted: boolean | null
+          like_count: number | null
+          share_count: number | null
         }
         Insert: {
-          comments_count?: number | null
-          content: string
-          created_at?: string
+          author_id: string
+          body: string
+          created_at?: string | null
           id?: string
-          likes_count?: number | null
-          location?: string | null
-          media_urls?: string[] | null
-          privacy?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          user_id: string
+          is_deleted?: boolean | null
+          like_count?: number | null
+          share_count?: number | null
         }
         Update: {
-          comments_count?: number | null
-          content?: string
-          created_at?: string
+          author_id?: string
+          body?: string
+          created_at?: string | null
           id?: string
-          likes_count?: number | null
-          location?: string | null
-          media_urls?: string[] | null
-          privacy?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          user_id?: string
+          is_deleted?: boolean | null
+          like_count?: number | null
+          share_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
           avatar_url: string | null
-          bio: string | null
-          birth_date: string | null
-          created_at: string
+          created_at: string | null
           display_name: string | null
-          email: string | null
           id: string
-          interests: string[] | null
-          is_private: boolean | null
-          last_active: string | null
-          location: string | null
-          privacy_level: string | null
-          updated_at: string
           username: string
-          website: string | null
         }
         Insert: {
           avatar_url?: string | null
-          bio?: string | null
-          birth_date?: string | null
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
-          email?: string | null
           id: string
-          interests?: string[] | null
-          is_private?: boolean | null
-          last_active?: string | null
-          location?: string | null
-          privacy_level?: string | null
-          updated_at?: string
           username: string
-          website?: string | null
         }
         Update: {
           avatar_url?: string | null
-          bio?: string | null
-          birth_date?: string | null
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
-          email?: string | null
           id?: string
-          interests?: string[] | null
-          is_private?: boolean | null
-          last_active?: string | null
-          location?: string | null
-          privacy_level?: string | null
-          updated_at?: string
           username?: string
-          website?: string | null
         }
         Relationships: []
       }
@@ -495,16 +218,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      friendship_status: "pending" | "accepted" | "blocked"
-      group_type: "public" | "private"
-      member_role: "owner" | "admin" | "moderator" | "member"
-      notification_priority: "low" | "medium" | "high"
-      notification_type:
-        | "like"
-        | "comment"
-        | "friend_request"
-        | "group_invite"
-        | "message"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -631,18 +345,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      friendship_status: ["pending", "accepted", "blocked"],
-      group_type: ["public", "private"],
-      member_role: ["owner", "admin", "moderator", "member"],
-      notification_priority: ["low", "medium", "high"],
-      notification_type: [
-        "like",
-        "comment",
-        "friend_request",
-        "group_invite",
-        "message",
-      ],
-    },
+    Enums: {},
   },
 } as const
