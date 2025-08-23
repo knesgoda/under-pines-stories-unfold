@@ -9,6 +9,7 @@ import { Heart, Share, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { toggleLike, sharePost, type Post } from '@/lib/posts'
+import { MediaGrid } from '@/components/media/MediaGrid'
 
 interface PostCardProps {
   post: Post
@@ -137,6 +138,10 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
             <div className="mt-3 text-card-foreground leading-relaxed break-words">
               {formattedBody}
             </div>
+            
+            {post.has_media && post.media.length > 0 && (
+              <MediaGrid media={post.media} className="mt-4" />
+            )}
             
             <div className="flex items-center gap-6 mt-4">
               <Button

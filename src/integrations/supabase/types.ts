@@ -153,27 +153,33 @@ export type Database = {
           author_id: string
           body: string
           created_at: string | null
+          has_media: boolean | null
           id: string
           is_deleted: boolean | null
           like_count: number | null
+          media: Json | null
           share_count: number | null
         }
         Insert: {
           author_id: string
           body: string
           created_at?: string | null
+          has_media?: boolean | null
           id?: string
           is_deleted?: boolean | null
           like_count?: number | null
+          media?: Json | null
           share_count?: number | null
         }
         Update: {
           author_id?: string
           body?: string
           created_at?: string | null
+          has_media?: boolean | null
           id?: string
           is_deleted?: boolean | null
           like_count?: number | null
+          media?: Json | null
           share_count?: number | null
         }
         Relationships: [

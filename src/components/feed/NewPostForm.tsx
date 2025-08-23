@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { createPost, type Post } from '@/lib/posts'
+import { MediaPicker } from '@/components/media/MediaPicker'
+import { uploadImage, uploadVideo, type MediaItem } from '@/lib/media'
 
 interface NewPostFormProps {
   onPostCreated: (post: Post) => void
@@ -17,19 +19,42 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
   const { user } = useAuth()
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
+  const [uploadedMedia, setUploadedMedia] = useState<MediaItem[]>([])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!content.trim() || content.length > 280) return
+    if (!content.trim() || content.length > 2500) return
 
     setIsSubmitting(true)
 
     try {
-      const newPost = await createPost(content.trim())
+      let media: MediaItem[] = []
+      
+      // Upload media files if any
+      if (selectedFiles.length > 0 && user) {
+        const tempPostId = `temp-${Date.now()}`
+        
+        if (mediaType === 'image') {
+          const uploadPromises = selectedFiles.map((file, index) => 
+            uploadImage(file, user.id, tempPostId, index)
+          )
+          media = await Promise.all(uploadPromises)
+        } else if (mediaType === 'video' && selectedFiles[0]) {
+          const videoMedia = await uploadVideo(selectedFiles[0], user.id, tempPostId)
+          media = [videoMedia]
+        }
+      }
+      
+      const newPost = await createPost(content.trim(), media)
       
       onPostCreated(newPost)
       setContent('')
+      setSelectedFiles([])
+      setMediaType(null)
+      setUploadedMedia([])
       
       console.info('Post created successfully')
       
@@ -52,8 +77,8 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
   if (!user) return null
 
   const charCount = content.length
-  const isOverLimit = charCount > 280
-  const isEmpty = content.trim().length === 0
+  const isOverLimit = charCount > 2500
+  const isEmpty = content.trim().length === 0 && selectedFiles.length === 0
 
   return (
         <Card className="bg-card border-ink-muted shadow-soft hover:shadow-glow transition-all duration-200 fade-in">
@@ -79,9 +104,18 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
                     disabled={isSubmitting}
                   />
                   
+                  <MediaPicker
+                    selectedFiles={selectedFiles}
+                    onFilesSelected={setSelectedFiles}
+                    mediaType={mediaType}
+                    onMediaTypeChange={setMediaType}
+                    isUploading={isSubmitting}
+                    uploadedMedia={uploadedMedia}
+                  />
+                  
                   <div className="flex items-center justify-between">
                     <div className={`text-sm ${isOverLimit ? 'text-destructive' : 'text-card-foreground/60'}`}>
-                      {charCount}/280
+                      {charCount}/2500
                       {isOverLimit && (
                         <span className="ml-2 text-destructive">
                           Character limit exceeded

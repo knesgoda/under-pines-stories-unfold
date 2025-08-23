@@ -6,22 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-
-interface Post {
-  id: string
-  author_id: string
-  body: string
-  created_at: string
-  like_count: number
-  share_count: number
-  is_deleted: boolean
-  profiles: {
-    username: string
-    display_name?: string
-    avatar_url?: string
-  }
-  liked_by_user: boolean
-}
+import { type Post } from '@/lib/posts'
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>()
@@ -66,6 +51,7 @@ export default function PostDetail() {
 
         const formattedPost: Post = {
           ...postData,
+          media: postData.media as Post['media'],
           liked_by_user: likedByUser
         }
 
