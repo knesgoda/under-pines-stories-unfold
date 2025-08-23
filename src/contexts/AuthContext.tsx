@@ -20,16 +20,17 @@ interface AuthContextType {
   user: User | null;
   supabaseUser: SupabaseUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (usernameOrEmail: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<Omit<User, 'id' | 'created_at'>>) => Promise<boolean>;
+  checkUsernameAvailability: (username: string) => Promise<boolean>;
 }
 
 interface RegisterData {
   username: string;
   display_name?: string;
-  email: string;
+  email?: string;  // Optional for beta flow
   password: string;
 }
 
@@ -139,9 +140,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const checkUsernameAvailability = async (username: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', username)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error('Error checking username availability:', error);
+        return false;
+      }
+
+      return !data; // Return true if username is available (no existing row)
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      return false;
+    }
+  };
+
+  const login = async (usernameOrEmail: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
+      
+      // Convert username to synthetic email if needed
+      const email = usernameOrEmail.includes('@') 
+        ? usernameOrEmail 
+        : `${usernameOrEmail}@beta.underpines.local`;
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -183,32 +210,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
 
       // Check if username already exists
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', userData.username)
-        .single();
-
-      if (existingUser) {
+      const isAvailable = await checkUsernameAvailability(userData.username);
+      if (!isAvailable) {
         toast({
           title: "Registration Failed",
-          description: "Username already taken",
+          description: "That handle is taken",
           variant: "destructive",
         });
         return false;
       }
 
-      // Create user account
-      console.log('Attempting signup with:', { email: userData.email, username: userData.username });
+      // Create synthetic email for beta auth
+      const syntheticEmail = userData.email || `${userData.username}@beta.underpines.local`;
+      
+      console.log('Attempting signup with:', { email: syntheticEmail, username: userData.username });
       
       const { data, error } = await supabase.auth.signUp({
-        email: userData.email,
+        email: syntheticEmail,
         password: userData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: userData.username,
-            display_name: userData.display_name,
+            display_name: userData.display_name || userData.username,
           },
         },
       });
@@ -318,6 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     updateProfile,
+    checkUsernameAvailability,
   };
 
   return (

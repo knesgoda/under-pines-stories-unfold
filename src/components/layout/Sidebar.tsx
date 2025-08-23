@@ -11,7 +11,8 @@ import {
   MessageCircle, 
   Bookmark, 
   User,
-  Settings 
+  Settings,
+  LogOut
 } from 'lucide-react'
 
 const navigation = [
@@ -101,6 +102,14 @@ export function Sidebar() {
           >
             <Settings className="h-4 w-4" />
             <span className="text-sm">Settings</span>
+          </Link>
+          
+          <Link
+            to="/logout"
+            className="flex items-center gap-3 p-3 mt-1 rounded-md hover:bg-destructive/20 hover:text-destructive transition-all interactive-glow text-secondary-foreground/80"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="text-sm">Sign Out</span>
           </Link>
         </div>
       </div>
