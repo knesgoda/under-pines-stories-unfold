@@ -5,7 +5,8 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export interface User {
   id: string;
-  username: string;
+  email: string;
+  username?: string;
   display_name?: string;
   avatar_url?: string;
   bio?: string;
@@ -20,7 +21,7 @@ interface AuthContextType {
   user: User | null;
   supabaseUser: SupabaseUser | null;
   isLoading: boolean;
-  login: (usernameOrEmail: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   register: (userData: RegisterData) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<Omit<User, 'id' | 'created_at'>>) => Promise<boolean>;
@@ -28,9 +29,7 @@ interface AuthContextType {
 }
 
 interface RegisterData {
-  username: string;
-  display_name?: string;
-  email?: string;  // Optional for beta flow
+  email: string;
   password: string;
 }
 
@@ -109,19 +108,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: authUser } = await supabase.auth.getUser();
       if (!authUser.user) return;
 
-      const email = authUser.user.email;
+      const email = authUser.user.email || '';
       const username = email ? email.split('@')[0] : `user_${userId.slice(0, 8)}`;
       
       const { data: profile, error } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           id: userId,
+          email,
           username,
           display_name: username,
           bio: null,
           hobbies: [],
           interests: [],
           places_lived: [],
+        }, {
+          onConflict: 'id'
         })
         .select()
         .single();
@@ -160,24 +162,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (usernameOrEmail: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
       
-      // Convert username to synthetic email if needed
-      const email = usernameOrEmail.includes('@') 
-        ? usernameOrEmail 
-        : `${usernameOrEmail}@beta.underpines.local`;
-      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
+        let errorMessage = "Something went wrong. Please try again.";
+        if (error.message.includes('invalid_credentials') || error.message.includes('Invalid login credentials')) {
+          errorMessage = "Wrong email or password";
+        } else if (error.message.includes('email_rate_limit_exceeded')) {
+          errorMessage = "Too many attempts. Try again in a minute";
+        } else if (error.message.includes('signup_disabled')) {
+          errorMessage = "Account creation is currently disabled";
+        }
+        
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         return false;
@@ -208,32 +214,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: RegisterData): Promise<boolean> => {
     try {
       setIsLoading(true);
-
-      // Check if username already exists
-      const isAvailable = await checkUsernameAvailability(userData.username);
-      if (!isAvailable) {
-        toast({
-          title: "Registration Failed",
-          description: "That handle is taken",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Create synthetic email for beta auth
-      const syntheticEmail = userData.email || `${userData.username}@beta.underpines.local`;
       
-      console.log('Attempting signup with:', { email: syntheticEmail, username: userData.username });
+      console.log('Attempting signup with:', { email: userData.email });
       
       const { data, error } = await supabase.auth.signUp({
-        email: syntheticEmail,
+        email: userData.email.trim(),
         password: userData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            username: userData.username,
-            display_name: userData.display_name || userData.username,
-          },
         },
       });
 
@@ -241,9 +229,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Signup error:', error);
+        let errorMessage = "Something went wrong. Please try again.";
+        if (error.message.includes('signup_disabled')) {
+          errorMessage = "Account creation is currently disabled";
+        } else if (error.message.includes('password')) {
+          errorMessage = "Use at least 8 characters with letters and numbers";
+        } else if (error.message.includes('email')) {
+          errorMessage = "Please enter a valid email address";
+        }
+        
         toast({
           title: "Registration Failed",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
         return false;
@@ -251,7 +248,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         // Check if email confirmation is required
-        if (data.user && !data.user.email_confirmed_at) {
+        if (data.user && !data.user.email_confirmed_at && data.session) {
+          // With email confirmation OFF, we should get a session immediately
+          toast({
+            title: "Welcome to Under Pines!",
+            description: "Account created successfully",
+          });
+        } else if (!data.session) {
           toast({
             title: "Check Your Email!",
             description: "Please check your email and click the confirmation link to complete registration.",

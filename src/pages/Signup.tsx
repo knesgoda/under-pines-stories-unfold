@@ -5,33 +5,51 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateUsername, validatePassword } from '@/lib/validation';
 import { AlertCircle, Check } from 'lucide-react';
 
-const BetaJoin: React.FC = () => {
+const Signup: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
     confirmPassword: '',
   });
 
-  const handleUsernameChange = async (value: string) => {
-    setFormData(prev => ({ ...prev, username: value }));
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return { isValid: false, error: 'Password must be at least 8 characters' };
+    }
+    
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    
+    if (!hasLetter || !hasNumber) {
+      return { isValid: false, error: 'Password must contain both letters and numbers' };
+    }
+    
+    return { isValid: true };
+  };
+
+  const handleEmailChange = (value: string) => {
+    setFormData(prev => ({ ...prev, email: value }));
     
     // Clear previous error
-    if (errors.username) {
-      setErrors(prev => ({ ...prev, username: '' }));
+    if (errors.email) {
+      setErrors(prev => ({ ...prev, email: '' }));
     }
 
-    // Validate format
-    const validation = validateUsername(value);
-    if (!validation.isValid && value.length > 0) {
-      setErrors(prev => ({ ...prev, username: validation.error || '' }));
+    // Validate email
+    if (!validateEmail(value) && value.length > 0) {
+      setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }));
     }
   };
 
@@ -70,9 +88,8 @@ const BetaJoin: React.FC = () => {
     // Validate all fields
     const newErrors: Record<string, string> = {};
     
-    const usernameValidation = validateUsername(formData.username);
-    if (!usernameValidation.isValid) {
-      newErrors.username = usernameValidation.error || 'Invalid username';
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
 
     const passwordValidation = validatePassword(formData.password);
@@ -92,7 +109,7 @@ const BetaJoin: React.FC = () => {
     setIsLoading(true);
     try {
       const success = await register({
-        username: formData.username,
+        email: formData.email,
         password: formData.password,
       });
 
@@ -107,10 +124,11 @@ const BetaJoin: React.FC = () => {
   };
 
   const isFormValid = 
-    formData.username && 
+    formData.email && 
     formData.password && 
     formData.confirmPassword &&
     formData.password === formData.confirmPassword &&
+    validateEmail(formData.email) &&
     Object.keys(errors).length === 0;
 
   return (
@@ -131,36 +149,34 @@ const BetaJoin: React.FC = () => {
           <CardHeader>
             <CardTitle>Create Account</CardTitle>
             <CardDescription>
-              Choose a username and password to get started
+              Enter your email and password to get started
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Username Field */}
+              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Input
-                    id="username"
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => handleUsernameChange(e.target.value)}
-                    placeholder="Enter username (3-20 characters)"
-                    className={errors.username ? 'border-destructive' : ''}
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    placeholder="Enter your email address"
+                    className={errors.email ? 'border-destructive' : ''}
+                    autoComplete="email"
                   />
-                  {formData.username && !errors.username && (
+                  {formData.email && !errors.email && validateEmail(formData.email) && (
                     <Check className="absolute right-3 top-3 h-4 w-4 text-primary" />
                   )}
                 </div>
-                {errors.username && (
+                {errors.email && (
                   <div className="flex items-center gap-2 text-destructive text-sm">
                     <AlertCircle className="h-4 w-4" />
-                    {errors.username}
+                    {errors.email}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Letters, numbers, and underscore only
-                </p>
               </div>
 
               {/* Password Field */}
@@ -173,6 +189,7 @@ const BetaJoin: React.FC = () => {
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   placeholder="Create a strong password"
                   className={errors.password ? 'border-destructive' : ''}
+                  autoComplete="new-password"
                 />
                 {errors.password && (
                   <div className="flex items-center gap-2 text-destructive text-sm">
@@ -195,6 +212,7 @@ const BetaJoin: React.FC = () => {
                   onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                   placeholder="Confirm your password"
                   className={errors.confirmPassword ? 'border-destructive' : ''}
+                  autoComplete="new-password"
                 />
                 {errors.confirmPassword && (
                   <div className="flex items-center gap-2 text-destructive text-sm">
@@ -232,7 +250,7 @@ const BetaJoin: React.FC = () => {
         {/* Beta Notice */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            This is a beta version. No email required during signup.
+            Beta version - Email confirmation disabled during testing.
           </p>
         </div>
       </div>
@@ -240,4 +258,4 @@ const BetaJoin: React.FC = () => {
   );
 };
 
-export default BetaJoin;
+export default Signup;

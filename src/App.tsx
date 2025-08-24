@@ -7,7 +7,7 @@ import PostDetail from '@/pages/PostDetail'
 import Profile from '@/pages/Profile'
 import ProfileSettings from '@/pages/ProfileSettings'
 import Discovery from '@/pages/Discovery'
-import BetaJoin from '@/pages/BetaJoin'
+import Signup from '@/pages/Signup'
 import Login from '@/pages/Login'
 import Logout from '@/pages/Logout'
 import AuthUpgrade from '@/pages/AuthUpgrade'
@@ -20,10 +20,10 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route 
-              path="/beta-join" 
+              path="/signup" 
               element={
                 <RouteGuard requireAuth={false}>
-                  <BetaJoin />
+                  <Signup />
                 </RouteGuard>
               } 
             />

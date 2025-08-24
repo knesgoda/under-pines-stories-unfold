@@ -16,7 +16,7 @@ const Login: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: '',
   });
 
@@ -24,14 +24,14 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
     
-    if (!formData.username || !formData.password) {
-      setError('Please enter both username and password');
+    if (!formData.email || !formData.password) {
+      setError('Please enter both email and password');
       return;
     }
 
     setIsLoading(true);
     try {
-      const success = await login(formData.username, formData.password);
+      const success = await login(formData.email, formData.password);
       
       if (success) {
         // Check if there's a return URL in the query params
@@ -39,7 +39,7 @@ const Login: React.FC = () => {
         const returnUrl = urlParams.get('return') || '/';
         navigate(returnUrl);
       } else {
-        setError('Wrong username or password');
+        setError('Wrong email or password');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>
-              Enter your username and password to continue
+              Enter your email and password to continue
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -80,16 +80,16 @@ const Login: React.FC = () => {
                 </div>
               )}
 
-              {/* Username Field */}
+              {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Enter your username"
-                  autoComplete="username"
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Enter your email address"
+                  autoComplete="email"
                   autoFocus
                 />
               </div>
@@ -126,7 +126,7 @@ const Login: React.FC = () => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !formData.username || !formData.password}
+                disabled={isLoading || !formData.email || !formData.password}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
@@ -137,7 +137,7 @@ const Login: React.FC = () => {
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
                 <Link 
-                  to="/beta-join" 
+                  to="/signup" 
                   className="font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   Create one now
@@ -150,7 +150,7 @@ const Login: React.FC = () => {
         {/* Beta Notice */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            Beta access - Simple username/password authentication
+            Email + password authentication for beta access
           </p>
         </div>
       </div>

@@ -36,7 +36,8 @@ export async function createPost(text: string, media: Array<any> = []): Promise<
     .insert({
       body: text,
       author_id: user.id,
-      media: media
+      media: media,
+      status: 'published'
     })
     .select(`
       id,
@@ -48,6 +49,7 @@ export async function createPost(text: string, media: Array<any> = []): Promise<
       is_deleted,
       media,
       has_media,
+      status,
       profiles!posts_author_id_fkey (
         username,
         display_name,
@@ -61,6 +63,55 @@ export async function createPost(text: string, media: Array<any> = []): Promise<
   return {
     ...post,
     media: post.media as Post['media'],
+    liked_by_user: false
+  }
+}
+
+export async function createDraftPost(): Promise<string> {
+  const { data, error } = await supabase.rpc('create_draft_post')
+  
+  if (error) throw error
+  
+  return data
+}
+
+export async function publishPost(postId: string, text: string, media: Array<any> = []): Promise<Post> {
+  const { data: post, error } = await supabase.rpc('publish_post', {
+    p_post_id: postId,
+    p_body: text,
+    p_media: media
+  })
+
+  if (error) throw error
+
+  // Fetch the complete post with profile data
+  const { data: fullPost, error: fetchError } = await supabase
+    .from('posts')
+    .select(`
+      id,
+      author_id,
+      body,
+      created_at,
+      like_count,
+      share_count,
+      is_deleted,
+      media,
+      has_media,
+      status,
+      profiles!posts_author_id_fkey (
+        username,
+        display_name,
+        avatar_url
+      )
+    `)
+    .eq('id', postId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  return {
+    ...fullPost,
+    media: fullPost.media as Post['media'],
     liked_by_user: false
   }
 }
@@ -81,6 +132,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
       is_deleted,
       media,
       has_media,
+      status,
       profiles!posts_author_id_fkey (
         username,
         display_name,
@@ -91,6 +143,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
       )
     `)
     .eq('is_deleted', false)
+    .eq('status', 'published')
     .order('created_at', { ascending: false })
     .limit(20)
 

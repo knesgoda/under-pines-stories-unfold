@@ -22,12 +22,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   });
 
   const [registerData, setRegisterData] = useState({
-    username: '',
-    displayName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    bio: '',
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -47,7 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!registerData.username || !registerData.displayName || !registerData.email || !registerData.password) {
+    if (!registerData.email || !registerData.password) {
       return;
     }
 
@@ -57,8 +54,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
     setIsLoading(true);
     const success = await register({
-      username: registerData.username,
-      display_name: registerData.displayName,
       email: registerData.email,
       password: registerData.password,
     });
@@ -67,12 +62,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     if (success) {
       onClose();
       setRegisterData({
-        username: '',
-        displayName: '',
         email: '',
         password: '',
         confirmPassword: '',
-        bio: '',
       });
     }
   };
@@ -128,30 +120,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <TabsContent value="register" className="space-y-4">
             <form onSubmit={handleRegister} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-username">Username</Label>
-                  <Input
-                    id="register-username"
-                    type="text"
-                    value={registerData.username}
-                    onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                    placeholder="Choose username"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-displayName">Display Name</Label>
-                  <Input
-                    id="register-displayName"
-                    type="text"
-                    value={registerData.displayName}
-                    onChange={(e) => setRegisterData({ ...registerData, displayName: e.target.value })}
-                    placeholder="Your name"
-                    required
-                  />
-                </div>
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="register-email">Email</Label>
                 <Input
@@ -187,23 +155,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-bio">Bio (Optional)</Label>
-                <Textarea
-                  id="register-bio"
-                  value={registerData.bio}
-                  onChange={(e) => setRegisterData({ ...registerData, bio: e.target.value })}
-                  placeholder="Tell us about yourself..."
-                  rows={2}
-                />
-              </div>
               <Button 
                 type="submit" 
                 className="w-full" 
                 disabled={
                   isLoading || 
-                  !registerData.username || 
-                  !registerData.displayName || 
                   !registerData.email || 
                   !registerData.password ||
                   registerData.password !== registerData.confirmPassword

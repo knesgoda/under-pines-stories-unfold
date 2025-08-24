@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { createPost, type Post } from '@/lib/posts'
+import { createDraftPost, publishPost, type Post } from '@/lib/posts'
 import { MediaPicker } from '@/components/media/MediaPicker'
 import { uploadImage, uploadVideo, type MediaItem } from '@/lib/media'
 
@@ -31,24 +31,25 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
     setIsSubmitting(true)
 
     try {
-      let media: MediaItem[] = []
+      // Phase 1: Create draft post
+      const postId = await createDraftPost()
       
-      // Upload media files if any
-      if (selectedFiles.length > 0 && user) {
-        const tempPostId = `temp-${Date.now()}`
-        
+      // Phase 2: Upload media files if any
+      let media: MediaItem[] = []
+      if (selectedFiles.length > 0 && user) {        
         if (mediaType === 'image') {
           const uploadPromises = selectedFiles.map((file, index) => 
-            uploadImage(file, user.id, tempPostId, index)
+            uploadImage(file, user.id, postId, index)
           )
           media = await Promise.all(uploadPromises)
         } else if (mediaType === 'video' && selectedFiles[0]) {
-          const videoMedia = await uploadVideo(selectedFiles[0], user.id, tempPostId)
+          const videoMedia = await uploadVideo(selectedFiles[0], user.id, postId)
           media = [videoMedia]
         }
       }
       
-      const newPost = await createPost(content.trim(), media)
+      // Phase 3: Publish post with media data
+      const newPost = await publishPost(postId, content.trim(), media)
       
       onPostCreated(newPost)
       setContent('')
@@ -85,11 +86,11 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
           <CardContent className="p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex gap-3">
-                <Link to={`/${user.username}`}>
+                <Link to={`/${user.username || user.email?.split('@')[0] || 'profile'}`}>
                   <Avatar className="h-10 w-10 flex-shrink-0 hover:opacity-80 transition-opacity">
                     <AvatarImage src={user.avatar_url} />
                     <AvatarFallback className="bg-accent-warm text-bg-dark">
-                      {user.display_name?.[0] || user.username[0]}
+                      {user.display_name?.[0] || user.username?.[0] || user.email?.[0] || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Link>
