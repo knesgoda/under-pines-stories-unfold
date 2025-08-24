@@ -159,6 +159,8 @@ export type Database = {
           like_count: number | null
           media: Json | null
           share_count: number | null
+          status: string
+          updated_at: string | null
         }
         Insert: {
           author_id: string
@@ -170,6 +172,8 @@ export type Database = {
           like_count?: number | null
           media?: Json | null
           share_count?: number | null
+          status?: string
+          updated_at?: string | null
         }
         Update: {
           author_id?: string
@@ -181,6 +185,8 @@ export type Database = {
           like_count?: number | null
           media?: Json | null
           share_count?: number | null
+          status?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -198,36 +204,39 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
+          email: string
           hobbies: string[] | null
           id: string
           interests: string[] | null
           places_lived: string[] | null
           updated_at: string | null
-          username: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string
           hobbies?: string[] | null
           id: string
           interests?: string[] | null
           places_lived?: string[] | null
           updated_at?: string | null
-          username: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string
           hobbies?: string[] | null
           id?: string
           interests?: string[] | null
           places_lived?: string[] | null
           updated_at?: string | null
-          username?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -236,7 +245,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_draft_post: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      publish_post: {
+        Args: { p_body: string; p_media?: Json; p_post_id: string }
+        Returns: {
+          author_id: string
+          body: string
+          created_at: string | null
+          has_media: boolean | null
+          id: string
+          is_deleted: boolean | null
+          like_count: number | null
+          media: Json | null
+          share_count: number | null
+          status: string
+          updated_at: string | null
+        }
+      }
     }
     Enums: {
       [_ in never]: never
