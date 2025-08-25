@@ -82,6 +82,27 @@ export type Database = {
           },
         ]
       }
+      follow_requests: {
+        Row: {
+          created_at: string | null
+          request_id: string
+          requester_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          request_id?: string
+          requester_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string | null
+          request_id?: string
+          requester_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string | null
@@ -240,14 +261,77 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          is_private: boolean
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          is_private?: boolean
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          is_private?: boolean
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      v_friends: {
+        Row: {
+          friend_id: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_followee_id_fkey"
+            columns: ["friend_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       create_draft_post: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      feed_author_ids: {
+        Args: { p_user: string }
+        Returns: {
+          author_id: string
+        }[]
+      }
+      feed_following: {
+        Args: { p_before?: string; p_limit?: number; p_user: string }
+        Returns: {
+          author_id: string
+          body: string
+          created_at: string
+          has_media: boolean
+          id: string
+          is_deleted: boolean
+          like_count: number
+          media: Json
+          share_count: number
+          status: string
+        }[]
       }
       publish_post: {
         Args: { p_body: string; p_media?: Json; p_post_id: string }

@@ -120,7 +120,20 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
 
-  let query = supabase
+  // Use the feed_following function to get posts from followed users only
+  const { data: feedPosts, error } = await supabase.rpc('feed_following', {
+    p_user: user.id,
+    p_before: cursor ? new Date(cursor).toISOString() : new Date().toISOString(),
+    p_limit: 20
+  })
+
+  if (error) throw error
+
+  // Get additional data for each post (profiles and likes)
+  const postIds = feedPosts?.map(p => p.id) || []
+  if (postIds.length === 0) return []
+
+  const { data: posts, error: postsError } = await supabase
     .from('posts')
     .select(`
       id,
@@ -142,18 +155,10 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
         user_id
       )
     `)
-    .eq('is_deleted', false)
-    .eq('status', 'published')
+    .in('id', postIds)
     .order('created_at', { ascending: false })
-    .limit(20)
 
-  if (cursor) {
-    query = query.lt('created_at', cursor)
-  }
-
-  const { data: posts, error } = await query
-
-  if (error) throw error
+  if (postsError) throw postsError
 
   return posts.map(post => ({
     ...post,
