@@ -11,12 +11,12 @@ import { Separator } from '@/components/ui/separator'
 import { Settings, MapPin, Heart, Briefcase, Calendar } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getProfileByUsername } from '@/lib/profiles'
-import type { User } from '@/contexts/AuthContext'
+import type { ProfileWithRelation } from '@/lib/profiles'
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>()
   const { user: currentUser } = useAuth()
-  const [profile, setProfile] = useState<User | null>(null)
+  const [profile, setProfile] = useState<ProfileWithRelation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 

@@ -20,6 +20,7 @@ export interface ProfileUpdateData {
   hobbies?: string[]
   interests?: string[]
   places_lived?: string[]
+  avatar_url?: string
 }
 
 export type Relation = 
