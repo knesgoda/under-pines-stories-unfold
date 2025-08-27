@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LogOut, User } from 'lucide-react'
+import PeopleTypeahead from '@/components/search/PeopleTypeahead'
 
 export function Header() {
   const { user, logout } = useAuth()
@@ -24,6 +25,11 @@ export function Header() {
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
               Under Pines
             </h1>
+          </div>
+
+          {/* Search bar in header */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <PeopleTypeahead />
           </div>
 
           <div className="flex items-center gap-4">

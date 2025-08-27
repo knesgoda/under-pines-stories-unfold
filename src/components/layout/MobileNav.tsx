@@ -13,7 +13,7 @@ import {
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Discover', href: '/discovery', icon: Search },
+  { name: 'Search', href: '/search', icon: Search },
   { name: 'Create', href: '/create', icon: Plus, isAction: true },
   { name: 'Inbox', href: '/messages', icon: MessageCircle },
   { name: 'Profile', href: '/profile', icon: User, isProfile: true },

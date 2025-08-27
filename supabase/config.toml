@@ -1,1 +1,16 @@
 project_id = "rxlrwephzfsmzspyjsdd"
+
+[functions.follow]
+verify_jwt = true
+
+[functions.unfollow]
+verify_jwt = true
+
+[functions.follow-requests]
+verify_jwt = true
+
+[functions.user-settings]
+verify_jwt = true
+
+[functions.search-people]
+verify_jwt = true

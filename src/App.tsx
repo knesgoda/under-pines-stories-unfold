@@ -11,6 +11,8 @@ import Signup from '@/pages/Signup'
 import Login from '@/pages/Login'
 import Logout from '@/pages/Logout'
 import AuthUpgrade from '@/pages/AuthUpgrade'
+import FollowRequests from '@/pages/FollowRequests'
+import Search from '@/pages/Search'
 
 function App() {
   return (
@@ -67,6 +69,22 @@ function App() {
               element={
                 <RouteGuard>
                   <ProfileSettings />
+                </RouteGuard>
+              } 
+            />
+            <Route 
+              path="/search" 
+              element={
+                <RouteGuard>
+                  <Search />
+                </RouteGuard>
+              } 
+            />
+            <Route 
+              path="/requests" 
+              element={
+                <RouteGuard>
+                  <FollowRequests />
                 </RouteGuard>
               } 
             />
