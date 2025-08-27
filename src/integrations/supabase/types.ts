@@ -224,12 +224,14 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          discoverable: boolean
           display_name: string | null
           email: string
           hobbies: string[] | null
           id: string
           interests: string[] | null
           places_lived: string[] | null
+          search_document: unknown | null
           updated_at: string | null
           username: string | null
         }
@@ -237,12 +239,14 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          discoverable?: boolean
           display_name?: string | null
           email?: string
           hobbies?: string[] | null
           id: string
           interests?: string[] | null
           places_lived?: string[] | null
+          search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
         }
@@ -250,12 +254,14 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          discoverable?: boolean
           display_name?: string | null
           email?: string
           hobbies?: string[] | null
           id?: string
           interests?: string[] | null
           places_lived?: string[] | null
+          search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
         }
@@ -333,6 +339,26 @@ export type Database = {
           status: string
         }[]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       publish_post: {
         Args: { p_body: string; p_media?: Json; p_post_id: string }
         Returns: {
@@ -348,6 +374,32 @@ export type Database = {
           status: string
           updated_at: string | null
         }
+      }
+      search_people: {
+        Args: { p_limit?: number; p_q: string; p_viewer: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          discoverable: boolean
+          display_name: string
+          id: string
+          is_private: boolean
+          rank: number
+          relation: string
+          username: string
+        }[]
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
     }
     Enums: {
