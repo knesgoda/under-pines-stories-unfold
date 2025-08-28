@@ -6,6 +6,7 @@ import Home from '@/pages/Home'
 import PostDetail from '@/pages/PostDetail'
 import Profile from '@/pages/Profile'
 import ProfileSettings from '@/pages/ProfileSettings'
+import DataSettings from '@/pages/DataSettings'
 import Discovery from '@/pages/Discovery'
 import Signup from '@/pages/Signup'
 import Login from '@/pages/Login'
@@ -67,13 +68,21 @@ function App() {
                 </RouteGuard>
               } 
             />
-            <Route 
-              path="/settings/profile" 
+            <Route
+              path="/settings/profile"
               element={
                 <RouteGuard>
                   <ProfileSettings />
                 </RouteGuard>
-              } 
+              }
+            />
+            <Route
+              path="/settings/data"
+              element={
+                <RouteGuard>
+                  <DataSettings />
+                </RouteGuard>
+              }
             />
             <Route
               path="/search"
