@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { toZonedTime, format } from 'date-fns-tz'
@@ -10,15 +10,19 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { toggleLike, sharePost, type Post } from '@/lib/posts'
 import { MediaGrid } from '@/components/media/MediaGrid'
+import LinkPreviewCard from '@/components/post/LinkPreviewCard'
 
 interface PostCardProps {
   post: Post
   onLikeToggle: (postId: string, newLikeCount: number, isLiked: boolean) => void
 }
 
+const previewCache = new Map<string, any>()
+
 export function PostCard({ post, onLikeToggle }: PostCardProps) {
   const [isLiking, setIsLiking] = useState(false)
   const [isSharing, setIsSharing] = useState(false)
+  const [preview, setPreview] = useState<any>(null)
   
   const createdAt = new Date(post.created_at)
   const zonedTime = toZonedTime(createdAt, 'America/Los_Angeles')
@@ -99,6 +103,34 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
     </span>
   ))
 
+  const urlMatch = post.body.match(/https?:\/\/\S+/)
+  const firstUrl = urlMatch ? urlMatch[0] : null
+
+  useEffect(() => {
+    if (!firstUrl) return
+    if (previewCache.has(firstUrl)) {
+      setPreview(previewCache.get(firstUrl))
+      return
+    }
+    let cancelled = false
+    fetch('/api/unfurl', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url: firstUrl })
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) {
+          previewCache.set(firstUrl, data)
+          setPreview(data)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [firstUrl])
+
   return (
     <Card className="bg-card border-ink-muted shadow-soft hover:shadow-glow transition-all duration-200 fade-in">
       <CardContent className="p-4">
@@ -138,11 +170,17 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
             <div className="mt-3 text-card-foreground leading-relaxed break-words">
               {formattedBody}
             </div>
-            
+
             {post.has_media && post.media.length > 0 && (
               <MediaGrid media={post.media} className="mt-4" />
             )}
-            
+
+            {preview && preview.url && (
+              <div className="mt-4">
+                <LinkPreviewCard {...preview} />
+              </div>
+            )}
+
             <div className="flex items-center gap-6 mt-4">
               <Button
                 variant="ghost"
