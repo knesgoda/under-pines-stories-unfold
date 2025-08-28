@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -48,69 +48,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        await loadUserProfile(session.user.id);
-      }
-      setIsLoading(false);
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        // Defer Supabase calls to prevent authentication deadlock
-        setTimeout(() => {
-          loadUserProfile(session.user.id);
-        }, 0);
-      } else {
-        setSupabaseUser(null);
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const loadUserProfile = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error loading profile:', error);
-        return;
-      }
-
-      if (profile) {
-        setUser(profile);
-      } else {
-        // Create profile if it doesn't exist
-        console.log('Profile not found, creating one...');
-        await createUserProfile(userId);
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-    }
-  };
-
-  const createUserProfile = async (userId: string) => {
+  const createUserProfile = useCallback(async (userId: string) => {
     try {
       const { data: authUser } = await supabase.auth.getUser();
       if (!authUser.user) return;
 
       const email = authUser.user.email || '';
       const username = email ? email.split('@')[0] : `user_${userId.slice(0, 8)}`;
-      
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .upsert({
@@ -140,7 +85,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error creating user profile:', error);
     }
-  };
+  }, []);
+
+  const loadUserProfile = useCallback(async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (profile) {
+        setUser(profile);
+      } else {
+        // Create profile if it doesn't exist
+        console.log('Profile not found, creating one...');
+        await createUserProfile(userId);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  }, [createUserProfile]);
+
+  useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setSupabaseUser(session.user);
+        await loadUserProfile(session.user.id);
+      }
+      setIsLoading(false);
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setSupabaseUser(session.user);
+        // Defer Supabase calls to prevent authentication deadlock
+        setTimeout(() => {
+          loadUserProfile(session.user.id);
+        }, 0);
+      } else {
+        setSupabaseUser(null);
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [loadUserProfile]);
 
   const checkUsernameAvailability = async (username: string): Promise<boolean> => {
     try {
