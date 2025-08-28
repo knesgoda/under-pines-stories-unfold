@@ -14,6 +14,8 @@ import AuthUpgrade from '@/pages/AuthUpgrade'
 import FollowRequests from '@/pages/FollowRequests'
 import Search from '@/pages/Search'
 import NotificationsPage from '@/pages/Notifications'
+import Messages from '@/pages/Messages'
+import MessageRequests from '@/pages/MessageRequests'
 
 function App() {
   return (
@@ -86,6 +88,22 @@ function App() {
               element={
                 <RouteGuard>
                   <NotificationsPage />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="/messages"
+              element={
+                <RouteGuard>
+                  <Messages />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="/messages/requests"
+              element={
+                <RouteGuard>
+                  <MessageRequests />
                 </RouteGuard>
               }
             />
