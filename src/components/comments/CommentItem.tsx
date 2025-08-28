@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Heart, MessageSquare } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Comment, createComment, toggleCommentLike } from '@/lib/comments'
+import { Comment, createComment } from '@/lib/comments'
 import { CommentComposer } from './CommentComposer'
+import CommentReactions from '@/components/reactions/CommentReactions'
 
 interface Props {
   comment: Comment
@@ -24,12 +25,7 @@ export function CommentItem({
 }: Props) {
   const { user } = useAuth()
   const [showReply, setShowReply] = useState(false)
-  const [likeData, setLikeData] = useState({ count: comment.like_count, didLike: false })
-
-  const handleLike = async () => {
-    const { like_count, did_like } = await toggleCommentLike(comment.id)
-    setLikeData({ count: like_count, didLike: did_like })
-  }
+  
 
   const handleReply = async (body: string) => {
     const reply = await createComment({ postId: comment.post_id, body, parentId: comment.id })
@@ -45,10 +41,7 @@ export function CommentItem({
           <div className="whitespace-pre-line text-sm">{comment.is_deleted ? 'Comment deleted' : comment.body}</div>
           {!comment.is_deleted && (
             <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-              <button onClick={handleLike} className="flex items-center gap-1" aria-label="Like comment">
-                <Heart className="h-4 w-4" fill={likeData.didLike ? 'currentColor' : 'none'} />
-                {likeData.count}
-              </button>
+              <CommentReactions commentId={comment.id} />
               {user && (
                 <button onClick={() => setShowReply(!showReply)} className="flex items-center gap-1" aria-label="Reply">
                   <MessageSquare className="h-4 w-4" /> Reply
