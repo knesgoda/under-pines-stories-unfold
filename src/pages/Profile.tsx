@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { AvatarUpload } from '@/components/profile/AvatarUpload'
+import ProfileCTA from '@/components/profile/ProfileCTA'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -118,13 +119,29 @@ export default function Profile() {
                       </p>
                     </div>
                     
-                    {isOwnProfile && (
+                    {isOwnProfile ? (
                       <Link to="/settings/profile">
                         <Button variant="secondary" className="gap-2 bg-bg-panel text-bg-dark hover:bg-bg-panel/90">
                           <Settings className="h-4 w-4" />
                           Edit Profile
                         </Button>
                       </Link>
+                    ) : (
+                      <ProfileCTA
+                        profileUserId={profile.id}
+                        relation={profile.relation}
+                        isPrivate={profile.isPrivate}
+                        requestId={profile.requestId}
+                        isIncomingRequest={profile.isIncomingRequest}
+                        onRelationChange={() => {
+                          // Refresh profile data when relation changes
+                          if (username) {
+                            getProfileByUsername(username).then(profileData => {
+                              if (profileData) setProfile(profileData)
+                            })
+                          }
+                        }}
+                      />
                     )}
                   </div>
                 </div>
