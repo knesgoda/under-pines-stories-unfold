@@ -34,14 +34,14 @@ Deno.serve(async (req) => {
       const body = await req.json()
       
       switch (action) {
-        case 'block':
+        case 'block': {
           const { error: blockError } = await supabaseClient
             .from('blocks')
             .insert({
               blocker_id: user.id,
               blocked_id: body.userId
             })
-          
+
           if (blockError) {
             console.error('Block error:', blockError)
             return new Response(JSON.stringify({ error: blockError.message }), {
@@ -65,14 +65,15 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
+        }
 
-        case 'unblock':
+        case 'unblock': {
           const { error: unblockError } = await supabaseClient
             .from('blocks')
             .delete()
             .eq('blocker_id', user.id)
             .eq('blocked_id', body.userId)
-          
+
           if (unblockError) {
             console.error('Unblock error:', unblockError)
             return new Response(JSON.stringify({ error: unblockError.message }), {
@@ -84,15 +85,16 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
+        }
 
-        case 'mute':
+        case 'mute': {
           const { error: muteError } = await supabaseClient
             .from('mutes')
             .insert({
               muter_id: user.id,
               muted_id: body.userId
             })
-          
+
           if (muteError) {
             console.error('Mute error:', muteError)
             return new Response(JSON.stringify({ error: muteError.message }), {
@@ -104,14 +106,15 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
+        }
 
-        case 'unmute':
+        case 'unmute': {
           const { error: unmuteError } = await supabaseClient
             .from('mutes')
             .delete()
             .eq('muter_id', user.id)
             .eq('muted_id', body.userId)
-          
+
           if (unmuteError) {
             console.error('Unmute error:', unmuteError)
             return new Response(JSON.stringify({ error: unmuteError.message }), {
@@ -123,8 +126,9 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
+        }
 
-        case 'report':
+        case 'report': {
           const { error: reportError } = await supabaseClient
             .from('reports')
             .insert({
@@ -134,7 +138,7 @@ Deno.serve(async (req) => {
               comment_id: body.commentId,
               reason: body.reason
             })
-          
+
           if (reportError) {
             console.error('Report error:', reportError)
             return new Response(JSON.stringify({ error: reportError.message }), {
@@ -146,6 +150,7 @@ Deno.serve(async (req) => {
           return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           })
+        }
 
         default:
           return new Response('Action not found', { status: 404, headers: corsHeaders })

@@ -65,7 +65,16 @@ Deno.serve(async (req) => {
       }
 
       // Map the results to the expected format
-      const items = (data || []).map((row: any) => ({
+      const items = (data || []).map((row: {
+        id: string
+        username: string
+        display_name: string
+        avatar_url: string
+        bio: string
+        is_private: boolean
+        discoverable: boolean
+        relation: 'self' | 'none' | 'following' | 'requested' | 'follows_you' | 'mutual'
+      }) => ({
         id: row.id,
         username: row.username,
         display_name: row.display_name,
@@ -73,7 +82,7 @@ Deno.serve(async (req) => {
         bio: row.bio,
         isPrivate: row.is_private,
         discoverable: row.discoverable,
-        relation: row.relation as 'self'|'none'|'following'|'requested'|'follows_you'|'mutual',
+        relation: row.relation,
       }))
 
       console.log(`[search-people] Found ${items.length} results`)
