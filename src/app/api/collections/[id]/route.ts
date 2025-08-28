@@ -34,7 +34,7 @@ export async function PUT(req: Request, ctx: { params: { id: string } }) {
   const { data: u } = await sb.auth.getUser();
   if (!u?.user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const updates: any = {};
+  const updates: Record<string, unknown> = {};
   if (typeof name === 'string' && name.trim()) updates.name = name.trim();
   if (typeof isPrivate === 'boolean') updates.is_private = isPrivate;
 

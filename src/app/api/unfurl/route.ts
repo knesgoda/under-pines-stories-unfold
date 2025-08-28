@@ -56,7 +56,7 @@ async function fetchWithCaps(url: string) {
     });
     const reader = res.body?.getReader();
     let received = 0;
-    let chunks: Uint8Array[] = [];
+    const chunks: Uint8Array[] = [];
     if (reader) {
       while (true) {
         const { value, done } = await reader.read();
@@ -109,7 +109,8 @@ export async function POST(req: Request) {
 
     await sb.from('link_previews').upsert(row);
     return NextResponse.json(row, { headers: { 'Cache-Control': 'public, max-age=300' } });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : '';
     const row = {
       url,
       title: '',
@@ -117,7 +118,7 @@ export async function POST(req: Request) {
       image_url: '',
       site_name: '',
       fetched_at: new Date().toISOString(),
-      status: e?.message === 'too_large' ? 413 : 408,
+      status: message === 'too_large' ? 413 : 408,
     };
     await sb.from('link_previews').upsert(row);
     return NextResponse.json(row, { headers: { 'Cache-Control': 'public, max-age=120' } });

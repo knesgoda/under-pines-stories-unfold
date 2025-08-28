@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast'
 import { toggleLike, sharePost, type Post } from '@/lib/posts'
 import { MediaGrid } from '@/components/media/MediaGrid'
 import LinkPreviewCard from '@/components/post/LinkPreviewCard'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface PostCardProps {
   post: Post
