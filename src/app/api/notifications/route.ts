@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   }
 
   const actorIds = Array.from(new Set(rows?.map(r => r.actor_id) ?? []))
-  let actors: Record<string, any> = {}
+  let actors: Record<string, unknown> = {}
   if (actorIds.length) {
     const { data: profiles } = await supabase
       .from('profiles')
