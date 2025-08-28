@@ -27,7 +27,7 @@ export interface Post {
   liked_by_user: boolean
 }
 
-export async function createPost(text: string, media: Array<any> = []): Promise<Post> {
+export async function createPost(text: string, media: Post['media'] = []): Promise<Post> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
 
@@ -75,7 +75,7 @@ export async function createDraftPost(): Promise<string> {
   return data
 }
 
-export async function publishPost(postId: string, text: string, media: Array<any> = []): Promise<Post> {
+export async function publishPost(postId: string, text: string, media: Post['media'] = []): Promise<Post> {
   const { data: post, error } = await supabase.rpc('publish_post', {
     p_post_id: postId,
     p_body: text,
@@ -163,7 +163,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   return posts.map(post => ({
     ...post,
     media: post.media as Post['media'],
-    liked_by_user: post.post_likes?.some((like: any) => like.user_id === user.id) || false
+    liked_by_user: post.post_likes?.some((like: { user_id: string }) => like.user_id === user.id) || false
   }))
 }
 
