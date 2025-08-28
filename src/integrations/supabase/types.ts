@@ -40,6 +40,24 @@ export type Database = {
           },
         ]
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_id: string
@@ -135,6 +153,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mutes: {
+        Row: {
+          created_at: string | null
+          muted_id: string
+          muter_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          muted_id: string
+          muter_id: string
+        }
+        Update: {
+          created_at?: string | null
+          muted_id?: string
+          muter_id?: string
+        }
+        Relationships: []
       }
       post_likes: {
         Row: {
@@ -267,6 +303,69 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          comment_id: string | null
+          created_at: string | null
+          id: string
+          post_id: string | null
+          reason: string
+          reporter_id: string
+          status: string
+          target_user_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reason: string
+          reporter_id: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          is_admin: boolean
+          user_id: string
+        }
+        Insert: {
+          is_admin?: boolean
+          user_id: string
+        }
+        Update: {
+          is_admin?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string | null
@@ -359,6 +458,10 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      metrics_snapshot: {
+        Args: { p_days?: number }
+        Returns: Json
+      }
       publish_post: {
         Args: { p_body: string; p_media?: Json; p_post_id: string }
         Returns: {
@@ -400,6 +503,16 @@ export type Database = {
       show_trgm: {
         Args: { "": string }
         Returns: string[]
+      }
+      suggestions_for_user: {
+        Args: { p_limit?: number; p_user: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          followers: number
+          id: string
+          username: string
+        }[]
       }
     }
     Enums: {
