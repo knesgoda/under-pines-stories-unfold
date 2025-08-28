@@ -13,6 +13,7 @@ import Logout from '@/pages/Logout'
 import AuthUpgrade from '@/pages/AuthUpgrade'
 import FollowRequests from '@/pages/FollowRequests'
 import Search from '@/pages/Search'
+import NotificationsPage from '@/pages/Notifications'
 
 function App() {
   return (
@@ -72,16 +73,24 @@ function App() {
                 </RouteGuard>
               } 
             />
-            <Route 
-              path="/search" 
+            <Route
+              path="/search"
               element={
                 <RouteGuard>
                   <Search />
                 </RouteGuard>
-              } 
+              }
             />
-            <Route 
-              path="/requests" 
+            <Route
+              path="/notifications"
+              element={
+                <RouteGuard>
+                  <NotificationsPage />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="/requests"
               element={
                 <RouteGuard>
                   <FollowRequests />
