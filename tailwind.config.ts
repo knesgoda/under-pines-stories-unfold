@@ -56,10 +56,18 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "text-light": "hsl(var(--text-light))",
+        "bg-pine": "hsl(var(--bg-pine))",
+        "background-panel": "hsl(var(--background-panel))",
+        "bg-panel": "hsl(var(--background-panel))",
+        "background-sand": "hsl(var(--background-sand))",
+        "ink-muted": "hsl(var(--ink-muted))",
+        "accent-warm": "hsl(var(--accent-warm))",
+        "bg-dark": "hsl(var(--bg-dark))",
       },
       borderRadius: {
         sm: "var(--radius-sm)",
-        md: "var(--radius-md)", 
+        md: "var(--radius-md)",
         lg: "var(--radius-lg)",
         xl: "calc(var(--radius-lg) + 4px)",
       },
@@ -111,7 +119,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+plugins: [require("tailwindcss-animate")],
 } satisfies Config
 
 export default config
