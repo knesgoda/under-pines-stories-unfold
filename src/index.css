@@ -23,11 +23,26 @@
   --border: 150 10% 25%;             /* Border color */
   --input: 150 25% 20%;              /* Input background */
   --ring: 25 85% 55%;                /* Focus ring */
+  /* Legacy color tokens for existing components */
+  --text-light: 35 20% 95%;          /* Alias of foreground */
+  --bg-pine: 150 25% 20%;            /* Alias of secondary */
+  --background-panel: 150 25% 15%;    /* Dark panel backgrounds */
+  --background-sand: 35 20% 92%;      /* Light sand surfaces */
+  --ink-muted: 150 10% 25%;          /* Muted border color */
+  --accent-warm: 25 85% 55%;         /* Warm accent (sunset orange) */
+  --bg-dark: 150 15% 8%;             /* Deep background for text contrast */
 
   /* Design Tokens */
   --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
   --shadow-soft: 0 6px 18px rgba(0, 0, 0, 0.25);
   --shadow-glow: 0 0 20px rgba(242, 140, 56, 0.3);
+
+  /* Gradient tokens */
+  --gradient-sunset: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--primary)));
+  --gradient-panel: linear-gradient(180deg, hsl(var(--card)), hsl(var(--card) / 0.9));
 }
 
 * {
@@ -77,14 +92,6 @@ body {
 }
 
 /* Utility Classes */
-.bg-gradient-sunset {
-  background: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--primary)));
-}
-
-.bg-gradient-panel {
-  background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--card) / 0.9));
-}
-
 .shadow-soft {
   box-shadow: var(--shadow-soft);
 }
