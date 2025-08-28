@@ -13,6 +13,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     author_id: u.user.id, body: text, media: media||[], status: 'published', group_id: params.id
   }).select('id').single();
   if (error) return NextResponse.json({ error:'create_failed' }, { status:500 });
+  await fetch(new URL('/api/game/claim/action', process.env.NEXT_PUBLIC_APP_ORIGIN), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'post', targetType:'post', targetId: data.id })
+  });
   return NextResponse.json({ postId: data.id });
 }
 
