@@ -1,0 +1,29 @@
+{
+  "name": "Under Pines",
+  "short_name": "Under Pines",
+  "description": "A social platform for outdoor enthusiasts and nature lovers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1C13",
+  "theme_color": "#0B1C13",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "lifestyle", "outdoor"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}
