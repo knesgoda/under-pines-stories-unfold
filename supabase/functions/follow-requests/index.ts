@@ -115,9 +115,9 @@ Deno.serve(async (req) => {
         // Create follow relationship
         const { error: followError } = await supabase
           .from('follows')
-          .insert({ 
-            follower_id: request.requester_id, 
-            followee_id: request.target_id 
+          .insert({
+            follower_id: request.requester_id,
+            followee_id: request.target_id
           })
 
         if (followError && !followError.message.includes('duplicate key value')) {
@@ -127,6 +127,17 @@ Deno.serve(async (req) => {
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
+
+        // notify requester of acceptance
+        const { error: notifError } = await supabase.rpc('create_notification', {
+          p_user: request.requester_id,
+          p_actor: user.id,
+          p_type: 'follow_accept',
+          p_post: null,
+          p_comment: null,
+          p_meta: {}
+        })
+        if (notifError) console.error('Notify error:', notifError)
 
         // Delete the request
         const { error: deleteError } = await supabase

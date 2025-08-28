@@ -3,24 +3,22 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { 
-  Home, 
-  Search, 
-  Users, 
-  Bell, 
-  MessageCircle, 
-  Bookmark, 
-  User,
+import {
+  Home,
+  Search,
+  Users,
+  MessageCircle,
+  Bookmark,
   Settings,
   LogOut
 } from 'lucide-react'
+import NotificationsBell from '@/components/notifications/NotificationsBell'
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Requests', href: '/requests', icon: Users },
   { name: 'Discovery', href: '/discovery', icon: Search },
-  { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
   { name: 'Saved', href: '/saved', icon: Bookmark },
 ]
@@ -37,9 +35,9 @@ export function Sidebar() {
         {/* Logo */}
         <div className="p-4 border-b border-border">
           <Link to="/" className="flex items-center gap-3 group">
-            <img 
-              src="/lovable-uploads/d686f771-cade-4bce-8c91-d54aa84ae0f5.png" 
-              alt="Under Pines" 
+            <img
+              src="/lovable-uploads/d686f771-cade-4bce-8c91-d54aa84ae0f5.png"
+              alt="Under Pines"
               className="w-10 h-10 rounded-full transition-transform group-hover:scale-105"
             />
             <div className="flex items-center gap-2">
@@ -61,11 +59,11 @@ export function Sidebar() {
                   <Link
                     to={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all",
-                      "hover:bg-muted/20 hover:text-accent interactive-glow",
+                      'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all',
+                      'hover:bg-muted/20 hover:text-accent interactive-glow',
                       isActive
-                        ? "bg-primary/20 text-accent border-l-2 border-primary"
-                        : "text-secondary-foreground/80"
+                        ? 'bg-primary/20 text-accent border-l-2 border-primary'
+                        : 'text-secondary-foreground/80',
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -74,6 +72,9 @@ export function Sidebar() {
                 </li>
               )
             })}
+            <li>
+              <NotificationsBell isActive={location.pathname === '/notifications'} />
+            </li>
           </ul>
         </nav>
 
@@ -96,7 +97,7 @@ export function Sidebar() {
               <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
             </div>
           </Link>
-          
+
           <Link
             to="/settings/profile"
             className="flex items-center gap-3 p-3 mt-2 rounded-md hover:bg-muted/20 transition-all interactive-glow text-secondary-foreground/80"
@@ -104,7 +105,7 @@ export function Sidebar() {
             <Settings className="h-4 w-4" />
             <span className="text-sm">Settings</span>
           </Link>
-          
+
           <Link
             to="/logout"
             className="flex items-center gap-3 p-3 mt-1 rounded-md hover:bg-destructive/20 hover:text-destructive transition-all interactive-glow text-secondary-foreground/80"

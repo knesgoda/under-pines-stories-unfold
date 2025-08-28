@@ -24,6 +24,47 @@ export async function POST(req: NextRequest) {
     .select('*')
     .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // notify post author and parent comment author
+  try {
+    const excerpt = body.slice(0, 120)
+    const { data: post } = await supabase
+      .from('posts')
+      .select('author_id')
+      .eq('id', postId)
+      .single()
+    if (post?.author_id) {
+      await supabase.rpc('create_notification', {
+        p_user: post.author_id,
+        p_actor: user.id,
+        p_type: 'post_comment',
+        p_post: postId,
+        p_comment: data.id,
+        p_meta: { excerpt }
+      })
+    }
+    if (parentId) {
+      const { data: parent } = await supabase
+        .from('comments')
+        .select('author_id')
+        .eq('id', parentId)
+        .single()
+      const parentAuthor = parent?.author_id
+      if (parentAuthor && parentAuthor !== post?.author_id) {
+        await supabase.rpc('create_notification', {
+          p_user: parentAuthor,
+          p_actor: user.id,
+          p_type: 'comment_reply',
+          p_post: postId,
+          p_comment: data.id,
+          p_meta: { excerpt }
+        })
+      }
+    }
+  } catch (e) {
+    console.error('[comments:notify]', e)
+  }
+
   return NextResponse.json(data)
 }
 
