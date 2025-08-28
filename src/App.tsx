@@ -16,6 +16,7 @@ import Search from '@/pages/Search'
 import NotificationsPage from '@/pages/Notifications'
 import Messages from '@/pages/Messages'
 import MessageRequests from '@/pages/MessageRequests'
+import Camp from '@/pages/Camp'
 
 function App() {
   return (
@@ -123,6 +124,14 @@ function App() {
                 </RouteGuard>
               } 
             />
+              <Route
+                path="/camp"
+                element={
+                  <RouteGuard>
+                    <Camp />
+                  </RouteGuard>
+                }
+              />
             <Route 
               path="/:username" 
               element={
