@@ -10,6 +10,7 @@ export interface User {
   display_name?: string;
   avatar_url?: string;
   bio?: string;
+  website?: string;
   hobbies: string[];
   interests: string[];
   places_lived: string[];
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username,
           display_name: username,
           bio: null,
+          website: null,
           hobbies: [],
           interests: [],
           places_lived: [],

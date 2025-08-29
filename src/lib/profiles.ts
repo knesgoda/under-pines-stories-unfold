@@ -7,6 +7,7 @@ export interface User {
   avatar_url?: string
   email: string
   bio?: string
+  website?: string
   hobbies?: string[]
   interests?: string[]
   places_lived?: string[]
@@ -17,6 +18,7 @@ export interface User {
 export interface ProfileUpdateData {
   display_name?: string
   bio?: string
+  website?: string
   hobbies?: string[]
   interests?: string[]
   places_lived?: string[]

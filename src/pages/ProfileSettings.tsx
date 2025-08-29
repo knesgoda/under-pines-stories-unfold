@@ -23,6 +23,7 @@ export default function ProfileSettings() {
   const [formData, setFormData] = useState({
     display_name: '',
     bio: '',
+    website: '',
     hobbies: [] as string[],
     interests: [] as string[],
     places_lived: [] as string[],
@@ -34,6 +35,7 @@ export default function ProfileSettings() {
       setFormData({
         display_name: user.display_name || '',
         bio: user.bio || '',
+        website: user.website || '',
         hobbies: user.hobbies || [],
         interests: user.interests || [],
         places_lived: user.places_lived || [],
@@ -66,6 +68,7 @@ export default function ProfileSettings() {
       const updates: ProfileUpdateData = {
         display_name: formData.display_name.trim() || undefined,
         bio: formData.bio.trim() || undefined,
+        website: formData.website.trim() || undefined,
         hobbies: formData.hobbies,
         interests: formData.interests,
         places_lived: formData.places_lived,
@@ -164,6 +167,17 @@ export default function ProfileSettings() {
                   <p className="text-sm text-card-foreground/60 mt-1">
                     This is how your name will appear to others
                   </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="website" className="text-card-foreground">Website</Label>
+                  <Input
+                    id="website"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    placeholder="https://example.com"
+                    className="bg-bg-pine border-ink-muted text-text-light placeholder:text-text-light/40"
+                  />
                 </div>
 
                 <div>
