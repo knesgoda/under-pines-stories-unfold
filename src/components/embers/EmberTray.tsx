@@ -1,8 +1,7 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useSWR from 'swr';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import EmberRing from './EmberRing';
 import { EPHEMERAL } from '@/lib/ephemeral/labels';
 
@@ -16,10 +15,10 @@ export default function EmberTray() {
   return (
     <div className="flex gap-3 overflow-x-auto py-2 px-3">
       {items.map((e:any)=>(
-        <Link key={e.id} href={`${EPHEMERAL.route}/${e.id}`} className="flex flex-col items-center gap-1">
+        <Link key={e.id} to={`${EPHEMERAL.route}/${e.id}`} className="flex flex-col items-center gap-1">
           <EmberRing active size={56}/>
           <div className="w-14 h-14 relative -mt-12 rounded-full overflow-hidden">
-            {e.media?.[0]?.key_md && <Image src={e.media[0].key_md} alt="" fill sizes="56px" className="object-cover" />}
+            {e.media?.[0]?.key_md && <img src={e.media[0].key_md} alt="" className="w-full h-full object-cover" />}
           </div>
           <span className="text-[11px] text-white/70 mt-1">Ember</span>
         </Link>
