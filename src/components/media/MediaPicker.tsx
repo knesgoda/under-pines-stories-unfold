@@ -89,7 +89,7 @@ export function MediaPicker({
       <div className="flex gap-2">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => imageInputRef.current?.click()}
           disabled={!canAddImages || isUploading}
@@ -106,7 +106,7 @@ export function MediaPicker({
         
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => videoInputRef.current?.click()}
           disabled={!canAddVideo || isUploading}
