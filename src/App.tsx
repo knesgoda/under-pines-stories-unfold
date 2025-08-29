@@ -15,8 +15,6 @@ import AuthUpgrade from '@/pages/AuthUpgrade'
 import FollowRequests from '@/pages/FollowRequests'
 import Search from '@/pages/Search'
 import NotificationsPage from '@/pages/Notifications'
-import Messages from '@/pages/Messages'
-import MessageRequests from '@/pages/MessageRequests'
 import Camp from '@/pages/Camp'
 
 function App() {
@@ -101,6 +99,8 @@ function App() {
                 </RouteGuard>
               }
             />
+            {/* Messages routes disabled until DM feature is implemented */}
+            {/*
             <Route
               path="/messages"
               element={
@@ -117,6 +117,7 @@ function App() {
                 </RouteGuard>
               }
             />
+            */}
             <Route
               path="/requests"
               element={

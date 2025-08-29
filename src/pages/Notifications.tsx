@@ -96,7 +96,7 @@ export default function NotificationsPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm">{textFor(n)}</div>
-                    {n.meta?.excerpt && <div className="text-xs text-text-light/70 truncate">“{n.meta.excerpt}”</div>}
+                    {n.meta?.excerpt && <div className="text-xs text-text-light/70 truncate">"{String(n.meta.excerpt)}"</div>}
                     <div className="text-xs text-text-light/50">{new Date(n.createdAt).toLocaleString()}</div>
                   </div>
                 </Link>

@@ -60,7 +60,7 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
     .single()
 
   if (error) throw error
-  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: post.id }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
 
   return {
     ...post,
@@ -73,7 +73,7 @@ export async function createDraftPost(): Promise<string> {
   const { data, error } = await supabase.rpc('create_draft_post')
   
   if (error) throw error
-  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: data }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
   
   return data
 }
@@ -132,7 +132,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   })
 
   if (error) throw error
-  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
+  // Remove game API call since it's not relevant to feed fetching
 
   // Get additional data for each post (profiles and likes)
   const postIds = feedPosts?.map(p => p.id) || []

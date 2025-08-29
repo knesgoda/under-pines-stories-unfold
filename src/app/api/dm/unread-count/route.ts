@@ -5,7 +5,7 @@ export async function GET() {
   const sb = createClient();
   const { data: u } = await sb.auth.getUser();
   if (!u?.user) return NextResponse.json({ count: 0 });
-  const { data, error } = await sb.rpc('dm_unread_count', { p_me: u.user.id });
-  if (error) return NextResponse.json({ count: 0 });
-  return NextResponse.json({ count: data ?? 0 });
+  
+  // Placeholder for DM unread count - return 0 for now since DM feature isn't fully implemented
+  return NextResponse.json({ count: 0 });
 }
