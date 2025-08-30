@@ -100,6 +100,94 @@ export type Database = {
           },
         ]
       }
+      dm_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dm_members: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          last_read_at: string | null
+          state: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          state?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          last_read_at?: string | null
+          state?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "dm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_messages: {
+        Row: {
+          attachments: Json | null
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "dm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_requests: {
         Row: {
           created_at: string | null
@@ -270,7 +358,6 @@ export type Database = {
           search_document: unknown | null
           updated_at: string | null
           username: string | null
-          website: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -286,7 +373,6 @@ export type Database = {
           search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -302,7 +388,6 @@ export type Database = {
           search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Relationships: []
       }
@@ -419,6 +504,18 @@ export type Database = {
       create_draft_post: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      dm_mark_read: {
+        Args: { conversation_id: string }
+        Returns: Json
+      }
+      dm_set_request: {
+        Args: { accept: boolean; conversation_id: string }
+        Returns: Json
+      }
+      dm_start: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
       feed_author_ids: {
         Args: { p_user: string }
