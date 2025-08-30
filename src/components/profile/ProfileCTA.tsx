@@ -1,5 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { startConversation } from '@/lib/dm';
 
 type Relation =
   | 'self'
@@ -70,7 +74,9 @@ export default function ProfileCTA({
   const [requestId, setRequestId] = useState<string | null>(initialReqId ?? null);
   const [submitting, setSubmitting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const isSelf = relation === 'self';
+  const isMutual = relation === 'mutual';
 
   function updateState(r: Relation, reqId: string | null = null) {
     setRelation(r);
@@ -206,6 +212,20 @@ export default function ProfileCTA({
     }
   }
 
+  // Handle DM button click
+  const handleSendMessage = async () => {
+    try {
+      setSubmitting(true);
+      const { conversationId } = await startConversation(profileUserId);
+      navigate(`/messages/${conversationId}`);
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      alert('Could not start conversation. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // --- Render ---------------------------------------------------------------
 
   return (
@@ -224,6 +244,20 @@ export default function ProfileCTA({
       >
         {primaryLabel()}
       </button>
+
+      {/* DM button for mutual followers */}
+      {isMutual && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSendMessage}
+          disabled={submitting}
+          className="gap-2"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Message
+        </Button>
+      )}
 
       {/* Incoming request controls if applicable */}
       {isIncomingRequest && requestId && (

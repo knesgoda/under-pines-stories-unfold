@@ -16,6 +16,8 @@ import FollowRequests from '@/pages/FollowRequests'
 import Search from '@/pages/Search'
 import NotificationsPage from '@/pages/Notifications'
 import Camp from '@/pages/Camp'
+import Messages from '@/pages/Messages'
+import ConversationView from '@/components/dm/ConversationView'
 
 function App() {
   return (
@@ -99,25 +101,19 @@ function App() {
                 </RouteGuard>
               }
             />
-            {/* Messages routes disabled until DM feature is implemented */}
-            {/*
             <Route
-              path="/messages"
+              path="/messages/*"
               element={
                 <RouteGuard>
                   <Messages />
                 </RouteGuard>
               }
-            />
-            <Route
-              path="/messages/requests"
-              element={
-                <RouteGuard>
-                  <MessageRequests />
-                </RouteGuard>
-              }
-            />
-            */}
+            >
+              <Route 
+                path=":conversationId" 
+                element={<ConversationView />} 
+              />
+            </Route>
             <Route
               path="/requests"
               element={
