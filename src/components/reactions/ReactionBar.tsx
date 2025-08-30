@@ -1,6 +1,6 @@
 'use client'
 
-const EMOJIS = ['👍','🔥','😂','😢','🤗','🤬','🙄']
+const EMOJIS = ['👍','😂','😡','😢','🤬','🙄']
 
 export default function ReactionBar({ onSelect }: { onSelect: (emoji: string) => void }) {
   return (
