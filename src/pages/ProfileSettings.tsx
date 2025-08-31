@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { updateProfile } from '@/lib/profiles'
 import { toast } from '@/hooks/use-toast'
 import type { ProfileUpdateData } from '@/lib/profiles'
 
@@ -65,27 +64,23 @@ export default function ProfileSettings() {
     setIsSaving(true)
 
     try {
+      let website = formData.website.trim()
+      if (website && !/^https?:\/\//i.test(website)) {
+        website = `https://${website}`
+      }
+
       const updates: ProfileUpdateData = {
         display_name: formData.display_name.trim() || undefined,
         bio: formData.bio.trim() || undefined,
-        website: formData.website.trim() || undefined,
         hobbies: formData.hobbies,
         interests: formData.interests,
         places_lived: formData.places_lived,
         avatar_url: formData.avatar_url || undefined,
       }
 
-      const updatedProfile = await updateProfile(updates)
-      
-      if (updatedProfile) {
-        // Update the auth context with the new profile data
-        await updateAuthProfile(updates)
-        
-        toast({
-          title: "Profile updated!",
-          description: "Your profile has been successfully updated.",
-        })
-        
+      const success = await updateAuthProfile(updates)
+
+      if (success) {
         navigate(`/${user.username}`)
       }
     } catch (error) {
