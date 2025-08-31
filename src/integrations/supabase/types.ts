@@ -295,25 +295,28 @@ export type Database = {
       }
       post_reactions: {
         Row: {
-          created_at: string
-          emoji: string
           id: string
           post_id: string
           user_id: string
+          reaction: Database['public']['Enums']['reaction_type']
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string
-          emoji: string
           id?: string
           post_id: string
           user_id: string
+          reaction?: Database['public']['Enums']['reaction_type']
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string
-          emoji?: string
           id?: string
           post_id?: string
           user_id?: string
+          reaction?: Database['public']['Enums']['reaction_type']
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -324,6 +327,19 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      post_reaction_counts: {
+        Row: {
+          post_id: string
+          total: number
+          thumbs_up: number
+          laugh: number
+          angry: number
+          sad: number
+          rage: number
+          eyeroll: number
+        }
+        Relationships: []
       }
       posts: {
         Row: {
@@ -652,7 +668,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      reaction_type: 'thumbs_up' | 'laugh' | 'angry' | 'sad' | 'rage' | 'eyeroll'
     }
     CompositeTypes: {
       [_ in never]: never

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import ReactionBar from './ReactionBar'
 import ReactorsSheet from './ReactorsSheet'
+import { emojiToType, typeToEmoji, ReactionType } from './reactionTypes'
 
 type Summary = { emoji: string; count: number }[]
 
@@ -13,6 +14,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   const [open, setOpen] = useState(false)
   const [sheet, setSheet] = useState<{emoji:string}|null>(null)
   const [userReaction, setUserReaction] = useState<string | null>(null)
+  const [lastReaction, setLastReaction] = useState<string>('👍')
   const timer = useRef<any>(null)
   const [longPressTriggered, setLongPressTriggered] = useState(false)
 
@@ -20,25 +22,58 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     loadReactions()
   }, [postId])
 
+  useEffect(() => {
+    const channel = supabase.channel(`public:post_reactions:post_id=eq.${postId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: `post_id=eq.${postId}` }, () => {
+        loadReactions()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [postId])
+
+  function countsToSummary(counts: any): Summary {
+    if (!counts) return []
+    const res: Summary = []
+    for (const key in typeToEmoji) {
+      const count = counts[key as keyof typeof counts]
+      if (count && count > 0) {
+        res.push({ emoji: typeToEmoji[key as ReactionType], count })
+      }
+    }
+    return res
+  }
+
   const loadReactions = async () => {
     try {
+      const { data: counts } = await supabase
+        .from('post_reaction_counts')
+        .select('*')
+        .eq('post_id', postId)
+        .maybeSingle()
+      setSummary(countsToSummary(counts))
+
       const { data: { session } } = await supabase.auth.getSession()
-      const headers: Record<string, string> = {}
-      
       if (session) {
-        headers['Authorization'] = `Bearer ${session.access_token}`
+        const { data: reaction } = await supabase
+          .from('post_reactions')
+          .select('reaction')
+          .eq('post_id', postId)
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+        if (reaction?.reaction) {
+          const emoji = typeToEmoji[reaction.reaction as ReactionType]
+          setUserReaction(emoji)
+          setLastReaction(emoji)
+        } else {
+          setUserReaction(null)
+        }
       }
-      
-      const response = await fetch(`/api/posts/${postId}/react`, { headers })
-      const data = await response.json()
-      setSummary(data.summary || [])
-      setUserReaction(data.userReaction || null)
     } catch (error) {
       console.error('Error loading reactions:', error)
     }
   }
 
-  function onPointerDown(){ 
+  function onPointerDown(){
     setLongPressTriggered(false)
     timer.current = setTimeout(() => {
       setLongPressTriggered(true)
@@ -49,12 +84,13 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   async function onPointerUp(){
     if (timer.current) {
       clearTimeout(timer.current)
-      
-      // If long press was not triggered, do quick reaction
       if (!longPressTriggered) {
-        await react('👍')
+        if (userReaction) {
+          await clearReaction()
+        } else {
+          await react(lastReaction)
+        }
       }
-      // If long press was triggered, menu is already open - do nothing
     }
   }
 
@@ -68,43 +104,44 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   async function react(emoji: string){
     setOpen(false)
     setLongPressTriggered(false)
-    
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    
     try {
-      const response = await fetch(`/api/posts/${postId}/react`, {
-        method:'POST', 
+      const reaction = emojiToType[emoji]
+      const response = await fetch('/functions/v1/reactions/upsert', {
+        method:'POST',
         headers:{
           'Content-Type':'application/json',
           'Authorization': `Bearer ${session.access_token}`
-        }, 
-        body: JSON.stringify({ emoji })
+        },
+        body: JSON.stringify({ post_id: postId, reaction })
       })
       const data = await response.json()
-      if (data.summary) {
-        setSummary(data.summary)
+      if (data.counts) {
+        setSummary(countsToSummary(data.counts))
         setUserReaction(emoji)
+        setLastReaction(emoji)
       }
     } catch (error) {
       console.error('Error reacting:', error)
     }
   }
-  
+
   async function clearReaction(){
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    
     try {
-      const response = await fetch(`/api/posts/${postId}/react`, { 
-        method:'DELETE',
-        headers: {
+      const response = await fetch('/functions/v1/reactions/clear', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
           'Authorization': `Bearer ${session.access_token}`
-        }
+        },
+        body: JSON.stringify({ post_id: postId })
       })
       const data = await response.json()
-      if (data.summary) {
-        setSummary(data.summary)
+      if (data.counts) {
+        setSummary(countsToSummary(data.counts))
         setUserReaction(null)
       }
     } catch (error) {
@@ -112,15 +149,13 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     }
   }
 
-  // Close menu when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside() {
       if (open) {
         setOpen(false)
         setLongPressTriggered(false)
       }
     }
-
     if (open) {
       document.addEventListener('click', handleClickOutside)
       return () => document.removeEventListener('click', handleClickOutside)
@@ -135,19 +170,19 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
           onContextMenu={(e)=>{ e.preventDefault(); setOpen(o=>!o) }}
-          onClick={(e) => e.stopPropagation()} // Prevent triggering outside click
+          onClick={(e) => e.stopPropagation()}
           aria-label="React to post"
           className="h-8 px-2 rounded bg-card-foreground/5 hover:bg-card-foreground/10 text-sm text-card-foreground/60 hover:text-card-foreground transition-colors select-none"
         >
-          {userReaction || '👍'}
+          {userReaction || lastReaction}
         </button>
 
         {open && (
-          <div 
+          <div
             className="absolute z-30 -top-12 left-0"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on menu
+            onClick={(e) => e.stopPropagation()}
           >
-            <ReactionBar onSelect={react}/>
+            <ReactionBar onSelect={react} selected={userReaction || undefined} />
           </div>
         )}
       </div>
@@ -165,8 +200,8 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
           </button>
         ))}
         {!!summary.length && (
-          <button 
-            onClick={clearReaction} 
+          <button
+            onClick={clearReaction}
             className="text-xs text-card-foreground/50 hover:underline"
           >
             Clear

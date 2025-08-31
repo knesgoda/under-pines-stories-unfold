@@ -1,0 +1,43 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: { headers: { Authorization: req.headers.get('Authorization')! } },
+      },
+    )
+
+    const { post_id } = await req.json()
+    if (!post_id || typeof post_id !== 'string') {
+      return new Response(JSON.stringify({ error: 'Invalid post_id' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const { error } = await supabase.rpc('clear_post_reaction', { p_post_id: post_id })
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const { data: counts } = await supabase
+      .from('post_reaction_counts')
+      .select('*')
+      .eq('post_id', post_id)
+      .single()
+
+    return new Response(JSON.stringify({ counts }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  } catch (err) {
+    console.error('reactions/clear error', err)
+    return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+})
