@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Settings, MapPin, Heart, Briefcase, Calendar } from 'lucide-react'
+import { Settings, MapPin, Heart, Briefcase, Calendar, Globe } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getProfileByUsername } from '@/lib/profiles'
 import type { ProfileWithRelation } from '@/lib/profiles'
@@ -87,6 +87,9 @@ export default function Profile() {
   const isOwnProfile = currentUser?.id === profile.id
   const joinedDate = new Date(profile.created_at)
   const timeAgo = formatDistanceToNow(joinedDate, { addSuffix: true })
+  const websiteUrl = profile.website
+    ? (profile.website.startsWith('http') ? profile.website : `https://${profile.website}`)
+    : null
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,13 +153,27 @@ export default function Profile() {
           </div>
 
           <Card className="bg-card border-ink-muted shadow-soft">
-            <CardContent className="p-8">              
+            <CardContent className="p-8">
               {profile.bio && (
                 <p className="text-lg mb-6 leading-relaxed text-card-foreground">
                   {profile.bio}
                 </p>
               )}
-              
+
+              {profile.website && websiteUrl && (
+                <div className="flex items-center gap-2 text-card-foreground/60 mb-4">
+                  <Globe className="h-4 w-4" />
+                  <a
+                    href={websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent-warm hover:underline"
+                  >
+                    {profile.website}
+                  </a>
+                </div>
+              )}
+
               <div className="flex items-center gap-2 text-card-foreground/60 mb-8">
                 <Calendar className="h-4 w-4" />
                 <span>Joined {timeAgo}</span>
