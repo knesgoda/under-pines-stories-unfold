@@ -12,13 +12,31 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   const [summary, setSummary] = useState<Summary>(initialSummary)
   const [open, setOpen] = useState(false)
   const [sheet, setSheet] = useState<{emoji:string}|null>(null)
+  const [userReaction, setUserReaction] = useState<string | null>(null)
   const timer = useRef<any>(null)
   const [longPressTriggered, setLongPressTriggered] = useState(false)
 
-  useEffect(()=>{ (async()=>{
-    const r = await fetch(`/api/posts/${postId}/react`)
-    const j = await r.json(); setSummary(j.summary || [])
-  })(); }, [postId])
+  useEffect(() => {
+    loadReactions()
+  }, [postId])
+
+  const loadReactions = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = {}
+      
+      if (session) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+      
+      const response = await fetch(`/api/posts/${postId}/react`, { headers })
+      const data = await response.json()
+      setSummary(data.summary || [])
+      setUserReaction(data.userReaction || null)
+    } catch (error) {
+      console.error('Error loading reactions:', error)
+    }
+  }
 
   function onPointerDown(){ 
     setLongPressTriggered(false)
@@ -54,28 +72,44 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     
-    const r = await fetch(`/api/posts/${postId}/react`, {
-      method:'POST', 
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      }, 
-      body: JSON.stringify({ emoji })
-    })
-    const j = await r.json(); if (j.summary) setSummary(j.summary)
+    try {
+      const response = await fetch(`/api/posts/${postId}/react`, {
+        method:'POST', 
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }, 
+        body: JSON.stringify({ emoji })
+      })
+      const data = await response.json()
+      if (data.summary) {
+        setSummary(data.summary)
+        setUserReaction(emoji)
+      }
+    } catch (error) {
+      console.error('Error reacting:', error)
+    }
   }
   
   async function clearReaction(){
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     
-    const r = await fetch(`/api/posts/${postId}/react`, { 
-      method:'DELETE',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`
+    try {
+      const response = await fetch(`/api/posts/${postId}/react`, { 
+        method:'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      const data = await response.json()
+      if (data.summary) {
+        setSummary(data.summary)
+        setUserReaction(null)
       }
-    })
-    const j = await r.json(); if (j.summary) setSummary(j.summary)
+    } catch (error) {
+      console.error('Error clearing reaction:', error)
+    }
   }
 
   // Close menu when clicking outside
@@ -105,7 +139,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
           aria-label="React to post"
           className="h-8 px-2 rounded bg-card-foreground/5 hover:bg-card-foreground/10 text-sm text-card-foreground/60 hover:text-card-foreground transition-colors select-none"
         >
-          👍 React
+          {userReaction || '👍'}
         </button>
 
         {open && (

@@ -1,3 +1,4 @@
+/* eslint-env node */
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -11,7 +12,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    
     const { data, error } = await supabase.rpc('get_post_reaction_summary', {
       p_post_id: params.id
     })
@@ -20,7 +20,30 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ summary: data || [] })
+    // Get user's current reaction
+    const authHeader = req.headers.get('Authorization')
+    let userReaction = null
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data: { user } } = await supabase.auth.getUser(token)
+      
+      if (user) {
+        const { data: reaction } = await supabase
+          .from('post_reactions')
+          .select('emoji')
+          .eq('post_id', params.id)
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        userReaction = reaction?.emoji || null
+      }
+    }
+
+    return NextResponse.json({ 
+      summary: data || [], 
+      userReaction 
+    })
   } catch (error) {
     console.error('Error fetching reaction summary:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -66,7 +89,7 @@ export async function POST(
       return NextResponse.json({ error: upsertError.message }, { status: 500 })
     }
 
-    // Get updated summary
+    // Get updated summary and user reaction
     const { data, error } = await supabase.rpc('get_post_reaction_summary', {
       p_post_id: params.id
     })
@@ -75,7 +98,10 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ summary: data || [] })
+    return NextResponse.json({ 
+      summary: data || [], 
+      userReaction: emoji 
+    })
   } catch (error) {
     console.error('Error creating reaction:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -121,7 +147,10 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ summary: data || [] })
+    return NextResponse.json({ 
+      summary: data || [], 
+      userReaction: null 
+    })
   } catch (error) {
     console.error('Error deleting reaction:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
