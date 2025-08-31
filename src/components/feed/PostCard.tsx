@@ -5,23 +5,22 @@ import { toZonedTime, format } from 'date-fns-tz'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Heart, Share, MessageCircle } from 'lucide-react'
+import { MessageCircle, Share } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
-import { toggleLike, sharePost, type Post } from '@/lib/posts'
+import { sharePost, type Post } from '@/lib/posts'
 import { MediaGrid } from '@/components/media/MediaGrid'
 import LinkPreviewCard from '@/components/post/LinkPreviewCard'
+import PostReactions from '@/components/reactions/PostReactions'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface PostCardProps {
   post: Post
-  onLikeToggle: (postId: string, newLikeCount: number, isLiked: boolean) => void
 }
 
 const previewCache = new Map<string, any>()
 
-export function PostCard({ post, onLikeToggle }: PostCardProps) {
-  const [isLiking, setIsLiking] = useState(false)
+export function PostCard({ post }: PostCardProps) {
   const [isSharing, setIsSharing] = useState(false)
   const [preview, setPreview] = useState<any>(null)
   
@@ -31,28 +30,6 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
   const absoluteTime = format(zonedTime, 'MMM d, yyyy \'at\' h:mm a zzz', { 
     timeZone: 'America/Los_Angeles' 
   })
-
-  const handleLike = async () => {
-    if (isLiking) return
-    
-    setIsLiking(true)
-    
-    try {
-      const { like_count, liked } = await toggleLike(post.id)
-      onLikeToggle(post.id, like_count, liked)
-      
-      console.info('Like toggled:', { postId: post.id, liked })
-    } catch (error) {
-      console.error('Error toggling like:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update like. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLiking(false)
-    }
-  }
 
   const handleShare = async () => {
     if (isSharing) return
@@ -182,25 +159,9 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
               </div>
             )}
 
+            {/* Actions */}
             <div className="flex items-center gap-6 mt-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLike}
-                disabled={isLiking}
-                className={cn(
-                  "flex items-center gap-2 text-card-foreground/60 hover:text-red-500 transition-colors p-2 -ml-2",
-                  post.liked_by_user && "text-red-500"
-                )}
-              >
-                <Heart 
-                  className={cn(
-                    "h-4 w-4 transition-transform hover:scale-110",
-                    post.liked_by_user && "fill-current scale-pop"
-                  )} 
-                />
-                <span className="font-medium">{post.like_count}</span>
-              </Button>
+              <PostReactions postId={post.id} />
               
               <Button
                 variant="ghost"

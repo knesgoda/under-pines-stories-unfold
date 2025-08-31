@@ -47,14 +47,6 @@ export function FeedView() {
     setPosts(prev => [newPost, ...prev])
   }
 
-  const handleLikeToggle = (postId: string, newLikeCount: number, isLiked: boolean) => {
-    setPosts(prev => prev.map(post => 
-      post.id === postId 
-        ? { ...post, like_count: newLikeCount, liked_by_user: isLiked }
-        : post
-    ))
-  }
-
   const loadMore = async () => {
     if (!hasMore || isLoadingMore || !cursor) return
     
@@ -79,7 +71,6 @@ export function FeedView() {
           <PostCard
             key={post.id}
             post={post}
-            onLikeToggle={handleLikeToggle}
           />
         ))}
         

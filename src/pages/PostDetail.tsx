@@ -92,16 +92,6 @@ export default function PostDetail() {
     }
   }, [post])
 
-  const handleLikeToggle = (postId: string, newLikeCount: number, isLiked: boolean) => {
-    if (post && post.id === postId) {
-      setPost(prev => prev ? {
-        ...prev,
-        like_count: newLikeCount,
-        liked_by_user: isLiked
-      } : null)
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -149,7 +139,7 @@ export default function PostDetail() {
             </Button>
           </div>
           
-          <PostCard post={post} onLikeToggle={handleLikeToggle} />
+          <PostCard post={post} />
 
           {/* Comments section disabled until comment feature is fully implemented */}
           <div className="mt-6 p-4 bg-background-panel rounded-lg text-center text-muted-foreground">
