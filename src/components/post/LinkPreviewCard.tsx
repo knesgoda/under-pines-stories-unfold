@@ -1,7 +1,5 @@
 'use client';
 
-import Image from 'next/image';
-
 type Props = {
   url: string;
   title?: string;
@@ -25,12 +23,10 @@ export default function LinkPreviewCard({ url, title, description, image_url, si
     >
       {image_url && !compact && (
         <div className="relative w-full pt-[52%]">
-          <Image
+          <img
             src={image_url}
             alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 640px"
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
       )}

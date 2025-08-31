@@ -1,6 +1,5 @@
 'use client'
 import useSWR from 'swr'
-import Image from 'next/image'
 
 type EmojiCount = { emoji: string; count: number }
 type Reactor = { count: number; user: { id: string; username?: string; display_name?: string; avatar_url?: string } }
@@ -47,7 +46,7 @@ export default function ProfileReactionStats({ userId = 'me' }:{ userId?: string
           {top.slice(0,12).map((r, i)=>(
             <div key={i} className="flex items-center gap-2">
               <div className="relative h-7 w-7 rounded-full overflow-hidden bg-white/10">
-                {r.user.avatar_url && <Image src={r.user.avatar_url} alt="" fill sizes="28px" className="object-cover" />}
+                {r.user.avatar_url && <img src={r.user.avatar_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="text-xs">
                 <div className="leading-4">{r.user.display_name || r.user.username || 'User'}</div>

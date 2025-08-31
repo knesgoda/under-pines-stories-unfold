@@ -38,6 +38,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .from('post_likes')
     .insert({ post_id: params.id, user_id: user.id })
   if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 })
+  await fetch(new URL('/api/game/claim/action', process.env.NEXT_PUBLIC_APP_ORIGIN), {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action:'react', targetType:'post', targetId: params.id })
+  });
 
   // notify post author
   try {

@@ -2,7 +2,7 @@
 import NavItem from './NavItem';
 import { HomeIcon, SearchIcon, SparkIcon, BellIcon, DmIcon, GroupsIcon, SaveIcon, UserIcon } from './icons';
 import { useUnread } from './useUnread';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 export default function DesktopSidebar({ meUsername }: { meUsername?: string }) {
   const { notifCount, dmCount } = useUnread();
@@ -21,7 +21,7 @@ export default function DesktopSidebar({ meUsername }: { meUsername?: string }) 
       </nav>
 
       <div className="mt-auto px-2 py-4">
-        <Link href="/compose" className="inline-flex items-center justify-center w-full h-10 rounded-md bg-background-sand text-black text-sm font-medium">
+        <Link to="/compose" className="inline-flex items-center justify-center w-full h-10 rounded-md bg-background-sand text-black text-sm font-medium">
           Create
         </Link>
         <NavItem href={meUsername ? `/@${meUsername}` : '/me'} icon={UserIcon} label="Profile" />

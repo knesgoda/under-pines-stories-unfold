@@ -72,7 +72,6 @@ export default function ProfileSettings() {
       const updates: ProfileUpdateData = {
         display_name: formData.display_name.trim() || undefined,
         bio: formData.bio.trim() || undefined,
-        website: website || undefined,
         hobbies: formData.hobbies,
         interests: formData.interests,
         places_lived: formData.places_lived,

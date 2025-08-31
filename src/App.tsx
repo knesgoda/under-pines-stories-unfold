@@ -15,8 +15,9 @@ import AuthUpgrade from '@/pages/AuthUpgrade'
 import FollowRequests from '@/pages/FollowRequests'
 import Search from '@/pages/Search'
 import NotificationsPage from '@/pages/Notifications'
+import Camp from '@/pages/Camp'
 import Messages from '@/pages/Messages'
-import MessageRequests from '@/pages/MessageRequests'
+import ConversationView from '@/components/dm/ConversationView'
 
 function App() {
   return (
@@ -101,21 +102,18 @@ function App() {
               }
             />
             <Route
-              path="/messages"
+              path="/messages/*"
               element={
                 <RouteGuard>
                   <Messages />
                 </RouteGuard>
               }
-            />
-            <Route
-              path="/messages/requests"
-              element={
-                <RouteGuard>
-                  <MessageRequests />
-                </RouteGuard>
-              }
-            />
+            >
+              <Route 
+                path=":conversationId" 
+                element={<ConversationView />} 
+              />
+            </Route>
             <Route
               path="/requests"
               element={
@@ -132,6 +130,14 @@ function App() {
                 </RouteGuard>
               } 
             />
+              <Route
+                path="/camp"
+                element={
+                  <RouteGuard>
+                    <Camp />
+                  </RouteGuard>
+                }
+              />
             <Route 
               path="/:username" 
               element={

@@ -1,6 +1,5 @@
 'use client'
 import useSWR from 'swr'
-import Image from 'next/image'
 
 export default function ReactorsSheet({
   open, onClose, kind, targetId, emoji
@@ -25,7 +24,7 @@ export default function ReactorsSheet({
           {items.map((it, i)=>(
             <div key={i} className="flex items-center gap-3">
               <div className="relative h-9 w-9 rounded-full overflow-hidden bg-white/10">
-                {it.user?.avatar_url && <Image src={it.user.avatar_url} alt="" fill sizes="36px" className="object-cover" />}
+                {it.user?.avatar_url && <img src={it.user.avatar_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="text-sm">
                 <div>{it.user?.display_name || it.user?.username || 'User'}</div>

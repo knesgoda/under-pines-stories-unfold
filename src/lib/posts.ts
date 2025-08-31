@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client"
+import { awardToast } from '@/components/game/awardToast'
 
 export interface Post {
   id: string
@@ -59,6 +60,7 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
     .single()
 
   if (error) throw error
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: post.id }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
 
   return {
     ...post,
@@ -71,6 +73,7 @@ export async function createDraftPost(): Promise<string> {
   const { data, error } = await supabase.rpc('create_draft_post')
   
   if (error) throw error
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: data }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
   
   return data
 }
@@ -83,6 +86,7 @@ export async function publishPost(postId: string, text: string, media: Post['med
   })
 
   if (error) throw error
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
 
   // Fetch the complete post with profile data
   const { data: fullPost, error: fetchError } = await supabase
@@ -128,6 +132,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   })
 
   if (error) throw error
+  // Remove game API call since it's not relevant to feed fetching
 
   // Get additional data for each post (profiles and likes)
   const postIds = feedPosts?.map(p => p.id) || []
@@ -206,6 +211,7 @@ export async function toggleLike(postId: string): Promise<{ like_count: number; 
       .insert({ post_id: postId, user_id: user.id })
 
     if (insertError) throw insertError
+    await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'react', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
 
     // Get updated post
     const { data: post, error: postError } = await supabase
@@ -241,4 +247,5 @@ export async function sharePost(postId: string): Promise<void> {
     .eq('id', postId)
 
   if (error) throw error
+  await fetch('/api/game/claim/action', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'share', targetType:'post', targetId: postId }) }).then(r=>r.json()).then(j=>awardToast(j.awarded));
 }
