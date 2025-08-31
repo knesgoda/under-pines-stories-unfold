@@ -1,11 +1,13 @@
 'use client';
 import { Link, useLocation } from 'react-router-dom';
-import { SparkIcon } from './icons';
+import { SparkIcon, BellIcon } from './icons';
+import { useUnread } from './useUnread';
 
 export default function AppHeader() {
   const location = useLocation();
   const p = location.pathname;
   const showSearch = !p.startsWith('/messages') && !p.startsWith('/compose');
+  const { notifCount } = useUnread();
 
   return (
     <header className="sticky top-0 z-30 bg-[#0B1C13]/80 backdrop-blur border-b border-white/10">
@@ -22,6 +24,15 @@ export default function AppHeader() {
             />
           </div>
         )}
+        <Link to="/notifications" className="relative inline-flex items-center justify-center h-9 w-9 rounded-md hover:bg-white/10">
+          <BellIcon />
+          {notifCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent-warm text-black text-[11px] leading-[18px] text-center">
+              {notifCount > 99 ? '99+' : notifCount}
+            </span>
+          )}
+          <span className="sr-only">Notifications</span>
+        </Link>
         <Link to="/embers" className="hidden sm:inline-flex items-center gap-2 h-9 px-3 rounded-md bg-white/10 hover:bg-white/15">
           <SparkIcon /><span className="text-sm">Embers</span>
         </Link>
