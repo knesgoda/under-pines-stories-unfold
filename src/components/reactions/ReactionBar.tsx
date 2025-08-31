@@ -1,18 +1,22 @@
 'use client'
 
-const EMOJIS = ['👍','😂','😡','😢','🤬','🙄']
+import { cn } from '@/lib/utils'
+import { REACTIONS } from './reactionTypes'
 
-export default function ReactionBar({ onSelect }: { onSelect: (emoji: string) => void }) {
+export default function ReactionBar({ onSelect, selected }: { onSelect: (emoji: string) => void; selected?: string }) {
   return (
     <div className="flex gap-1 rounded bg-popover border shadow-lg p-1">
-      {EMOJIS.map(e => (
+      {REACTIONS.map(r => (
         <button
-          key={e}
-          onClick={() => onSelect(e)}
-          className="h-8 w-8 flex items-center justify-center rounded hover:bg-accent"
-          aria-label={e}
+          key={r.emoji}
+          onClick={() => onSelect(r.emoji)}
+          className={cn(
+            'h-8 w-8 flex items-center justify-center rounded hover:bg-accent transition-transform',
+            selected === r.emoji && 'ring-2 ring-primary scale-110'
+          )}
+          aria-label={r.label}
         >
-          {e}
+          {r.emoji}
         </button>
       ))}
     </div>

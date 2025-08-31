@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preflight": "node scripts/preflight.js"
+    "preflight": "node scripts/preflight.js",
+    "test": "node --test src/components/reactions/emojiMapping.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
