@@ -65,6 +65,7 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
   return {
     ...post,
     media: post.media as Post['media'],
+    profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
     liked_by_user: false
   }
 }
@@ -116,6 +117,7 @@ export async function publishPost(postId: string, text: string, media: Post['med
   return {
     ...fullPost,
     media: fullPost.media as Post['media'],
+    profiles: Array.isArray(fullPost.profiles) ? fullPost.profiles[0] : fullPost.profiles,
     liked_by_user: false
   }
 }
@@ -168,6 +170,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   return posts.map(post => ({
     ...post,
     media: post.media as Post['media'],
+    profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
     liked_by_user: post.post_likes?.some((like: { user_id: string }) => like.user_id === user.id) || false
   }))
 }

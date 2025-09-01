@@ -24,8 +24,8 @@ export async function GET(
       .from('post_reactions')
       .select(`
         reaction,
-        created_at as reacted_at,
-        user:profiles!post_reactions_user_id_fkey (
+        created_at,
+        profiles!post_reactions_user_id_fkey (
           id,
           username,
           display_name,
@@ -40,9 +40,11 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const items = (data || []).map(it => ({
-      ...it,
-      emoji: typeToEmoji[it.reaction as keyof typeof typeToEmoji],
+    const items = (data || []).map(item => ({
+      reaction: item.reaction,
+      reacted_at: item.created_at,
+      user: item.profiles,
+      emoji: typeToEmoji[item.reaction as keyof typeof typeToEmoji],
     }))
 
     return NextResponse.json({ items })
