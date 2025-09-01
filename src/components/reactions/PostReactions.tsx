@@ -34,36 +34,40 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   function countsToSummary(counts: any): Summary {
     if (!counts) return []
     const res: Summary = []
-    for (const key in typeToEmoji) {
-      const count = counts[key as keyof typeof counts]
-      if (count && count > 0) {
-        res.push({ emoji: typeToEmoji[key as ReactionType], count })
+    
+    // If counts is the new format with emoji keys
+    if (typeof counts === 'object') {
+      for (const [emoji, count] of Object.entries(counts)) {
+        if (count && (count as number) > 0) {
+          res.push({ emoji, count: count as number })
+        }
       }
     }
-    return res
+    
+    return res.sort((a, b) => b.count - a.count)
   }
 
   const loadReactions = async () => {
     try {
-      const { data: counts } = await supabase
-        .from('post_reaction_counts')
-        .select('*')
-        .eq('post_id', postId)
-        .maybeSingle()
-      setSummary(countsToSummary(counts))
+      // Use the get_post_reaction_summary function
+      const { data: summaryData } = await supabase.rpc('get_post_reaction_summary', {
+        p_post_id: postId
+      })
+      
+      // The function returns an array in the correct format
+      setSummary(Array.isArray(summaryData) ? summaryData as Summary : [])
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const { data: reaction } = await supabase
           .from('post_reactions')
-          .select('reaction')
+          .select('emoji')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
           .maybeSingle()
-        if (reaction?.reaction) {
-          const emoji = typeToEmoji[reaction.reaction as ReactionType]
-          setUserReaction(emoji)
-          setLastReaction(emoji)
+        if (reaction?.emoji) {
+          setUserReaction(reaction.emoji)
+          setLastReaction(reaction.emoji)
         } else {
           setUserReaction(null)
         }

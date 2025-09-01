@@ -295,28 +295,25 @@ export type Database = {
       }
       post_reactions: {
         Row: {
+          created_at: string
+          emoji: string
           id: string
           post_id: string
           user_id: string
-          reaction: Database['public']['Enums']['reaction_type']
-          created_at: string
-          updated_at: string
         }
         Insert: {
+          created_at?: string
+          emoji: string
           id?: string
           post_id: string
           user_id: string
-          reaction?: Database['public']['Enums']['reaction_type']
-          created_at?: string
-          updated_at?: string
         }
         Update: {
+          created_at?: string
+          emoji?: string
           id?: string
           post_id?: string
           user_id?: string
-          reaction?: Database['public']['Enums']['reaction_type']
-          created_at?: string
-          updated_at?: string
         }
         Relationships: [
           {
@@ -327,19 +324,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      post_reaction_counts: {
-        Row: {
-          post_id: string
-          total: number
-          thumbs_up: number
-          laugh: number
-          angry: number
-          sad: number
-          rage: number
-          eyeroll: number
-        }
-        Relationships: []
       }
       posts: {
         Row: {
@@ -406,7 +390,6 @@ export type Database = {
           search_document: unknown | null
           updated_at: string | null
           username: string | null
-          website: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -422,7 +405,6 @@ export type Database = {
           search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -438,7 +420,6 @@ export type Database = {
           search_document?: unknown | null
           updated_at?: string | null
           username?: string | null
-          website?: string | null
         }
         Relationships: []
       }
@@ -528,6 +509,21 @@ export type Database = {
       }
     }
     Views: {
+      post_reaction_counts: {
+        Row: {
+          counts: Json | null
+          post_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_friends: {
         Row: {
           friend_id: string | null
@@ -552,6 +548,10 @@ export type Database = {
       }
     }
     Functions: {
+      clear_post_reaction: {
+        Args: { p_post_id: string }
+        Returns: undefined
+      }
       create_draft_post: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -669,9 +669,13 @@ export type Database = {
           username: string
         }[]
       }
+      upsert_post_reaction: {
+        Args: { p_post_id: string; p_reaction: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      reaction_type: 'thumbs_up' | 'laugh' | 'angry' | 'sad' | 'rage' | 'eyeroll'
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

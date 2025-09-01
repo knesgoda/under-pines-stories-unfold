@@ -41,9 +41,9 @@ Deno.serve(async (req) => {
       .from('post_reaction_counts')
       .select('*')
       .eq('post_id', post_id)
-      .single()
+      .maybeSingle()
 
-    return new Response(JSON.stringify({ counts }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ counts: counts?.counts || {} }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (err) {
     console.error('reactions/upsert error', err)
     return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })

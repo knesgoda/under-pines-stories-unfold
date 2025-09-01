@@ -14,16 +14,15 @@ export async function GET(
   try {
     const { searchParams } = new URL(req.url)
     const emoji = searchParams.get('emoji') || ''
-    const reaction = emojiToType[emoji]
 
-    if (!reaction) {
-      return NextResponse.json({ error: 'Missing or invalid emoji parameter' }, { status: 400 })
+    if (!emoji) {
+      return NextResponse.json({ error: 'Missing emoji parameter' }, { status: 400 })
     }
 
     const { data, error } = await supabase
       .from('post_reactions')
       .select(`
-        reaction,
+        emoji,
         created_at,
         profiles!post_reactions_user_id_fkey (
           id,
@@ -33,7 +32,7 @@ export async function GET(
         )
       `)
       .eq('post_id', params.id)
-      .eq('reaction', reaction)
+      .eq('emoji', emoji)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -41,10 +40,9 @@ export async function GET(
     }
 
     const items = (data || []).map(item => ({
-      reaction: item.reaction,
+      emoji: item.emoji,
       reacted_at: item.created_at,
       user: item.profiles,
-      emoji: typeToEmoji[item.reaction as keyof typeof typeToEmoji],
     }))
 
     return NextResponse.json({ items })
