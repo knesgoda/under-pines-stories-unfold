@@ -556,6 +556,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      create_notification: {
+        Args: {
+          p_actor: string
+          p_comment?: string
+          p_meta?: Json
+          p_post?: string
+          p_type: string
+          p_user: string
+        }
+        Returns: string
+      }
       dm_mark_read: {
         Args: { conversation_id: string }
         Returns: Json
@@ -588,6 +599,16 @@ export type Database = {
           share_count: number
           status: string
         }[]
+      }
+      get_post_comments: {
+        Args: {
+          p_before?: string
+          p_limit?: number
+          p_post: string
+          p_preview_replies?: number
+          p_viewer: string
+        }
+        Returns: Json
       }
       get_post_reaction_summary: {
         Args: { p_post_id: string }
