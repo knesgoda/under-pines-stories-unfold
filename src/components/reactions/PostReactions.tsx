@@ -49,13 +49,15 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
 
   const loadReactions = async () => {
     try {
-      // Use the get_post_reaction_summary function
-      const { data: summaryData } = await supabase.rpc('get_post_reaction_summary', {
-        p_post_id: postId
-      })
+      // Get reaction counts from the new table
+      const { data: countsData } = await supabase
+        .from('post_reaction_counts')
+        .select('counts')
+        .eq('post_id', postId)
+        .maybeSingle()
       
-      // The function returns an array in the correct format
-      setSummary(Array.isArray(summaryData) ? summaryData as Summary : [])
+      const counts = countsData?.counts || {}
+      setSummary(countsToSummary(counts))
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
@@ -112,20 +114,17 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     if (!session) return
     try {
       const reaction = emojiToType[emoji]
-      const response = await fetch('/functions/v1/reactions/upsert', {
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ post_id: postId, reaction })
+      const { data, error } = await supabase.functions.invoke('reactions/upsert', {
+        body: { post_id: postId, reaction }
       })
-      const data = await response.json()
-      if (data.counts) {
+      if (error) throw error
+      if (data?.counts) {
         setSummary(countsToSummary(data.counts))
         setUserReaction(emoji)
         setLastReaction(emoji)
       }
+      // Refresh data to be sure
+      loadReactions()
     } catch (error) {
       console.error('Error reacting:', error)
     }
@@ -135,19 +134,16 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     try {
-      const response = await fetch('/functions/v1/reactions/clear', {
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ post_id: postId })
+      const { data, error } = await supabase.functions.invoke('reactions/clear', {
+        body: { post_id: postId }
       })
-      const data = await response.json()
-      if (data.counts) {
+      if (error) throw error
+      if (data?.counts) {
         setSummary(countsToSummary(data.counts))
         setUserReaction(null)
       }
+      // Refresh data to be sure
+      loadReactions()
     } catch (error) {
       console.error('Error clearing reaction:', error)
     }

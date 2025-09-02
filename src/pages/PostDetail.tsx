@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { type Post } from '@/lib/posts'
+import { CommentThread } from '@/components/comments/CommentThread'
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>()
@@ -141,11 +142,9 @@ export default function PostDetail() {
           
           <PostCard post={post} />
 
-          {/* Comments section disabled until comment feature is fully implemented */}
-          <div className="mt-6 p-4 bg-background-panel rounded-lg text-center text-muted-foreground">
-            Comments feature coming soon
+          <div className="mt-6">
+            <CommentThread postId={post.id} />
           </div>
-          {/* <CommentThread postId={post.id} /> */}
         </div>
       </main>
     </div>

@@ -293,6 +293,24 @@ export type Database = {
           },
         ]
       }
+      post_reaction_counts: {
+        Row: {
+          counts: Json | null
+          post_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          counts?: Json | null
+          post_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          counts?: Json | null
+          post_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       post_reactions: {
         Row: {
           created_at: string
@@ -509,21 +527,6 @@ export type Database = {
       }
     }
     Views: {
-      post_reaction_counts: {
-        Row: {
-          counts: Json | null
-          post_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_reactions_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       v_friends: {
         Row: {
           friend_id: string | null
@@ -689,6 +692,10 @@ export type Database = {
           id: string
           username: string
         }[]
+      }
+      update_post_reaction_counts: {
+        Args: { p_post_id: string }
+        Returns: undefined
       }
       upsert_post_reaction: {
         Args: { p_post_id: string; p_reaction: string }

@@ -12,6 +12,7 @@ import { sharePost, type Post } from '@/lib/posts'
 import { MediaGrid } from '@/components/media/MediaGrid'
 import LinkPreviewCard from '@/components/post/LinkPreviewCard'
 import PostReactions from '@/components/reactions/PostReactions'
+import { CommentModal } from '@/components/comments/CommentModal'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface PostCardProps {
@@ -23,6 +24,7 @@ const previewCache = new Map<string, any>()
 export function PostCard({ post }: PostCardProps) {
   const [isSharing, setIsSharing] = useState(false)
   const [preview, setPreview] = useState<any>(null)
+  const [open, setOpen] = useState(false)
   
   const createdAt = new Date(post.created_at)
   const zonedTime = toZonedTime(createdAt, 'America/Los_Angeles')
@@ -177,6 +179,7 @@ export function PostCard({ post }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setOpen(true)}
                 className="flex items-center gap-2 text-card-foreground/60 hover:text-green-500 transition-colors p-2"
               >
                 <MessageCircle className="h-4 w-4 transition-transform hover:scale-110" />
@@ -186,6 +189,12 @@ export function PostCard({ post }: PostCardProps) {
           </div>
         </div>
       </CardContent>
+
+      <CommentModal
+        open={open}
+        onClose={() => setOpen(false)}
+        postId={post.id}
+      />
     </Card>
   )
 }
