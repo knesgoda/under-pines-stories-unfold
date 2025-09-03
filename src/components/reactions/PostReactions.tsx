@@ -35,11 +35,14 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     if (!counts) return []
     const res: Summary = []
     
-    // If counts is the new format with emoji keys
+    // If counts is the new format with reaction type keys
     if (typeof counts === 'object') {
-      for (const [emoji, count] of Object.entries(counts)) {
+      for (const [reactionType, count] of Object.entries(counts)) {
         if (count && (count as number) > 0) {
-          res.push({ emoji, count: count as number })
+          const emoji = typeToEmoji[reactionType as ReactionType]
+          if (emoji) {
+            res.push({ emoji, count: count as number })
+          }
         }
       }
     }
@@ -63,13 +66,14 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
       if (session) {
         const { data: reaction } = await supabase
           .from('post_reactions')
-          .select('emoji')
+          .select('reaction')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
           .maybeSingle()
-        if (reaction?.emoji) {
-          setUserReaction(reaction.emoji)
-          setLastReaction(reaction.emoji)
+        if (reaction?.reaction) {
+          const emoji = typeToEmoji[reaction.reaction]
+          setUserReaction(emoji)
+          setLastReaction(emoji)
         } else {
           setUserReaction(null)
         }
