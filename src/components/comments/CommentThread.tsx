@@ -59,28 +59,66 @@ export function CommentThread({ postId }: CommentThreadProps) {
   const createComment = async (body: string, parentId?: string) => {
     if (!user) return
 
-    const token = (await supabase.auth.getSession()).data.session?.access_token
-    if (!token) return
-
-    const response = await fetch('/api/comments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        postId,
-        body,
-        parentId: parentId || null
+    const { data, error } = await supabase
+      .from('comments')
+      .insert({ 
+        post_id: postId, 
+        body, 
+        parent_id: parentId || null, 
+        author_id: user.id 
       })
-    })
+      .select('*')
+      .single()
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to create comment')
+    if (error) throw error
+
+    // Create notifications
+    try {
+      const excerpt = body.slice(0, 120)
+      
+      // Notify post author
+      const { data: post } = await supabase
+        .from('posts')
+        .select('author_id')
+        .eq('id', postId)
+        .single()
+      
+      if (post?.author_id) {
+        await supabase.rpc('create_notification', {
+          p_user: post.author_id,
+          p_actor: user.id,
+          p_type: 'post_comment',
+          p_post: postId,
+          p_comment: data.id,
+          p_meta: { excerpt }
+        })
+      }
+
+      // Notify parent comment author if replying
+      if (parentId) {
+        const { data: parent } = await supabase
+          .from('comments')
+          .select('author_id')
+          .eq('id', parentId)
+          .single()
+        
+        const parentAuthor = parent?.author_id
+        if (parentAuthor && parentAuthor !== post?.author_id) {
+          await supabase.rpc('create_notification', {
+            p_user: parentAuthor,
+            p_actor: user.id,
+            p_type: 'comment_reply',
+            p_post: postId,
+            p_comment: data.id,
+            p_meta: { excerpt }
+          })
+        }
+      }
+    } catch (e) {
+      console.error('[comments:notify]', e)
     }
 
-    return response.json()
+    return data
   }
 
   const handleSubmitComment = async (body: string) => {
@@ -130,23 +168,14 @@ export function CommentThread({ postId }: CommentThreadProps) {
   const handleEditComment = async (commentId: string, newBody: string) => {
     if (!user) return
 
-    const token = (await supabase.auth.getSession()).data.session?.access_token
-    if (!token) return
-
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ body: newBody })
-      })
+      const { error } = await supabase
+        .from('comments')
+        .update({ body: newBody })
+        .eq('id', commentId)
+        .eq('author_id', user.id) // Ensure user can only edit their own comments
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to edit comment')
-      }
+      if (error) throw error
 
       await loadComments()
       toast({
@@ -166,21 +195,14 @@ export function CommentThread({ postId }: CommentThreadProps) {
   const handleDeleteComment = async (commentId: string) => {
     if (!user) return
 
-    const token = (await supabase.auth.getSession()).data.session?.access_token
-    if (!token) return
-
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const { error } = await supabase
+        .from('comments')
+        .update({ is_deleted: true })
+        .eq('id', commentId)
+        .eq('author_id', user.id) // Ensure user can only delete their own comments
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete comment')
-      }
+      if (error) throw error
 
       await loadComments()
       toast({
