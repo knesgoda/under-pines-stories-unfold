@@ -65,7 +65,6 @@ export function CommentThread({ postId }: CommentThreadProps) {
     console.log('Creating comment with:', { 
       post_id: postId, 
       body, 
-      parent_id: parentId || null, 
       author_id: user.id 
     })
 
@@ -74,7 +73,6 @@ export function CommentThread({ postId }: CommentThreadProps) {
       .insert({ 
         post_id: postId, 
         body, 
-        parent_id: parentId || null, 
         author_id: user.id 
       })
       .select('*')
