@@ -63,10 +63,10 @@ const Login: React.FC = () => {
         </div>
 
         {/* Form Card */}
-        <Card className="shadow-soft border-border/50">
+        <Card className="shadow-soft border-border/50 bg-secondary">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-white">Sign In</CardTitle>
+            <CardDescription className="text-white/80">
               Enter your email and password to continue
             </CardDescription>
           </CardHeader>
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
 
               {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -91,12 +91,13 @@ const Login: React.FC = () => {
                   placeholder="Enter your email address"
                   autoComplete="email"
                   autoFocus
+                  className="bg-black text-white border-gray-600 placeholder:text-gray-400 focus:border-primary"
                 />
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-white">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -104,6 +105,7 @@ const Login: React.FC = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Enter your password"
                   autoComplete="current-password"
+                  className="bg-black text-white border-gray-600 placeholder:text-gray-400 focus:border-primary"
                 />
               </div>
 
@@ -116,7 +118,7 @@ const Login: React.FC = () => {
                 />
                 <Label 
                   htmlFor="remember" 
-                  className="text-sm font-normal cursor-pointer"
+                  className="text-sm font-normal cursor-pointer text-white"
                 >
                   Keep me signed in
                 </Label>
@@ -134,7 +136,7 @@ const Login: React.FC = () => {
 
             {/* Sign Up Link */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-white/80">
                 Don't have an account?{' '}
                 <Link 
                   to="/signup" 
