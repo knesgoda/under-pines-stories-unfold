@@ -62,6 +62,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
       throw new Error('User not authenticated')
     }
 
+    console.log('User object:', user)
     console.log('Creating comment with:', { 
       post_id: postId, 
       body, 
