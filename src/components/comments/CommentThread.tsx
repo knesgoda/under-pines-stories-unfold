@@ -57,7 +57,17 @@ export function CommentThread({ postId }: CommentThreadProps) {
   }
 
   const createComment = async (body: string, parentId?: string) => {
-    if (!user) return
+    if (!user) {
+      console.error('No user found when trying to create comment')
+      throw new Error('User not authenticated')
+    }
+
+    console.log('Creating comment with:', { 
+      post_id: postId, 
+      body, 
+      parent_id: parentId || null, 
+      author_id: user.id 
+    })
 
     const { data, error } = await supabase
       .from('comments')
@@ -70,7 +80,12 @@ export function CommentThread({ postId }: CommentThreadProps) {
       .select('*')
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error creating comment:', error)
+      throw error
+    }
+
+    console.log('Comment created successfully:', data)
 
     // Create notifications
     try {
