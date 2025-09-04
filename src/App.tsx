@@ -3,7 +3,6 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from '@/components/ui/toaster'
 import { RouteGuard } from '@/components/auth/RouteGuard'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Home from '@/pages/Home'
 import PostDetail from '@/pages/PostDetail'
 import Profile from '@/pages/Profile'
@@ -25,10 +24,9 @@ import MentionTimeline from '@/pages/MentionTimeline'
 
 function App() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
           <div className="min-h-screen bg-background">
           <Routes>
             {/* Public Routes */}
@@ -174,7 +172,6 @@ function App() {
         </Router>
       </AuthProvider>
     </ThemeProvider>
-    </ErrorBoundary>
   )
 }
 
