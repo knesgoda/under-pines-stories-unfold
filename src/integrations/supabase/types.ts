@@ -646,6 +646,21 @@ export type Database = {
         Args: { p_post_id: string }
         Returns: Json
       }
+      get_public_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          discoverable: boolean
+          display_name: string
+          hobbies: string[]
+          id: string
+          interests: string[]
+          places_lived: string[]
+          username: string
+        }[]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
