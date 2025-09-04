@@ -261,7 +261,7 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
   }, [postId])
 
   useEffect(() => {
-    const channel = supabase.channel(`comments:${postId}`)
+    const subscription = supabase.channel(`comments:${postId}`)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
@@ -273,7 +273,7 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      subscription.unsubscribe()
     }
   }, [postId])
 
