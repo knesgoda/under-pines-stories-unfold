@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getUnreadNotificationCount } from '@/lib/notifications'
+import { safeCleanup } from '@/lib/safeCleanup'
 
 interface Props { isActive?: boolean }
 
@@ -12,7 +13,7 @@ export default function NotificationsBell({ isActive }: Props) {
   const [count, setCount] = useState<number>(0)
 
   useEffect(() => {
-    let sub: ReturnType<typeof supabase.channel> | undefined
+    let subscription: any
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       const uid = session?.user?.id
@@ -23,7 +24,7 @@ export default function NotificationsBell({ isActive }: Props) {
       setCount(unreadCount)
       
       // Subscribe to real-time updates
-      sub = supabase
+      subscription = supabase
         .channel(`notifs:${uid}`)
         .on('postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
@@ -39,7 +40,9 @@ export default function NotificationsBell({ isActive }: Props) {
         .subscribe()
     }
     init()
-    return () => { if (sub) sub.unsubscribe() }
+    return () => { 
+      safeCleanup(subscription)
+    }
   }, [])
 
   return (
