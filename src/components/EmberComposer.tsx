@@ -59,7 +59,7 @@ export default function EmberComposer() {
   };
 
   return (
-    <div className="rounded-xl border border-emerald-900/35 bg-[#F8F6F2] p-4 shadow-lg">
+    <div id="ember-composer" className="rounded-xl border border-emerald-900/35 bg-[#F8F6F2] p-4 shadow-lg">
       <div className="flex items-center gap-2 mb-3">
         <Flame className="h-5 w-5 text-amber-500" />
         <h3 className="font-semibold text-slate-800">Drop an Ember</h3>

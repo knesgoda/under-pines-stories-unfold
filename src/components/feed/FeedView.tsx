@@ -7,7 +7,7 @@ import { PostCardSkeleton } from '@/components/ui/PostCardSkeleton'
 import { Loader2 } from 'lucide-react'
 import { fetchFeed, type Post } from '@/lib/posts'
 import EmberComposer from '@/components/EmberComposer'
-import EmbersRail from '@/components/EmbersRail'
+import EmbersRailV2 from '@/components/EmbersRailV2'
 
 export function FeedView() {
   const { user } = useAuth()
@@ -62,7 +62,7 @@ export function FeedView() {
       <div className="space-y-6">
         <NewPostForm onPostCreated={handleNewPost} />
         <EmberComposer />
-        <EmbersRail />
+        <EmbersRailV2 />
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <PostCardSkeleton key={i} />
@@ -76,7 +76,7 @@ export function FeedView() {
     <div className="space-y-6">
       <NewPostForm onPostCreated={handleNewPost} />
       <EmberComposer />
-      <EmbersRail />
+      <EmbersRailV2 />
       
       <div className="space-y-4">
         {posts.map((post) => (
