@@ -8,7 +8,7 @@ export function useUnread() {
   const [dmCount, setDmCount] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    const interval: NodeJS.Timeout;
     
     async function fetchCounts() {
       const { data: { session } } = await supabase.auth.getSession();

@@ -8,7 +8,7 @@ export interface Notification {
   post_id?: string;
   comment_id?: string;
   actor_id?: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   read_at?: string;
   created_at: string;
 }
@@ -186,7 +186,7 @@ export async function createNotification({
   post_id?: string;
   comment_id?: string;
   actor_id?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }): Promise<Notification | null> {
   const { data, error } = await supabase
     .from('notifications')
