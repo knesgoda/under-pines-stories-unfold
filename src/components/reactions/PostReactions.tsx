@@ -18,6 +18,51 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   const timer = useRef<NodeJS.Timeout | null>(null)
   const [longPressTriggered, setLongPressTriggered] = useState(false)
 
+  const loadReactions = useCallback(async () => {
+    try {
+      console.log('Loading reactions for post:', postId)
+      
+      // Get reaction counts directly from post_reactions table
+      const { data: reactionsData, error: reactionsError } = await supabase
+        .from('post_reactions')
+        .select('emoji')
+        .eq('post_id', postId)
+      
+      console.log('Reactions data:', reactionsData, 'Error:', reactionsError)
+      
+      // Count reactions by emoji
+      const counts: Record<string, number> = {}
+      if (reactionsData && !reactionsError) {
+        for (const reaction of reactionsData) {
+          if (reaction && reaction.emoji) {
+            counts[reaction.emoji] = (counts[reaction.emoji] || 0) + 1
+          }
+        }
+      }
+      
+      // Get current user's reaction
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.id) {
+        const { data: userReactionData } = await supabase
+          .from('post_reactions')
+          .select('emoji')
+          .eq('post_id', postId)
+          .eq('user_id', session.user.id)
+          .single()
+        
+        setUserReaction(userReactionData?.emoji || null)
+      }
+      
+      // Convert counts to summary format
+      const res = Object.entries(counts).map(([emoji, count]) => ({ emoji, count }))
+      setSummary(res)
+      
+      console.log('Final summary:', res)
+    } catch (error) {
+      console.error('Error loading reactions:', error)
+    }
+  }, [postId])
+
   useEffect(() => {
     loadReactions()
   }, [postId, loadReactions])
@@ -50,56 +95,6 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     return res.sort((a, b) => b.count - a.count)
   }
 
-  const loadReactions = useCallback(async () => {
-    try {
-      console.log('Loading reactions for post:', postId)
-      
-      // Get reaction counts directly from post_reactions table
-      const { data: reactionsData, error: reactionsError } = await supabase
-        .from('post_reactions')
-        .select('emoji')
-        .eq('post_id', postId)
-      
-      console.log('Reactions data:', reactionsData, 'Error:', reactionsError)
-      
-      // Count reactions by emoji
-      const counts: Record<string, number> = {}
-      if (reactionsData && !reactionsError) {
-        for (const reaction of reactionsData) {
-          if (reaction && reaction.emoji) {
-            counts[reaction.emoji] = (counts[reaction.emoji] || 0) + 1
-          }
-        }
-      }
-      console.log('Counts object:', counts)
-      setSummary(countsToSummary(counts))
-
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        console.log('Loading user reaction for user:', session.user.id)
-        
-        // Get the user's reaction using the emoji column
-        const { data: reaction, error } = await supabase
-          .from('post_reactions')
-          .select('emoji')
-          .eq('post_id', postId)
-          .eq('user_id', session.user.id)
-          .maybeSingle()
-        
-        console.log('User reaction data:', reaction, 'Error:', error)
-        
-        if (reaction && reaction.emoji) {
-          console.log('Using emoji column:', reaction.emoji)
-          setUserReaction(reaction.emoji)
-          setLastReaction(reaction.emoji)
-        } else {
-          setUserReaction(null)
-        }
-      }
-    } catch (error) {
-      console.error('Error loading reactions:', error)
-    }
-  }, [postId])
 
   function onPointerDown(){
     setLongPressTriggered(false)
