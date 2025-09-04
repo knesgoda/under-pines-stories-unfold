@@ -1,73 +1,91 @@
-# Welcome to your Lovable project
+# Under Pines - Social Community
 
-## Project info
+A cozy social community for outdoor enthusiasts built with React, Vite, Tailwind, and Supabase.
 
-**URL**: https://lovable.dev/projects/79aea074-c423-43f3-bcab-588688fda0bf
+## Features
 
-## How can I edit this code?
+- **Social Feed**: Share posts, photos, and stories with the community
+- **Friend System**: Connect with other outdoor enthusiasts
+- **Real-time Updates**: Live notifications and messaging
+- **Hashtags & Mentions**: Discover content and connect with others
+- **Responsive Design**: Works seamlessly on desktop and mobile
+- **Pacific Northwest Theme**: Warm, nature-inspired design
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Auth, Realtime, Storage)
+- **Icons**: Lucide React
+- **Deployment**: GitHub Actions with automatic deployment
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/79aea074-c423-43f3-bcab-588688fda0bf) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ 
+- npm or pnpm
+- Supabase account
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clone the repository:
+```bash
+git clone https://github.com/knesgoda/under-pines-stories-unfold.git
+cd under-pines-stories-unfold
+```
 
-Follow these steps:
+2. Install dependencies:
+```bash
+npm install
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Add your Supabase credentials to `.env.local`:
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Run the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Available Scripts
 
-**Use GitHub Codespaces**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run typecheck` - Run TypeScript checks
+- `npm run lint` - Run ESLint
+- `npm run dep:cycles` - Check for circular dependencies
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Database Setup
 
-## What technologies are used for this project?
+The project uses Supabase migrations. Run migrations in your Supabase dashboard or using the Supabase CLI.
 
-This project is built with:
+## Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The project is automatically deployed via GitHub Actions when changes are pushed to the main branch.
 
-## How can I deploy this project?
+## Contributing
 
-Simply open [Lovable](https://lovable.dev/projects/79aea074-c423-43f3-bcab-588688fda0bf) and click on Share -> Publish.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
 
-## Can I connect a custom domain to my Lovable project?
+## License
 
-Yes, you can!
+This project is licensed under the MIT License.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Support
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For support, please open an issue on GitHub or contact the development team.

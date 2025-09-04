@@ -1,141 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background: Sunset Sky Gradient -->
   <defs>
-    <!-- Sunset gradient -->
-    <radialGradient id="sunsetGradient" cx="50%" cy="30%" r="70%">
-      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
-      <stop offset="30%" style="stop-color:#FF8E53;stop-opacity:1" />
-      <stop offset="60%" style="stop-color:#4A90E2;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2C3E50;stop-opacity:1" />
+    <radialGradient id="sunsetGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FFD700"/> <!-- Bright yellow/orange for sunset center -->
+      <stop offset="30%" stop-color="#FFA500"/> <!-- Orange -->
+      <stop offset="60%" stop-color="#FF4500"/> <!-- Red-orange -->
+      <stop offset="80%" stop-color="#8B0000"/> <!-- Dark red -->
+      <stop offset="100%" stop-color="#4682B4"/> <!-- Steel blue for deep sky -->
     </radialGradient>
-    
-    <!-- Fire gradient -->
-    <radialGradient id="fireGradient" cx="50%" cy="80%" r="30%">
-      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#FF6B35;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8B0000;stop-opacity:1" />
-    </radialGradient>
-    
-    <!-- Star pattern -->
-    <pattern id="stars" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-      <circle cx="5" cy="5" r="0.5" fill="white" opacity="0.8"/>
-      <circle cx="15" cy="8" r="0.3" fill="white" opacity="0.6"/>
-      <circle cx="8" cy="15" r="0.4" fill="white" opacity="0.7"/>
-    </pattern>
   </defs>
-  
-  <!-- Main circle border -->
-  <circle cx="60" cy="60" r="58" fill="none" stroke="#2C3E50" stroke-width="2"/>
-  
-  <!-- Background with sunset gradient -->
-  <circle cx="60" cy="60" r="58" fill="url(#sunsetGradient)"/>
-  
-  <!-- Stars in upper sky -->
-  <rect width="120" height="40" fill="url(#stars)" opacity="0.3"/>
-  
-  <!-- Large sun -->
-  <circle cx="60" cy="25" r="12" fill="#FFD700" opacity="0.9"/>
-  
-  <!-- Pine trees - left side -->
-  <g fill="#1A3A1A">
-    <!-- Tall left pine -->
-    <polygon points="25,45 30,25 35,45" />
-    <polygon points="25,50 30,35 35,50" />
-    <polygon points="25,55 30,45 35,55" />
-    <rect x="29" y="55" width="2" height="8" fill="#2D4A2D"/>
-    
-    <!-- Medium left pines -->
-    <polygon points="15,55 18,40 21,55" />
-    <polygon points="15,60 18,50 21,60" />
-    <rect x="17" y="60" width="2" height="6" fill="#2D4A2D"/>
-    
-    <polygon points="35,60 38,45 41,60" />
-    <polygon points="35,65 38,55 41,65" />
-    <rect x="37" y="65" width="2" height="5" fill="#2D4A2D"/>
-  </g>
-  
-  <!-- Pine trees - right side -->
-  <g fill="#1A3A1A">
-    <!-- Tall right pine -->
-    <polygon points="85,45 90,25 95,45" />
-    <polygon points="85,50 90,35 95,50" />
-    <polygon points="85,55 90,45 95,55" />
-    <rect x="89" y="55" width="2" height="8" fill="#2D4A2D"/>
-    
-    <!-- Medium right pines -->
-    <polygon points="75,55 78,40 81,55" />
-    <polygon points="75,60 78,50 81,60" />
-    <rect x="77" y="60" width="2" height="6" fill="#2D4A2D"/>
-    
-    <polygon points="95,60 98,45 101,60" />
-    <polygon points="95,65 98,55 101,65" />
-    <rect x="97" y="65" width="2" height="5" fill="#2D4A2D"/>
-  </g>
-  
-  <!-- Background pines -->
-  <g fill="#0F2A0F" opacity="0.7">
-    <polygon points="45,65 48,50 51,65" />
-    <polygon points="45,70 48,60 51,70" />
-    <rect x="47" y="70" width="2" height="4" fill="#1A3A1A"/>
-    
-    <polygon points="65,70 68,55 71,70" />
-    <polygon points="65,75 68,65 71,75" />
-    <rect x="67" y="75" width="2" height="3" fill="#1A3A1A"/>
-  </g>
-  
+  <circle cx="60" cy="60" r="60" fill="url(#sunsetGradient)"/>
+
+  <!-- Stars in the sky -->
+  <circle cx="20" cy="20" r="1" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="90" cy="15" r="0.8" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="40" cy="30" r="1.2" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="105" cy="35" r="0.9" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="55" cy="10" r="0.7" fill="#FFFFFF" opacity="0.5"/>
+
+  <!-- Pine Trees (Silhouettes) -->
+  <path d="M0 120 L15 80 L25 90 L35 70 L45 85 L60 60 L75 85 L85 70 L95 90 L105 80 L120 120 Z" fill="#065f46"/>
+  <path d="M10 120 L20 90 L30 100 L40 80 L50 95 L60 70 L70 95 L80 80 L90 100 L100 90 L110 120 Z" fill="#047857" opacity="0.8"/>
+
   <!-- Campfire -->
-  <ellipse cx="60" cy="85" rx="8" ry="4" fill="#2D4A2D"/>
-  <ellipse cx="60" cy="85" rx="6" ry="3" fill="#1A3A1A"/>
-  
-  <!-- Fire flames -->
-  <g fill="url(#fireGradient)">
-    <ellipse cx="58" cy="80" rx="2" ry="6" transform="rotate(-15 58 80)"/>
-    <ellipse cx="60" cy="78" rx="2.5" ry="7" transform="rotate(0 60 78)"/>
-    <ellipse cx="62" cy="80" rx="2" ry="6" transform="rotate(15 62 80)"/>
-  </g>
-  
-  <!-- People around fire -->
-  <g fill="#2C3E50">
-    <!-- Person 1 (left, standing) -->
-    <circle cx="50" cy="75" r="2" fill="#2C3E50"/>
-    <rect x="49" y="77" width="2" height="4" fill="#2C3E50"/>
-    
-    <!-- Person 2 (right, standing) -->
-    <circle cx="70" cy="75" r="2" fill="#2C3E50"/>
-    <rect x="69" y="77" width="2" height="4" fill="#2C3E50"/>
-    
-    <!-- Person 3 (left, sitting) -->
-    <circle cx="45" cy="85" r="1.5" fill="#2C3E50"/>
-    <ellipse cx="45" cy="87" rx="2" ry="1.5" fill="#2C3E50"/>
-    
-    <!-- Person 4 (right, sitting) -->
-    <circle cx="75" cy="85" r="1.5" fill="#2C3E50"/>
-    <ellipse cx="75" cy="87" rx="2" ry="1.5" fill="#2C3E50"/>
-  </g>
-  
+  <circle cx="60" cy="105" r="8" fill="#FF8C00"/>
+  <circle cx="60" cy="105" r="5" fill="#FFD700"/>
+  <path d="M58 100 L62 100 L60 95 Z" fill="#FF4500"/>
+  <path d="M55 102 L65 102 L60 97 Z" fill="#FF8C00"/>
+
+  <!-- People around campfire -->
+  <circle cx="45" cy="105" r="4" fill="#2C3E50"/>
+  <circle cx="75" cy="105" r="4" fill="#2C3E50"/>
+  <circle cx="50" cy="100" r="3" fill="#2C3E50"/>
+  <circle cx="70" cy="100" r="3" fill="#2C3E50"/>
+
   <!-- Dogs -->
-  <g fill="#2C3E50">
-    <!-- Small dog (left) -->
-    <ellipse cx="42" cy="88" rx="1.5" ry="1" fill="#2C3E50"/>
-    <circle cx="41" cy="87" r="0.5" fill="#2C3E50"/>
-    
-    <!-- Large dog (right) -->
-    <ellipse cx="78" cy="88" rx="2" ry="1.2" fill="#2C3E50"/>
-    <circle cx="77" cy="87" r="0.6" fill="#2C3E50"/>
-  </g>
-  
+  <path d="M38 108 L40 105 L42 108 Z" fill="#6B4226"/> <!-- Small dog -->
+  <path d="M82 108 L85 105 L88 108 Z" fill="#A0522D"/> <!-- Large dog -->
+
   <!-- Hidden creatures -->
-  <!-- Bear (left) -->
-  <g fill="#2C3E50" opacity="0.6">
-    <ellipse cx="20" cy="75" rx="3" ry="2" fill="#2C3E50"/>
-    <circle cx="18" cy="73" r="1" fill="#2C3E50"/>
+  <!-- Bear on left -->
+  <g fill="#2C3E50" opacity="0.5">
+    <ellipse cx="20" cy="70" rx="2.5" ry="4" fill="#2C3E50"/>
+    <circle cx="20" cy="65" r="1.5" fill="#2C3E50"/>
   </g>
-  
-  <!-- Bigfoot (right) -->
+  <!-- Bigfoot on right -->
   <g fill="#2C3E50" opacity="0.5">
     <ellipse cx="100" cy="70" rx="2.5" ry="4" fill="#2C3E50"/>
     <circle cx="100" cy="65" r="1.5" fill="#2C3E50"/>
   </g>
-  
+
   <!-- Text "UNDER PINES" -->
   <path id="textPath" d="M 20 105 A 40 40 0 0 1 100 105" fill="none" stroke="none"/>
   <text fill="#F8F6F2" font-family="Arial, sans-serif" font-size="8" font-weight="bold" text-anchor="middle">

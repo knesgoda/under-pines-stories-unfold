@@ -23,7 +23,7 @@ This implementation provides a complete authentication system using real email a
 **Supabase Dashboard Settings (REQUIRED):**
 1. **Authentication → Email → Confirm email**: Set to **OFF** during beta
 2. **Authentication → URL Configuration**: 
-   - Site URL: Your Lovable project URL
+   - Site URL: Your project URL
    - Redirect URLs: Add your project URL
 
 ## Part B: Reliable Media Posts (Two-Phase Save)
