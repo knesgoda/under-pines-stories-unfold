@@ -8,6 +8,7 @@ export interface Post {
   created_at: string
   like_count: number
   share_count: number
+  comment_count: number
   is_deleted: boolean
   media: Array<{
     type: 'image' | 'video'
@@ -149,6 +150,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
       created_at,
       like_count,
       share_count,
+      comment_count,
       is_deleted,
       media,
       has_media,

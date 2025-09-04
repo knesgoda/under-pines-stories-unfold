@@ -14,6 +14,7 @@ interface Comment {
   body: string
   author_id: string
   post_id: string
+  parent_id?: string
   created_at: string
   is_deleted: boolean
   author: {
@@ -44,6 +45,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
           body,
           author_id,
           post_id,
+          parent_id,
           created_at,
           is_deleted,
           author:profiles!author_id (
@@ -54,7 +56,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
         `)
         .eq('post_id', postId)
         .eq('is_deleted', false)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true })
         .limit(50)
 
       if (error) throw error
@@ -89,7 +91,8 @@ export function CommentThread({ postId }: CommentThreadProps) {
       .insert({ 
         post_id: postId, 
         body, 
-        author_id: user.id 
+        author_id: user.id,
+        parent_id: parentId || null
       })
       .select('*')
       .single()
@@ -291,28 +294,49 @@ export function CommentThread({ postId }: CommentThreadProps) {
         </div>
       ) : (
         <div className="space-y-0 border border-border rounded-lg bg-card">
-          {comments.map((comment) => (
-            <div key={comment.id}>
-              <CommentCard
-                comment={comment}
-                onReply={(commentId) => setReplyingTo(commentId === replyingTo ? null : commentId)}
-                onEdit={handleEditComment}
-                onDelete={handleDeleteComment}
-                currentUserId={user?.id}
-              />
-              
-              {replyingTo === comment.id && (
-                <div className="ml-11 pb-3 border-b border-border/50">
-                  <CommentForm
-                    onSubmit={handleReply}
-                    placeholder={`Reply to ${comment.author.display_name || comment.author.username}...`}
-                    isReply
-                    onCancel={() => setReplyingTo(null)}
+          {comments
+            .filter(comment => !comment.parent_id) // Only show top-level comments
+            .map((comment) => {
+              const replies = comments.filter(reply => reply.parent_id === comment.id)
+              return (
+                <div key={comment.id}>
+                  <CommentCard
+                    comment={comment}
+                    onReply={(commentId) => setReplyingTo(commentId === replyingTo ? null : commentId)}
+                    onEdit={handleEditComment}
+                    onDelete={handleDeleteComment}
+                    currentUserId={user?.id}
                   />
+                  
+                  {/* Show replies */}
+                  {replies.length > 0 && (
+                    <div className="ml-11 space-y-0 border-l border-border/30">
+                      {replies.map((reply) => (
+                        <CommentCard
+                          key={reply.id}
+                          comment={reply}
+                          onReply={(commentId) => setReplyingTo(commentId === replyingTo ? null : commentId)}
+                          onEdit={handleEditComment}
+                          onDelete={handleDeleteComment}
+                          currentUserId={user?.id}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {replyingTo === comment.id && (
+                    <div className="ml-11 pb-3 border-b border-border/50">
+                      <CommentForm
+                        onSubmit={handleReply}
+                        placeholder={`Reply to ${comment.author.display_name || comment.author.username}...`}
+                        isReply
+                        onCancel={() => setReplyingTo(null)}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              )
+            })}
         </div>
       )}
     </div>
