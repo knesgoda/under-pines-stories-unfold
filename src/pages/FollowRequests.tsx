@@ -31,7 +31,7 @@ export default function FollowRequests() {
     if (user) {
       fetchRequests()
     }
-  }, [user])
+  }, [user, fetchRequests])
 
   async function fetchRequests() {
     if (!user?.id) return;

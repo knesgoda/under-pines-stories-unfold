@@ -96,7 +96,7 @@ export default function HashtagPage() {
     if (tag) {
       loadPosts(true);
     }
-  }, [tag]);
+  }, [tag, loadPosts]);
 
   const handleLoadMore = () => {
     if (!isLoading && hasMore) {

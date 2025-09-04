@@ -78,7 +78,7 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
 
   useEffect(() => {
     loadSuggestedUsers();
-  }, [user?.id]);
+  }, [user?.id, loadSuggestedUsers]);
 
   const handleSendRequest = async (targetUserId: string) => {
     if (!user?.id) return;

@@ -52,7 +52,7 @@ export default function EnhancedPeopleTypeahead() {
   // Load suggestions on mount
   useEffect(() => {
     loadSuggestions()
-  }, [])
+  }, [loadSuggestions])
 
   const loadSuggestions = useCallback(async () => {
     try {

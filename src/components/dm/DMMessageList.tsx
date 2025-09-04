@@ -43,7 +43,7 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
 
   useEffect(() => {
     loadMessages();
-  }, [dmId]);
+  }, [dmId, loadMessages]);
 
   useEffect(() => {
     scrollToBottom();

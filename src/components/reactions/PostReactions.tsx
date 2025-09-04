@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import ReactionBar from './ReactionBar'
 import ReactorsSheet from './ReactorsSheet'
@@ -20,7 +20,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
 
   useEffect(() => {
     loadReactions()
-  }, [postId])
+  }, [postId, loadReactions])
 
   useEffect(() => {
     const subscription = supabase.channel(`public:post_reactions:post_id=eq.${postId}`)
@@ -29,7 +29,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
       })
       .subscribe()
     return () => { subscription.unsubscribe() }
-  }, [postId])
+  }, [postId, loadReactions])
 
   function countsToSummary(counts: Record<string, number> | null): Summary {
     if (!counts) return []
@@ -50,7 +50,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     return res.sort((a, b) => b.count - a.count)
   }
 
-  const loadReactions = async () => {
+  const loadReactions = useCallback(async () => {
     try {
       console.log('Loading reactions for post:', postId)
       
@@ -99,7 +99,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     } catch (error) {
       console.error('Error loading reactions:', error)
     }
-  }
+  }, [postId])
 
   function onPointerDown(){
     setLongPressTriggered(false)

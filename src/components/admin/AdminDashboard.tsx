@@ -38,7 +38,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadMetrics()
     loadReports()
-  }, [days])
+  }, [days, loadMetrics, loadReports])
 
   const loadMetrics = async () => {
     try {

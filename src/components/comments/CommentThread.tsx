@@ -258,7 +258,7 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
 
   useEffect(() => {
     loadComments()
-  }, [postId])
+  }, [postId, loadComments])
 
   useEffect(() => {
     const subscription = supabase.channel(`comments:${postId}`)
@@ -275,7 +275,7 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [postId])
+  }, [postId, loadComments])
 
   return (
     <div className="space-y-6">

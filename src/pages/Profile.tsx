@@ -95,7 +95,7 @@ export default function Profile() {
     if (activeTab === 'posts' && username) {
       loadPosts()
     }
-  }, [activeTab, username])
+  }, [activeTab, username, loadPosts])
 
   if (isLoading) {
     return (

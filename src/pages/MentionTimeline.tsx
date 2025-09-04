@@ -108,7 +108,7 @@ export default function MentionTimeline() {
     if (username) {
       loadPosts(true);
     }
-  }, [username]);
+  }, [username, loadPosts]);
 
   const handleLoadMore = () => {
     if (!isLoading && hasMore) {

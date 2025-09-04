@@ -72,7 +72,7 @@ export default function SearchPage() {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, search]);
 
   const handleSendRequest = async (targetUserId: string) => {
     if (!user) return;

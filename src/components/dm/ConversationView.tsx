@@ -22,7 +22,7 @@ export default function ConversationView() {
       loadMessages()
       markAsRead()
     }
-  }, [conversationId])
+  }, [conversationId, loadMessages, markAsRead])
 
   useEffect(() => {
     scrollToBottom()
