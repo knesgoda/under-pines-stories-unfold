@@ -15,7 +15,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   const [sheet, setSheet] = useState<{emoji:string}|null>(null)
   const [userReaction, setUserReaction] = useState<string | null>(null)
   const [lastReaction, setLastReaction] = useState<string>('👍')
-  const timer = useRef<any>(null)
+  const timer = useRef<NodeJS.Timeout | null>(null)
   const [longPressTriggered, setLongPressTriggered] = useState(false)
 
   useEffect(() => {
