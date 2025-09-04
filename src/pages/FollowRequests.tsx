@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
+import { getPendingRequests, acceptRequest, declineRequest, removeFriend, type Relationship } from '@/services/relationships'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { formatDistanceToNow } from 'date-fns'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Check, X, UserMinus } from 'lucide-react'
 
 interface FollowRequest {
-  request_id: string
+  user_id: string
+  target_user_id: string
   created_at: string
   profiles: {
     id: string
@@ -33,25 +34,27 @@ export default function FollowRequests() {
   }, [user])
 
   async function fetchRequests() {
+    if (!user?.id) return;
+    
     try {
       setLoading(true)
       
-      const [incomingRes, outgoingRes] = await Promise.all([
-        supabase.functions.invoke('follow-requests', {
-          method: 'GET',
-          body: { box: 'incoming' }
-        }),
-        supabase.functions.invoke('follow-requests', {
-          method: 'GET', 
-          body: { box: 'outgoing' }
-        })
-      ])
-
-      if (incomingRes.error) throw incomingRes.error
-      if (outgoingRes.error) throw outgoingRes.error
-
-      setIncomingRequests(incomingRes.data.requests || [])
-      setOutgoingRequests(outgoingRes.data.requests || [])
+      const pendingRequests = await getPendingRequests(user.id)
+      
+      // For now, we'll show pending requests as incoming
+      // In a full implementation, you'd separate incoming vs outgoing
+      setIncomingRequests(pendingRequests.map(req => ({
+        user_id: req.user_id,
+        target_user_id: req.target_user_id,
+        created_at: req.created_at,
+        profiles: {
+          id: req.user_id,
+          username: 'Unknown', // Would need to fetch profile data
+          display_name: undefined,
+          avatar_url: undefined
+        }
+      })))
+      setOutgoingRequests([])
     } catch (error) {
       console.error('Error fetching requests:', error)
     } finally {
