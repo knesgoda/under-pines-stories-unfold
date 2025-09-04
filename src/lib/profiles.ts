@@ -65,7 +65,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
     .from('profiles')
     .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
     .eq('username', username)
-    .single()
+    .maybeSingle()
 
   if (error || !profile) return null
 
@@ -183,7 +183,7 @@ export async function getCurrentUserProfile(): Promise<User | null> {
     .from('profiles')
     .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at, email')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (error) throw error
   return profile as User
@@ -245,7 +245,7 @@ export async function deleteAvatar(): Promise<void> {
     .from('profiles')
     .select('avatar_url')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (profile?.avatar_url) {
     // Extract path from URL
