@@ -1,5 +1,5 @@
 // Adjust the import to your client location
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export async function searchUsersPrefix(q: string) {
   if (!q) return [];
