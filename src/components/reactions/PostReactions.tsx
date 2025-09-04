@@ -52,6 +52,8 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
 
   const loadReactions = async () => {
     try {
+      console.log('Loading reactions for post:', postId)
+      
       // Get reaction counts from the new table
       const { data: countsData } = await supabase
         .from('post_reaction_counts')
@@ -59,21 +61,37 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
         .eq('post_id', postId)
         .maybeSingle()
       
+      console.log('Counts data:', countsData)
       const counts = countsData?.counts || {}
+      console.log('Counts object:', counts)
       setSummary(countsToSummary(counts))
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        const { data: reaction } = await supabase
+        console.log('Loading user reaction for user:', session.user.id)
+        
+        // Try both columns to see which one exists
+        const { data: reaction, error } = await supabase
           .from('post_reactions')
-          .select('reaction')
+          .select('reaction, emoji')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
           .maybeSingle()
-        if (reaction?.reaction) {
-          const emoji = typeToEmoji[reaction.reaction]
-          setUserReaction(emoji)
-          setLastReaction(emoji)
+        
+        console.log('User reaction data:', reaction, 'Error:', error)
+        
+        if (reaction) {
+          // Check which column has data
+          if (reaction.reaction) {
+            const emoji = typeToEmoji[reaction.reaction]
+            console.log('Using reaction column:', reaction.reaction, '-> emoji:', emoji)
+            setUserReaction(emoji)
+            setLastReaction(emoji)
+          } else if (reaction.emoji) {
+            console.log('Using emoji column:', reaction.emoji)
+            setUserReaction(reaction.emoji)
+            setLastReaction(reaction.emoji)
+          }
         } else {
           setUserReaction(null)
         }
@@ -112,22 +130,30 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   }
 
   async function react(emoji: string){
+    console.log('Reacting with emoji:', emoji)
     setOpen(false)
     setLongPressTriggered(false)
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     try {
       const reaction = emojiToType[emoji]
+      console.log('Converting emoji to reaction type:', emoji, '->', reaction)
+      
       const { data, error } = await supabase.functions.invoke('reactions/upsert', {
         body: { post_id: postId, reaction }
       })
+      
+      console.log('Supabase function response:', data, 'Error:', error)
+      
       if (error) throw error
       if (data?.counts) {
+        console.log('Setting summary from function response:', data.counts)
         setSummary(countsToSummary(data.counts))
         setUserReaction(emoji)
         setLastReaction(emoji)
       }
       // Refresh data to be sure
+      console.log('Refreshing reactions...')
       loadReactions()
     } catch (error) {
       console.error('Error reacting:', error)
