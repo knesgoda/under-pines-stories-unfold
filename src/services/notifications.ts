@@ -175,7 +175,7 @@ export function subscribeToNotifications(
   userId: string,
   callback: (notification: Notification) => void
 ): () => void {
-  const channel = supabase
+  const subscription = supabase
     .channel(`notifications:${userId}`)
     .on(
       'postgres_changes',
@@ -192,6 +192,6 @@ export function subscribeToNotifications(
     .subscribe();
 
   return () => {
-    supabase.removeChannel(channel);
+    subscription.unsubscribe();
   };
 }

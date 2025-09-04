@@ -269,7 +269,7 @@ export async function createConversation(userIds: string[]): Promise<string | nu
  * Subscribe to DM messages
  */
 export function subscribeToDM(dmId: string, callback: (message: DMMessage) => void): () => void {
-  const subscription = supabase
+  const channel = supabase
     .channel(`dm:${dmId}`)
     .on(
       'postgres_changes',
@@ -298,7 +298,7 @@ export function subscribeToDM(dmId: string, callback: (message: DMMessage) => vo
     .subscribe();
 
   return () => {
-    subscription.unsubscribe();
+    supabase.removeChannel(channel);
   };
 }
 
@@ -309,10 +309,10 @@ export function subscribeToTyping(
   dmId: string, 
   callback: (userId: string, isTyping: boolean) => void
 ): () => void {
-  const subscription = supabase
+  const channel = supabase
     .channel(`typing:${dmId}`)
     .on('presence', { event: 'sync' }, () => {
-      const state = subscription.presenceState();
+      const state = channel.presenceState();
       // Handle typing state changes
     })
     .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -324,7 +324,7 @@ export function subscribeToTyping(
     .subscribe();
 
   return () => {
-    subscription.unsubscribe();
+    supabase.removeChannel(channel);
   };
 }
 

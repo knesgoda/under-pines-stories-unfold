@@ -45,7 +45,7 @@ export function useRealtimeFeed({
     if (!user?.id) return;
 
     // Subscribe to new posts
-    const postsSubscription = supabase
+    const postsChannel = supabase
       .channel('feed-posts')
       .on(
         'postgres_changes',
@@ -129,7 +129,7 @@ export function useRealtimeFeed({
       .subscribe();
 
     // Subscribe to reaction changes
-    const reactionsSubscription = supabase
+    const reactionsChannel = supabase
       .channel('feed-reactions')
       .on(
         'postgres_changes',
@@ -161,8 +161,8 @@ export function useRealtimeFeed({
       .subscribe();
 
     return () => {
-      postsSubscription.unsubscribe();
-      reactionsSubscription.unsubscribe();
+      supabase.removeChannel(postsChannel);
+      supabase.removeChannel(reactionsChannel);
     };
   }, [user?.id, onNewPost, onPostUpdate, onPostDelete, onReactionUpdate]);
 
