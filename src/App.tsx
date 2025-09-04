@@ -19,6 +19,8 @@ import NotificationsPage from '@/pages/Notifications'
 import Camp from '@/pages/Camp'
 import Messages from '@/pages/Messages'
 import ConversationView from '@/components/dm/ConversationView'
+import HashtagPage from '@/pages/HashtagPage'
+import MentionTimeline from '@/pages/MentionTimeline'
 
 function App() {
   return (
@@ -92,6 +94,22 @@ function App() {
               element={
                 <RouteGuard>
                   <Search />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="/tag/:tag"
+              element={
+                <RouteGuard>
+                  <HashtagPage />
+                </RouteGuard>
+              }
+            />
+            <Route
+              path="/@:username"
+              element={
+                <RouteGuard>
+                  <MentionTimeline />
                 </RouteGuard>
               }
             />
