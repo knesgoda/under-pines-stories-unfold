@@ -15,7 +15,7 @@ export default function MentionTimeline() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<{ id: string; username: string; display_name?: string; avatar_url?: string } | null>(null);
 
   const loadPosts = async (reset = false) => {
     if (!username) return;
