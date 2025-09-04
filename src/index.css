@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  /* Under Pines Brand Colors - All HSL values */
+  /* Under Pines Brand Colors - Dark Mode (Default) */
   --background: 150 15% 8%;          /* Deep forest background */
   --foreground: 35 20% 95%;          /* Light text */
   --card: 35 20% 92%;                /* Light sand cards */
@@ -43,6 +43,37 @@
   /* Gradient tokens */
   --gradient-sunset: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--primary)));
   --gradient-panel: linear-gradient(180deg, hsl(var(--card)), hsl(var(--card) / 0.9));
+}
+
+/* Light Mode */
+.light {
+  --background: 35 20% 95%;          /* Light sand background */
+  --foreground: 150 25% 15%;         /* Dark text */
+  --card: 35 20% 98%;                /* Very light cards */
+  --card-foreground: 150 25% 15%;    /* Dark text on cards */
+  --popover: 35 20% 98%;             /* Same as card */
+  --popover-foreground: 150 25% 15%; /* Dark text on popover */
+  --primary: 25 85% 55%;             /* Sunset orange (same) */
+  --primary-foreground: 35 20% 95%;  /* Light text on primary */
+  --secondary: 150 25% 85%;          /* Light pine green */
+  --secondary-foreground: 150 25% 15%; /* Dark text on secondary */
+  --muted: 150 10% 90%;              /* Light muted green-gray */
+  --muted-foreground: 35 15% 45%;    /* Darker muted text */
+  --accent: 45 95% 75%;              /* Firelight yellow (same) */
+  --accent-foreground: 150 25% 15%;  /* Dark text on accent */
+  --destructive: 0 75% 60%;          /* Red for errors (same) */
+  --destructive-foreground: 35 20% 95%;
+  --border: 150 10% 85%;             /* Light border color */
+  --input: 35 20% 98%;               /* Light input background */
+  --ring: 25 85% 55%;                /* Focus ring (same) */
+  /* Legacy color tokens for existing components */
+  --text-light: 150 25% 15%;         /* Dark text in light mode */
+  --bg-pine: 150 25% 85%;            /* Light pine green */
+  --background-panel: 35 20% 92%;     /* Light panel backgrounds */
+  --background-sand: 35 20% 98%;      /* Very light sand surfaces */
+  --ink-muted: 150 10% 85%;          /* Light muted border color */
+  --accent-warm: 25 85% 55%;         /* Warm accent (sunset orange) */
+  --bg-dark: 150 25% 15%;            /* Dark text for contrast */
 }
 
 * {

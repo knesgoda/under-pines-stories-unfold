@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import { Toaster } from '@/components/ui/toaster'
 import { RouteGuard } from '@/components/auth/RouteGuard'
 import Home from '@/pages/Home'
@@ -21,9 +22,10 @@ import ConversationView from '@/components/dm/ConversationView'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-background">
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-background">
           <Routes>
             {/* Public Routes */}
             <Route 
@@ -148,9 +150,10 @@ function App() {
             />
           </Routes>
           <Toaster />
-        </div>
-      </Router>
-    </AuthProvider>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

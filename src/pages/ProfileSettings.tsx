@@ -10,8 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Palette } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { toast } from '@/hooks/use-toast'
 import type { ProfileUpdateData } from '@/lib/profiles'
 
@@ -227,6 +229,26 @@ export default function ProfileSettings() {
                 <p className="text-sm text-card-foreground/60 mt-2">
                   Add places in chronological order - the first one will be shown as "current"
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-ink-muted shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-card-foreground flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Appearance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-card-foreground">Theme</Label>
+                    <p className="text-sm text-card-foreground/60">
+                      Choose your preferred theme
+                    </p>
+                  </div>
+                  <ThemeToggle />
+                </div>
               </CardContent>
             </Card>
 
