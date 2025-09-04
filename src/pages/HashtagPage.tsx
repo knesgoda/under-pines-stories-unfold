@@ -1,217 +1,197 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Hash, ArrowLeft } from 'lucide-react';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { MobileNav } from '@/components/layout/MobileNav';
+import { PostCard } from '@/components/feed/PostCard';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
-
-interface Post {
-  id: string;
-  content: string;
-  created_at: string;
-  author: {
-    id: string;
-    username: string;
-    display_name?: string;
-    avatar_url?: string;
-  };
-}
-
-interface HashtagInfo {
-  tag: string;
-  uses_count: number;
-  created_at: string;
-}
+import { Hash, ArrowLeft } from 'lucide-react';
+import type { Post } from '@/lib/posts';
 
 export default function HashtagPage() {
   const { tag } = useParams<{ tag: string }>();
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [hashtagInfo, setHashtagInfo] = useState<HashtagInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
 
-  useEffect(() => {
+  const loadPosts = async (reset = false) => {
     if (!tag) return;
 
-    const loadHashtagData = async () => {
-      setIsLoading(true);
-      setError(null);
+    const currentOffset = reset ? 0 : offset;
+    setIsLoading(true);
 
-      try {
-        // Load hashtag info
-        const { data: hashtagData, error: hashtagError } = await supabase
-          .from('hashtags')
-          .select('tag, uses_count, created_at')
-          .eq('tag', tag.toLowerCase())
-          .single();
-
-        if (hashtagError) {
-          setError('Hashtag not found');
-          return;
-        }
-
-        setHashtagInfo(hashtagData);
-
-        // Load posts with this hashtag
-        const { data: postsData, error: postsError } = await supabase
-          .from('posts')
-          .select(`
-            id,
-            content,
-            created_at,
-            author:profiles!posts_author_id_fkey(
-              id,
-              username,
-              display_name,
-              avatar_url
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          body,
+          created_at,
+          author_id,
+          media,
+          profiles!posts_author_id_fkey(
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('visibility', 'public')
+        .in('id', 
+          supabase
+            .from('post_hashtags')
+            .select('post_id')
+            .in('hashtag_id', 
+              supabase
+                .from('hashtags')
+                .select('id')
+                .eq('tag', tag)
             )
-          `)
-          .eq('post_hashtags.hashtags.tag', tag.toLowerCase())
-          .order('created_at', { ascending: false })
-          .limit(50);
+        )
+        .order('created_at', { ascending: false })
+        .range(currentOffset, currentOffset + 19);
 
-        if (postsError) {
-          console.error('Error loading posts:', postsError);
-          setError('Failed to load posts');
-          return;
-        }
-
-        setPosts(postsData || []);
-      } catch (err) {
-        console.error('Error loading hashtag data:', err);
-        setError('An error occurred');
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        console.error('Error loading hashtag posts:', error);
+        return;
       }
-    };
 
-    loadHashtagData();
+      const formattedPosts: Post[] = (data || []).map(post => ({
+        id: post.id,
+        author_id: post.author_id,
+        body: post.body,
+        created_at: post.created_at,
+        like_count: 0, // Will be loaded separately
+        share_count: 0,
+        comment_count: 0, // Will be loaded separately
+        is_deleted: false,
+        media: post.media || [],
+        has_media: (post.media && post.media.length > 0) || false,
+        profiles: {
+          username: post.profiles.username,
+          display_name: post.profiles.display_name,
+          avatar_url: post.profiles.avatar_url
+        },
+        liked_by_user: false // Will be determined by PostCard
+      }));
+
+      if (reset) {
+        setPosts(formattedPosts);
+        setOffset(20);
+      } else {
+        setPosts(prev => [...prev, ...formattedPosts]);
+        setOffset(prev => prev + 20);
+      }
+
+      setHasMore(formattedPosts.length === 20);
+    } catch (error) {
+      console.error('Error loading hashtag posts:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tag) {
+      loadPosts(true);
+    }
   }, [tag]);
+
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      loadPosts(false);
+    }
+  };
 
   if (!tag) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-emerald-50 mb-4">Invalid hashtag</h1>
-          <p className="text-emerald-300">The hashtag URL is invalid.</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center py-12">
-              <Hash className="h-16 w-16 text-emerald-400/50 mx-auto mb-4" />
+        <Sidebar />
+        <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+          <div className="max-w-4xl mx-auto px-4 py-6">
+            <div className="text-center">
               <h1 className="text-2xl font-bold text-emerald-50 mb-4">Hashtag not found</h1>
-              <p className="text-emerald-300 mb-6">
-                The hashtag <span className="font-mono text-emerald-200">#{tag}</span> doesn't exist yet.
-              </p>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-800 text-emerald-50 rounded-lg hover:bg-emerald-700 transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Feed
-              </Link>
+              <p className="text-emerald-300">The hashtag you're looking for doesn't exist.</p>
             </div>
           </div>
-        </div>
+        </main>
+        <MobileNav />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
+      <Sidebar />
+      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+        <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Header */}
           <div className="mb-6">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-emerald-300 hover:text-emerald-100 transition-colors mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Feed
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-emerald-800 flex items-center justify-center">
-                <Hash className="h-8 w-8 text-emerald-300" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-emerald-50">
-                  #{hashtagInfo?.tag || tag}
-                </h1>
-                {hashtagInfo && (
-                  <p className="text-emerald-300">
-                    {hashtagInfo.uses_count} {hashtagInfo.uses_count === 1 ? 'use' : 'uses'}
+            <div className="flex items-center gap-4 mb-4">
+              <Link
+                to="/search"
+                className="p-2 rounded-full hover:bg-emerald-900/50 text-emerald-100/90 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-emerald-800/50 flex items-center justify-center">
+                  <Hash className="h-5 w-5 text-emerald-300" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-emerald-50">
+                    #{tag}
+                  </h1>
+                  <p className="text-emerald-300/70">
+                    {posts.length} {posts.length === 1 ? 'post' : 'posts'}
                   </p>
-                )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Posts */}
           <div className="space-y-4">
-            {isLoading ? (
-              <div className="text-center py-12">
+            {isLoading && posts.length === 0 ? (
+              <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400 mx-auto mb-4"></div>
                 <p className="text-emerald-300">Loading posts...</p>
               </div>
             ) : posts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-emerald-50 mb-2">No posts yet</h3>
-                <p className="text-emerald-300">
-                  Be the first to post with <span className="font-mono text-emerald-200">#{tag}</span>
+              <div className="text-center py-8">
+                <Hash className="h-16 w-16 text-emerald-400/50 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-emerald-50 mb-2">
+                  No posts found
+                </h2>
+                <p className="text-emerald-300/70">
+                  No posts have been tagged with #{tag} yet.
                 </p>
               </div>
             ) : (
-              posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="p-6 bg-emerald-950/50 border border-emerald-800/30 rounded-2xl"
-                >
-                  <div className="flex items-start gap-4">
-                    <Link to={`/@${post.author.username}`}>
-                      <img
-                        src={post.author.avatar_url || '/placeholder.svg'}
-                        alt={post.author.username}
-                        className="h-12 w-12 rounded-full object-cover hover:opacity-80 transition-opacity"
-                      />
-                    </Link>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Link
-                          to={`/@${post.author.username}`}
-                          className="text-emerald-50 font-medium hover:text-emerald-300 transition-colors"
-                        >
-                          {post.author.display_name || post.author.username}
-                        </Link>
-                        <span className="text-emerald-400/60">·</span>
-                        <span className="text-sm text-emerald-400/70">
-                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                      
-                      <Link to={`/post/${post.id}`}>
-                        <p className="text-emerald-200 leading-relaxed hover:text-emerald-100 transition-colors">
-                          {post.content}
-                        </p>
-                      </Link>
-                    </div>
+              <>
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+
+                {/* Load More */}
+                {hasMore && (
+                  <div className="text-center py-4">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={isLoading}
+                      className="px-6 py-2 bg-emerald-800/50 hover:bg-emerald-800/70 text-emerald-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? 'Loading...' : 'Load more posts'}
+                    </button>
                   </div>
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
         </div>
-      </div>
+      </main>
+      <MobileNav />
     </div>
   );
 }
