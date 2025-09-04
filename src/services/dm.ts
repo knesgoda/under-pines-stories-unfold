@@ -227,7 +227,7 @@ export async function createConversation(userIds: string[]): Promise<string | nu
   if (existing && existing.length > 0) {
     // Check if all users are in the same conversation
     for (const conv of existing) {
-      const memberIds = (conv.dm_members as any[]).map(m => m.user_id);
+      const memberIds = (conv.dm_members as Array<{ user_id: string }>).map(m => m.user_id);
       if (userIds.every(id => memberIds.includes(id))) {
         return conv.id;
       }

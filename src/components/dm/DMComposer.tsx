@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { sendMessage, sendTyping } from '@/services/dm';
+import { sendMessage, sendTyping, type DMMessage } from '@/services/dm';
 
 interface DMComposerProps {
   dmId: string;
-  onMessageSent?: (message: any) => void;
+  onMessageSent?: (message: DMMessage) => void;
   className?: string;
 }
 
