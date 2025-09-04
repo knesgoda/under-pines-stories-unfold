@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { formatDistanceToNow } from 'date-fns'
 import { Loader2, Check, X, UserMinus } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { MobileNav } from '@/components/layout/MobileNav'
 
 interface FollowRequest {
   user_id: string
@@ -108,15 +110,24 @@ export default function FollowRequests() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-background">
+        <Sidebar />
+        <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+          <div className="flex items-center justify-center h-screen">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </main>
+        <MobileNav />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <Sidebar />
+      
+      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+        <div className="max-w-2xl mx-auto px-4 py-6">
         <Card>
           <CardHeader>
             <CardTitle>Follow Requests</CardTitle>
@@ -229,7 +240,10 @@ export default function FollowRequests() {
             </Tabs>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </main>
+
+      <MobileNav />
     </div>
   )
 }
