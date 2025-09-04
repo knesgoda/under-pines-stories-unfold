@@ -54,15 +54,23 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     try {
       console.log('Loading reactions for post:', postId)
       
-      // Get reaction counts from the new table
-      const { data: countsData } = await supabase
-        .from('post_reaction_counts')
-        .select('counts')
+      // Get reaction counts directly from post_reactions table
+      const { data: reactionsData, error: reactionsError } = await supabase
+        .from('post_reactions')
+        .select('emoji')
         .eq('post_id', postId)
-        .maybeSingle()
       
-      console.log('Counts data:', countsData)
-      const counts = countsData?.counts || {}
+      console.log('Reactions data:', reactionsData, 'Error:', reactionsError)
+      
+      // Count reactions by emoji
+      const counts: Record<string, number> = {}
+      if (reactionsData && !reactionsError) {
+        for (const reaction of reactionsData) {
+          if (reaction && reaction.emoji) {
+            counts[reaction.emoji] = (counts[reaction.emoji] || 0) + 1
+          }
+        }
+      }
       console.log('Counts object:', counts)
       setSummary(countsToSummary(counts))
 
@@ -70,49 +78,20 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
       if (session) {
         console.log('Loading user reaction for user:', session.user.id)
         
-        // Try to get the user's reaction - check which column exists
-        let reaction = null
-        let error = null
-        
-        // First try the new schema with 'reaction' column
-        const { data: reactionData, error: reactionError } = await supabase
+        // Get the user's reaction using the emoji column
+        const { data: reaction, error } = await supabase
           .from('post_reactions')
-          .select('reaction')
+          .select('emoji')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
           .maybeSingle()
         
-        if (reactionError && (reactionError.code === 'PGRST204' || reactionError.code === '42703')) {
-          // Column doesn't exist, try the old schema with 'emoji' column
-          console.log('Reaction column not found, trying emoji column...')
-          const { data: emojiData, error: emojiError } = await supabase
-            .from('post_reactions')
-            .select('emoji')
-            .eq('post_id', postId)
-            .eq('user_id', session.user.id)
-            .maybeSingle()
-          
-          reaction = emojiData
-          error = emojiError
-        } else {
-          reaction = reactionData
-          error = reactionError
-        }
-        
         console.log('User reaction data:', reaction, 'Error:', error)
         
-        if (reaction) {
-          // Check which column has data
-          if (reaction.reaction) {
-            const emoji = typeToEmoji[reaction.reaction]
-            console.log('Using reaction column:', reaction.reaction, '-> emoji:', emoji)
-            setUserReaction(emoji)
-            setLastReaction(emoji)
-          } else if (reaction.emoji) {
-            console.log('Using emoji column:', reaction.emoji)
-            setUserReaction(reaction.emoji)
-            setLastReaction(reaction.emoji)
-          }
+        if (reaction && reaction.emoji) {
+          console.log('Using emoji column:', reaction.emoji)
+          setUserReaction(reaction.emoji)
+          setLastReaction(reaction.emoji)
         } else {
           setUserReaction(null)
         }
