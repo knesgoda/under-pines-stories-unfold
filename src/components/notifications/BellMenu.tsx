@@ -42,7 +42,7 @@ export function BellMenu({ className = '' }: BellMenuProps) {
   React.useEffect(() => {
     if (!user?.id) return;
 
-    const channel = subscribeToNotifications(user.id, (notification) => {
+    const cleanup = subscribeToNotifications(user.id, (notification) => {
       // Add new notification to the list
       setNotifications(prev => [notification as NotificationWithActor, ...prev]);
       
@@ -52,9 +52,7 @@ export function BellMenu({ className = '' }: BellMenuProps) {
       }
     });
 
-    return () => {
-      channel.unsubscribe();
-    };
+    return cleanup;
   }, [user?.id]);
 
   const handleMarkAsRead = async (notificationId: string) => {
