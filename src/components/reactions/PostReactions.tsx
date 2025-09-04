@@ -238,10 +238,6 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
         >
           {userReaction || lastReaction}
         </button>
-        {/* Debug info */}
-        <div style={{fontSize: '10px', color: 'red'}}>
-          Debug: userReaction={userReaction}, lastReaction={lastReaction}
-        </div>
 
         {open && (
           <div

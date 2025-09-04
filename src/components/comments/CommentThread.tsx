@@ -36,11 +36,26 @@ export function CommentThread({ postId }: CommentThreadProps) {
 
   const loadComments = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_post_comments', {
-        p_viewer: user?.id || null,
-        p_post: postId,
-        p_limit: 50
-      })
+      // Use direct database query instead of RPC function to avoid schema mismatches
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          id,
+          body,
+          author_id,
+          post_id,
+          created_at,
+          is_deleted,
+          author:profiles!author_id (
+            username,
+            display_name,
+            avatar_url
+          )
+        `)
+        .eq('post_id', postId)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(50)
 
       if (error) throw error
       setComments(Array.isArray(data) ? (data as unknown as Comment[]) : [])
