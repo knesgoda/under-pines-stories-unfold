@@ -123,7 +123,7 @@ export function FeedView() {
                 <div className="text-center py-12 text-muted-foreground">
                   <div className="mb-6">
                     <img 
-                      src="/placeholder.svg" 
+                      src="/logo.svg" 
                       alt="Under Pines" 
                       className="w-16 h-16 mx-auto mb-4 rounded-full opacity-60"
                     />

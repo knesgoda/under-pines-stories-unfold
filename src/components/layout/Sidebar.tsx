@@ -36,7 +36,7 @@ export function Sidebar() {
         <div className="p-4 border-b border-border">
           <Link to="/" className="flex items-center gap-3 group">
             <img
-              src="/placeholder.svg"
+              src="/logo.svg"
               alt="Under Pines"
               className="w-10 h-10 rounded-full transition-transform group-hover:scale-105"
             />
