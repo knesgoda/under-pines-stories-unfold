@@ -44,7 +44,7 @@ export async function searchTagsPrefix(q: string): Promise<SearchResult[]> {
 
 export interface PostSearchResult {
   id: string;
-  content: string;
+  body: string;
   created_at: string;
   author: {
     id: string;
@@ -61,7 +61,7 @@ export async function searchPostsFTS(q: string, limit = 20): Promise<PostSearchR
     .from("posts")
     .select(`
       id,
-      content,
+      body,
       created_at,
       author:profiles!posts_author_id_fkey(
         id,
@@ -70,7 +70,7 @@ export async function searchPostsFTS(q: string, limit = 20): Promise<PostSearchR
         avatar_url
       )
     `)
-    .textSearch('content', q, {
+    .textSearch('body', q, {
       type: 'websearch',
       config: 'english'
     })
