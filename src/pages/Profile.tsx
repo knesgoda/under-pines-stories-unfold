@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { formatDistanceToNow } from 'date-fns'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { AvatarUpload } from '@/components/profile/AvatarUpload'
@@ -13,8 +12,9 @@ import { Settings, MapPin, Heart, Briefcase, Calendar, Globe, User, FileText } f
 import { useAuth } from '@/contexts/AuthContext'
 import { getProfileByUsername } from '@/lib/profiles'
 import { getUserPostsByUsername, getUserPostCountByUsername, type PostWithStats } from '@/services/posts'
-import { renderRichText } from '@/lib/renderRichText'
 import type { ProfileWithRelation } from '@/lib/profiles'
+import { PostCard } from '@/components/feed/PostCard'
+import type { Post } from '@/lib/posts'
 
 export default function Profile() {
   const { username } = useParams<{ username: string }>()
@@ -26,6 +26,26 @@ export default function Profile() {
   const [posts, setPosts] = useState<PostWithStats[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
   const [postCount, setPostCount] = useState(0)
+
+  // Convert PostWithStats to Post interface for PostCard compatibility
+  const convertToPostCard = (postWithStats: PostWithStats): Post => ({
+    id: postWithStats.id,
+    author_id: postWithStats.author_id,
+    body: postWithStats.body,
+    created_at: postWithStats.created_at,
+    like_count: postWithStats.reaction_counts.reduce((sum, rc) => sum + rc.count, 0),
+    share_count: 0, // Not tracked in current system
+    comment_count: postWithStats.comment_count,
+    is_deleted: false,
+    media: postWithStats.media || [],
+    has_media: (postWithStats.media && postWithStats.media.length > 0) || false,
+    profiles: {
+      username: postWithStats.author.username,
+      display_name: postWithStats.author.display_name,
+      avatar_url: postWithStats.author.avatar_url
+    },
+    liked_by_user: false // Will be determined by PostCard component
+  })
 
   const loadPosts = async () => {
     if (!username) return
@@ -350,81 +370,7 @@ export default function Profile() {
                 </div>
               ) : (
                 posts.map((post) => (
-                  <Card key={post.id} className="bg-emerald-950/50 border border-emerald-800/30">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <Link to={`/@${post.author.username}`}>
-                          <img
-                            src={post.author.avatar_url || '/placeholder.svg'}
-                            alt={post.author.username}
-                            className="h-12 w-12 rounded-full object-cover hover:opacity-80 transition-opacity"
-                          />
-                        </Link>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Link
-                              to={`/@${post.author.username}`}
-                              className="text-emerald-50 font-medium hover:text-emerald-300 transition-colors"
-                            >
-                              {post.author.display_name || post.author.username}
-                            </Link>
-                            <span className="text-emerald-400/60">·</span>
-                            <span className="text-sm text-emerald-400/70">
-                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                          
-                          <Link to={`/post/${post.id}`}>
-                            <div className="text-emerald-200 leading-relaxed hover:text-emerald-100 transition-colors">
-                              {renderRichText(post.body)}
-                            </div>
-                          </Link>
-
-                          {/* Media */}
-                          {post.media && post.media.length > 0 && (
-                            <div className="mt-3">
-                              {post.media.map((media, index) => (
-                                <div key={index} className="relative overflow-hidden rounded-2xl border border-emerald-800/40 bg-black/30">
-                                  {media.type === 'image' ? (
-                                    <img 
-                                      className="max-h-[540px] w-full object-cover" 
-                                      src={media.url} 
-                                      alt={media.alt_text || ''} 
-                                    />
-                                  ) : (
-                                    <div className="aspect-video bg-emerald-900/50 flex items-center justify-center">
-                                      <span className="text-emerald-300">🎥 Video</span>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Stats */}
-                          <div className="flex items-center gap-4 mt-4 text-sm text-emerald-400/70">
-                            {post.reaction_counts.length > 0 && (
-                              <div className="flex items-center gap-1">
-                                <span>Reactions:</span>
-                                {post.reaction_counts.map((rc) => (
-                                  <span key={rc.emoji} className="flex items-center gap-1">
-                                    <span>{rc.emoji}</span>
-                                    <span>{rc.count}</span>
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            {post.comment_count > 0 && (
-                              <div className="flex items-center gap-1">
-                                <span>💬 {post.comment_count} comments</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <PostCard key={post.id} post={convertToPostCard(post)} />
                 ))
               )}
             </div>
