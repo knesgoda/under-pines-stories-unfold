@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getPendingRequests, acceptRequest, declineRequest, removeFriend, type Relationship } from '@/services/relationships'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { formatDistanceToNow } from 'date-fns'
 import { Loader2, Check, X, UserMinus } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
 
 interface FollowRequest {
   user_id: string
@@ -27,13 +28,7 @@ export default function FollowRequests() {
   const [loading, setLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    if (user) {
-      fetchRequests()
-    }
-  }, [user, fetchRequests])
-
-  async function fetchRequests() {
+  const fetchRequests = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -41,42 +36,64 @@ export default function FollowRequests() {
       
       const pendingRequests = await getPendingRequests(user.id)
       
-      // For now, we'll show pending requests as incoming
-      // In a full implementation, you'd separate incoming vs outgoing
-      setIncomingRequests(pendingRequests.map(req => ({
-        user_id: req.user_id,
-        target_user_id: req.target_user_id,
-        created_at: req.created_at,
-        profiles: {
-          id: req.user_id,
-          username: 'Unknown', // Would need to fetch profile data
-          display_name: undefined,
-          avatar_url: undefined
-        }
-      })))
+      // Fetch profile data for each requester
+      const requestsWithProfiles = await Promise.all(
+        pendingRequests.map(async (req) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, username, display_name, avatar_url')
+            .eq('id', req.user_id)
+            .single()
+          
+          return {
+            user_id: req.user_id,
+            target_user_id: req.target_user_id,
+            created_at: req.created_at,
+            profiles: profile || {
+              id: req.user_id,
+              username: 'Unknown',
+              display_name: undefined,
+              avatar_url: undefined
+            }
+          }
+        })
+      )
+      
+      setIncomingRequests(requestsWithProfiles)
       setOutgoingRequests([])
     } catch (error) {
       console.error('Error fetching requests:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user) {
+      fetchRequests()
+    }
+  }, [user, fetchRequests])
 
   async function handleRequest(requestId: string, action: 'accept' | 'decline' | 'cancel') {
+    if (!user?.id) return;
+    
     try {
       setProcessingIds(prev => new Set(prev).add(requestId))
       
-      const { error } = await supabase.functions.invoke(`follow-requests/${action}`, {
-        body: { requestId }
-      })
+      let success = false;
+      if (action === 'accept') {
+        success = await acceptRequest(user.id, requestId)
+      } else if (action === 'decline') {
+        success = await declineRequest(user.id, requestId)
+      }
       
-      if (error) throw error
-      
-      // Remove from appropriate list
-      if (action === 'accept' || action === 'decline') {
-        setIncomingRequests(prev => prev.filter(req => req.request_id !== requestId))
-      } else {
-        setOutgoingRequests(prev => prev.filter(req => req.request_id !== requestId))
+      if (success) {
+        // Remove from appropriate list
+        if (action === 'accept' || action === 'decline') {
+          setIncomingRequests(prev => prev.filter(req => req.user_id !== requestId))
+        } else {
+          setOutgoingRequests(prev => prev.filter(req => req.user_id !== requestId))
+        }
       }
     } catch (error) {
       console.error(`Error ${action}ing request:`, error)
@@ -123,7 +140,7 @@ export default function FollowRequests() {
                 ) : (
                   incomingRequests.map((request) => (
                     <div
-                      key={request.request_id}
+                      key={request.user_id}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
@@ -148,16 +165,16 @@ export default function FollowRequests() {
                       <div className="flex space-x-2">
                         <Button
                           size="sm"
-                          onClick={() => handleRequest(request.request_id, 'accept')}
-                          disabled={processingIds.has(request.request_id)}
+                          onClick={() => handleRequest(request.user_id, 'accept')}
+                          disabled={processingIds.has(request.user_id)}
                         >
                           Accept
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleRequest(request.request_id, 'decline')}
-                          disabled={processingIds.has(request.request_id)}
+                          onClick={() => handleRequest(request.user_id, 'decline')}
+                          disabled={processingIds.has(request.user_id)}
                         >
                           Decline
                         </Button>
@@ -175,7 +192,7 @@ export default function FollowRequests() {
                 ) : (
                   outgoingRequests.map((request) => (
                     <div
-                      key={request.request_id}
+                      key={request.user_id}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
                       <div className="flex items-center space-x-3">
@@ -200,8 +217,8 @@ export default function FollowRequests() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleRequest(request.request_id, 'cancel')}
-                        disabled={processingIds.has(request.request_id)}
+                        onClick={() => handleRequest(request.user_id, 'cancel')}
+                        disabled={processingIds.has(request.user_id)}
                       >
                         Cancel
                       </Button>
