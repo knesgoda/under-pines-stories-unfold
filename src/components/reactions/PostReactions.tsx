@@ -213,9 +213,12 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
           onContextMenu={(e)=>{ e.preventDefault(); setOpen(o=>!o) }}
           onClick={(e) => e.stopPropagation()}
           aria-label="React to post"
-          className="h-8 px-2 rounded bg-card-foreground/5 hover:bg-card-foreground/10 text-sm text-muted-foreground hover:text-card-foreground transition-colors select-none"
+          className="h-10 px-3 rounded-full bg-emerald-900/20 hover:bg-emerald-900/30 text-emerald-100/90 hover:text-emerald-50 transition-colors select-none flex items-center gap-2"
         >
-          {userReaction || lastReaction}
+          <span className="text-[22px] leading-none sm:text-[26px]">
+            {userReaction || lastReaction || '🙂'}
+          </span>
+          <span className="hidden sm:inline text-sm">React</span>
         </button>
 
         {open && (
