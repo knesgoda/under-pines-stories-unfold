@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getUnreadNotificationCount } from '@/lib/notifications'
 
 interface Props { isActive?: boolean }
 
@@ -17,21 +18,23 @@ export default function NotificationsBell({ isActive }: Props) {
       const uid = session?.user?.id
       if (!uid) return
       
-      // Get unread count directly from Supabase
-      const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', uid)
-        .is('read_at', null)
+      // Get unread count using the service
+      const unreadCount = await getUnreadNotificationCount()
+      setCount(unreadCount)
       
-      if (!error) {
-        setCount(count || 0)
-      }
+      // Subscribe to real-time updates
       sub = supabase
         .channel(`notifs:${uid}`)
         .on('postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
           () => setCount(c => c + 1)
+        )
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
+          () => {
+            // Refresh count when notifications are marked as read
+            getUnreadNotificationCount().then(setCount)
+          }
         )
         .subscribe()
     }

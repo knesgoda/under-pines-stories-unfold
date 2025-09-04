@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { getNotifications, markNotificationsAsRead, type Notification } from '@/lib/notifications'
 
 export type Notif = {
   id: string
@@ -26,70 +27,37 @@ export default function NotificationsPage() {
     if (loading || done) return
     setLoading(true)
     
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.user) {
-      setLoading(false)
-      return
-    }
+    try {
+      const { notifications, nextCursor } = await getNotifications(30, cursor)
+      
+      // Convert to the expected format
+      const newItems: Notif[] = notifications.map(n => ({
+        id: n.id,
+        type: n.type as any,
+        postId: n.post_id,
+        commentId: n.comment_id,
+        createdAt: n.created_at,
+        readAt: n.read_at,
+        meta: n.meta,
+        actor: n.actor,
+      }))
 
-    const before = cursor ? new Date(cursor).toISOString() : new Date().toISOString()
-    const limit = 30
-
-    // Get notifications directly from Supabase
-    const { data: rows, error } = await supabase
-      .from('notifications')
-      .select('id, type, post_id, comment_id, actor_id, created_at, read_at, meta')
-      .eq('user_id', session.user.id)
-      .lt('created_at', before)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-
-    if (error) {
+      setItems(prev => [...prev, ...newItems])
+      setCursor(nextCursor)
+      setDone(!nextCursor)
+    } catch (error) {
       console.error('Error loading notifications:', error)
+    } finally {
       setLoading(false)
-      return
     }
-
-    // Get actor profiles
-    const actorIds = Array.from(new Set(rows?.map(r => r.actor_id) ?? []))
-    let actors: Record<string, any> = {}
-    if (actorIds.length) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url')
-        .in('id', actorIds)
-      actors = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
-    }
-
-    const newItems = (rows ?? []).map(r => ({
-      id: r.id,
-      type: r.type,
-      postId: r.post_id,
-      commentId: r.comment_id,
-      createdAt: r.created_at,
-      readAt: r.read_at,
-      meta: r.meta ?? {},
-      actor: actors[r.actor_id] ?? { id: r.actor_id, username: 'unknown' },
-    }))
-
-    setItems(prev => [...prev, ...newItems])
-    setCursor(newItems.length ? newItems[newItems.length - 1].createdAt : null)
-    setDone(newItems.length < limit)
-    setLoading(false)
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadMore() }, [])
 
   async function markAllRead() {
-    // Mark all notifications as read using direct Supabase update
-    const last = items[items.length - 1]?.createdAt || new Date().toISOString()
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read_at: new Date().toISOString() })
-      .lt('created_at', last)
-    
-    if (!error) {
+    const success = await markNotificationsAsRead()
+    if (success) {
       setItems(prev => prev.map(n => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })))
     }
   }
