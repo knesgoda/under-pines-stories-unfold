@@ -13,7 +13,7 @@ export default function NotificationsBell({ isActive }: Props) {
   const [count, setCount] = useState<number>(0)
 
   useEffect(() => {
-    let subscription: any
+    let subscription: unknown
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       const uid = session?.user?.id

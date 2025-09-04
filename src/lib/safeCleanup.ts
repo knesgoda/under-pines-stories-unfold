@@ -2,7 +2,7 @@
  * Safe cleanup helper for various subscription types
  * Handles different return types from Supabase and other libraries
  */
-export function safeCleanup(handle: any): void {
+export function safeCleanup(handle: unknown): void {
   try {
     if (!handle) return;
     
