@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import ProfileCTA from '@/components/profile/ProfileCTA'
 import { supabase } from '@/integrations/supabase/client'
-import { highlight } from '@/lib/highlight'
+import { HighlightedText } from '@/components/ui/highlight'
 import type { Relation } from '@/lib/profiles'
 
 type Person = {
@@ -273,11 +273,10 @@ export default function EnhancedPeopleTypeahead() {
                       </Avatar>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <div 
+                          <HighlightedText 
+                            text={p.display_name || p.username}
+                            query={q}
                             className="text-sm font-semibold truncate"
-                            dangerouslySetInnerHTML={{
-                              __html: highlight(p.display_name || p.username, q)
-                            }}
                           />
                           {p.isPrivate && (
                             <Badge variant="secondary" className="text-xs bg-background-sand/20 text-text-light">
@@ -285,12 +284,9 @@ export default function EnhancedPeopleTypeahead() {
                             </Badge>
                           )}
                         </div>
-                        <div 
-                          className="text-xs text-text-light/70 truncate"
-                          dangerouslySetInnerHTML={{
-                            __html: `@${highlight(p.username, q)}`
-                          }}
-                        />
+                        <div className="text-xs text-text-light/70 truncate">
+                          @<HighlightedText text={p.username} query={q} />
+                        </div>
                         {p.bio && (
                           <div className="text-xs text-text-light/60 truncate mt-1">
                             {p.bio}
