@@ -122,11 +122,11 @@ export function FeedView() {
               {posts.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <div className="mb-6">
-                    <img 
-                      src="/logo.svg" 
-                      alt="Under Pines" 
-                      className="w-16 h-16 mx-auto mb-4 rounded-full opacity-60"
-                    />
+                                      <img
+                    src="/logo.jpeg"
+                    alt="Under Pines"
+                    className="w-16 h-16 mx-auto mb-4 rounded-full opacity-60"
+                  />
                     <p className="text-lg mb-2 text-foreground">Welcome to Under Pines</p>
                     <p>Share something to get the fire going 🔥</p>
                   </div>
