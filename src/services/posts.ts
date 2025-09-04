@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface Post {
   id: string;
-  content: string;
+  body: string;
   created_at: string;
   author_id: string;
   media?: Array<{
@@ -39,7 +39,7 @@ export async function getUserPosts(userId: string, limit = 20, offset = 0): Prom
     .from('posts')
     .select(`
       id,
-      content,
+      body,
       created_at,
       author_id,
       media,
@@ -67,7 +67,7 @@ export async function getUserPosts(userId: string, limit = 20, offset = 0): Prom
   const postIds = data.map(post => post.id);
   const { data: reactionCounts } = await supabase
     .from('post_reaction_counts')
-    .select('post_id, emoji, count')
+    .select('post_id, counts')
     .in('post_id', postIds);
 
   // Get comment counts for all posts
@@ -80,13 +80,14 @@ export async function getUserPosts(userId: string, limit = 20, offset = 0): Prom
   // Group reaction counts by post
   const reactionCountsByPost = new Map<string, Array<{ emoji: string; count: number }>>();
   reactionCounts?.forEach(rc => {
-    if (!reactionCountsByPost.has(rc.post_id)) {
-      reactionCountsByPost.set(rc.post_id, []);
+    if (rc.counts && typeof rc.counts === 'object') {
+      const counts = rc.counts as Record<string, number>;
+      const reactionArray = Object.entries(counts).map(([emoji, count]) => ({
+        emoji,
+        count
+      }));
+      reactionCountsByPost.set(rc.post_id, reactionArray);
     }
-    reactionCountsByPost.get(rc.post_id)!.push({
-      emoji: rc.emoji,
-      count: rc.count
-    });
   });
 
   // Group comment counts by post

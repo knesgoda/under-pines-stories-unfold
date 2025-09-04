@@ -377,7 +377,7 @@ export default function Profile() {
                           
                           <Link to={`/post/${post.id}`}>
                             <div className="text-emerald-200 leading-relaxed hover:text-emerald-100 transition-colors">
-                              {renderRichText(post.content)}
+                              {renderRichText(post.body)}
                             </div>
                           </Link>
 
