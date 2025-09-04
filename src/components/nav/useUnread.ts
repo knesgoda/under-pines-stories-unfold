@@ -8,9 +8,7 @@ export function useUnread() {
   const [dmCount, setDmCount] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    async function fetchCounts() {
+    const fetchCounts = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
@@ -28,13 +26,13 @@ export function useUnread() {
       if (!dmError) {
         setDmCount(dmCount || 0);
       }
-    }
+    };
 
     fetchCounts();
-    interval = setInterval(fetchCounts, 30000); // Refresh every 30 seconds
+    const interval = setInterval(fetchCounts, 30000); // Refresh every 30 seconds
 
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
     };
   }, []);
 

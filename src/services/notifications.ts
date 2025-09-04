@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Notification {
   id: string;
@@ -20,10 +19,12 @@ export interface NotificationWithActor extends Notification {
     display_name?: string;
     avatar_url?: string;
   };
-  post?: {
-    id: string;
-    content: string;
-  };
+}
+
+export interface NotificationListResult {
+  notifications: NotificationWithActor[];
+  hasMore: boolean;
+  nextCursor?: string;
 }
 
 /**
@@ -37,7 +38,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
     .is('read_at', null);
 
   if (error) {
-    console.error('Error getting unread count:', error);
+    console.error('Error fetching unread count:', error);
     return 0;
   }
 
@@ -48,14 +49,16 @@ export async function getUnreadCount(userId: string): Promise<number> {
  * List notifications with pagination
  */
 export async function listNotifications({
+  userId,
   cursor,
-  limit = 30,
+  limit = 20,
   type
 }: {
+  userId: string;
   cursor?: string;
   limit?: number;
   type?: string;
-} = {}): Promise<{ notifications: NotificationWithActor[]; nextCursor?: string }> {
+}): Promise<NotificationListResult> {
   let query = supabase
     .from('notifications')
     .select(`
@@ -65,36 +68,35 @@ export async function listNotifications({
         username,
         display_name,
         avatar_url
-      ),
-      post:posts!notifications_post_id_fkey(
-        id,
-        content
       )
     `)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(limit + 1); // Get one extra to check if there are more
-
-  if (cursor) {
-    query = query.lt('created_at', cursor);
-  }
+    .limit(limit + 1);
 
   if (type) {
     query = query.eq('type', type);
   }
 
+  if (cursor) {
+    query = query.lt('created_at', cursor);
+  }
+
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error listing notifications:', error);
-    return { notifications: [] };
+    console.error('Error fetching notifications:', error);
+    return { notifications: [], hasMore: false };
   }
 
   const notifications = data || [];
   const hasMore = notifications.length > limit;
-  const nextCursor = hasMore ? notifications[limit - 1]?.created_at : undefined;
+  const result = hasMore ? notifications.slice(0, limit) : notifications;
+  const nextCursor = hasMore ? result[result.length - 1]?.created_at : undefined;
 
   return {
-    notifications: hasMore ? notifications.slice(0, limit) : notifications,
+    notifications: result as NotificationWithActor[],
+    hasMore,
     nextCursor
   };
 }
@@ -102,11 +104,11 @@ export async function listNotifications({
 /**
  * Mark notifications as read
  */
-export async function markAsRead(ids: string[]): Promise<boolean> {
+export async function markAsRead(notificationIds: string[]): Promise<boolean> {
   const { error } = await supabase
     .from('notifications')
     .update({ read_at: new Date().toISOString() })
-    .in('id', ids);
+    .in('id', notificationIds);
 
   if (error) {
     console.error('Error marking notifications as read:', error);
@@ -135,13 +137,45 @@ export async function markAllAsRead(userId: string): Promise<boolean> {
 }
 
 /**
- * Subscribe to realtime notifications for a user
+ * Create a notification
+ */
+export async function createNotification(
+  userId: string,
+  type: string,
+  actorId: string,
+  options: {
+    postId?: string;
+    commentId?: string;
+    meta?: Record<string, unknown>;
+  } = {}
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      type,
+      actor_id: actorId,
+      post_id: options.postId,
+      comment_id: options.commentId,
+      meta: options.meta || {}
+    });
+
+  if (error) {
+    console.error('Error creating notification:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Subscribe to notifications for a user
  */
 export function subscribeToNotifications(
   userId: string,
-  onNotification: (notification: Notification) => void
-): RealtimeChannel {
-  return supabase
+  callback: (notification: Notification) => void
+): () => void {
+  const channel = supabase
     .channel(`notifications:${userId}`)
     .on(
       'postgres_changes',
@@ -152,59 +186,12 @@ export function subscribeToNotifications(
         filter: `user_id=eq.${userId}`
       },
       (payload) => {
-        onNotification(payload.new as Notification);
-      }
-    )
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`
-      },
-      (payload) => {
-        onNotification(payload.new as Notification);
+        callback(payload.new as Notification);
       }
     )
     .subscribe();
-}
 
-/**
- * Create a notification
- */
-export async function createNotification({
-  user_id,
-  type,
-  post_id,
-  comment_id,
-  actor_id,
-  meta = {}
-}: {
-  user_id: string;
-  type: string;
-  post_id?: string;
-  comment_id?: string;
-  actor_id?: string;
-  meta?: Record<string, unknown>;
-}): Promise<Notification | null> {
-  const { data, error } = await supabase
-    .from('notifications')
-    .insert({
-      user_id,
-      type,
-      post_id,
-      comment_id,
-      actor_id,
-      meta
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating notification:', error);
-    return null;
-  }
-
-  return data;
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }

@@ -1,39 +1,22 @@
 import { supabase } from '@/integrations/supabase/client';
 
+export type RelationshipState = 'requested' | 'accepted' | 'blocked';
+
 export interface Relationship {
   user_id: string;
   target_user_id: string;
-  state: 'requested' | 'accepted' | 'blocked';
+  state: RelationshipState;
   created_at: string;
-  updated_at: string;
-}
-
-export interface RelationshipWithUser extends Relationship {
-  user: {
-    id: string;
-    username: string;
-    display_name?: string;
-    avatar_url?: string;
-  };
-  target_user: {
-    id: string;
-    username: string;
-    display_name?: string;
-    avatar_url?: string;
-  };
 }
 
 /**
  * Send a friend request
  */
-export async function sendRequest(targetUserId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
+export async function sendRequest(userId: string, targetUserId: string): Promise<boolean> {
   const { error } = await supabase
     .from('relationships')
     .insert({
-      user_id: user.id,
+      user_id: userId,
       target_user_id: targetUserId,
       state: 'requested'
     });
@@ -49,36 +32,16 @@ export async function sendRequest(targetUserId: string): Promise<boolean> {
 /**
  * Accept a friend request
  */
-export async function acceptRequest(userId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
-  // Update the request to accepted
-  const { error: updateError } = await supabase
+export async function acceptRequest(userId: string, requesterId: string): Promise<boolean> {
+  const { error } = await supabase
     .from('relationships')
-    .update({ 
-      state: 'accepted',
-      updated_at: new Date().toISOString()
-    })
-    .eq('user_id', userId)
-    .eq('target_user_id', user.id);
+    .update({ state: 'accepted' })
+    .eq('user_id', requesterId)
+    .eq('target_user_id', userId)
+    .eq('state', 'requested');
 
-  if (updateError) {
-    console.error('Error accepting friend request:', updateError);
-    return false;
-  }
-
-  // Create the reciprocal relationship
-  const { error: insertError } = await supabase
-    .from('relationships')
-    .insert({
-      user_id: user.id,
-      target_user_id: userId,
-      state: 'accepted'
-    });
-
-  if (insertError) {
-    console.error('Error creating reciprocal relationship:', insertError);
+  if (error) {
+    console.error('Error accepting friend request:', error);
     return false;
   }
 
@@ -88,15 +51,13 @@ export async function acceptRequest(userId: string): Promise<boolean> {
 /**
  * Decline a friend request
  */
-export async function declineRequest(userId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
+export async function declineRequest(userId: string, requesterId: string): Promise<boolean> {
   const { error } = await supabase
     .from('relationships')
     .delete()
-    .eq('user_id', userId)
-    .eq('target_user_id', user.id);
+    .eq('user_id', requesterId)
+    .eq('target_user_id', userId)
+    .eq('state', 'requested');
 
   if (error) {
     console.error('Error declining friend request:', error);
@@ -109,27 +70,20 @@ export async function declineRequest(userId: string): Promise<boolean> {
 /**
  * Block a user
  */
-export async function blockUser(targetUserId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
-  // Delete any existing relationship
-  await supabase
+export async function blockUser(userId: string, targetUserId: string): Promise<boolean> {
+  // First, update any existing relationship to blocked
+  const { error: updateError } = await supabase
     .from('relationships')
-    .delete()
-    .or(`and(user_id.eq.${user.id},target_user_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},target_user_id.eq.${user.id})`);
-
-  // Create block relationship
-  const { error } = await supabase
-    .from('relationships')
-    .insert({
-      user_id: user.id,
+    .upsert({
+      user_id: userId,
       target_user_id: targetUserId,
       state: 'blocked'
+    }, {
+      onConflict: 'user_id,target_user_id'
     });
 
-  if (error) {
-    console.error('Error blocking user:', error);
+  if (updateError) {
+    console.error('Error blocking user:', updateError);
     return false;
   }
 
@@ -139,14 +93,11 @@ export async function blockUser(targetUserId: string): Promise<boolean> {
 /**
  * Unblock a user
  */
-export async function unblockUser(targetUserId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
+export async function unblockUser(userId: string, targetUserId: string): Promise<boolean> {
   const { error } = await supabase
     .from('relationships')
     .delete()
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('target_user_id', targetUserId)
     .eq('state', 'blocked');
 
@@ -159,149 +110,78 @@ export async function unblockUser(targetUserId: string): Promise<boolean> {
 }
 
 /**
- * Unfriend a user
+ * Get relationship status between two users
  */
-export async function unfriendUser(targetUserId: string): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-
-  const { error } = await supabase
-    .from('relationships')
-    .delete()
-    .or(`and(user_id.eq.${user.id},target_user_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},target_user_id.eq.${user.id})`);
-
-  if (error) {
-    console.error('Error unfriending user:', error);
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Get pending friend requests (received)
- */
-export async function getPendingRequests(): Promise<RelationshipWithUser[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
+export async function getRelationshipStatus(
+  userId: string, 
+  targetUserId: string
+): Promise<RelationshipState | null> {
   const { data, error } = await supabase
     .from('relationships')
-    .select(`
-      *,
-      user:profiles!relationships_user_id_fkey(
-        id,
-        username,
-        display_name,
-        avatar_url
-      )
-    `)
-    .eq('target_user_id', user.id)
-    .eq('state', 'requested')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error getting pending requests:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-/**
- * Get sent friend requests
- */
-export async function getSentRequests(): Promise<RelationshipWithUser[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await supabase
-    .from('relationships')
-    .select(`
-      *,
-      target_user:profiles!relationships_target_user_id_fkey(
-        id,
-        username,
-        display_name,
-        avatar_url
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('state', 'requested')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error getting sent requests:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-/**
- * Get friends list
- */
-export async function getFriends(): Promise<RelationshipWithUser[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await supabase
-    .from('relationships')
-    .select(`
-      *,
-      target_user:profiles!relationships_target_user_id_fkey(
-        id,
-        username,
-        display_name,
-        avatar_url
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('state', 'accepted')
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    console.error('Error getting friends:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-/**
- * Get relationship status between current user and target user
- */
-export async function getRelationshipStatus(targetUserId: string): Promise<Relationship | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from('relationships')
-    .select('*')
-    .eq('user_id', user.id)
+    .select('state')
+    .eq('user_id', userId)
     .eq('target_user_id', targetUserId)
     .maybeSingle();
 
   if (error) {
-    console.error('Error getting relationship status:', error);
+    console.error('Error fetching relationship status:', error);
     return null;
   }
 
-  return data;
+  return data?.state || null;
 }
 
 /**
- * Check if users are friends
+ * Get pending friend requests for a user
  */
-export async function areFriends(targetUserId: string): Promise<boolean> {
-  const relationship = await getRelationshipStatus(targetUserId);
-  return relationship?.state === 'accepted' || false;
+export async function getPendingRequests(userId: string): Promise<Relationship[]> {
+  const { data, error } = await supabase
+    .from('relationships')
+    .select('*')
+    .eq('target_user_id', userId)
+    .eq('state', 'requested')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching pending requests:', error);
+    return [];
+  }
+
+  return data || [];
 }
 
 /**
- * Check if user is blocked
+ * Get friends list for a user
  */
-export async function isBlocked(targetUserId: string): Promise<boolean> {
-  const relationship = await getRelationshipStatus(targetUserId);
-  return relationship?.state === 'blocked' || false;
+export async function getFriends(userId: string): Promise<Relationship[]> {
+  const { data, error } = await supabase
+    .from('relationships')
+    .select('*')
+    .or(`and(user_id.eq.${userId},state.eq.accepted),and(target_user_id.eq.${userId},state.eq.accepted)`)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching friends:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Remove a friend (unfriend)
+ */
+export async function removeFriend(userId: string, friendId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('relationships')
+    .delete()
+    .or(`and(user_id.eq.${userId},target_user_id.eq.${friendId}),and(user_id.eq.${friendId},target_user_id.eq.${userId})`)
+    .eq('state', 'accepted');
+
+  if (error) {
+    console.error('Error removing friend:', error);
+    return false;
+  }
+
+  return true;
 }
