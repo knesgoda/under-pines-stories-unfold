@@ -34,9 +34,7 @@ interface CommentCardProps {
 export function CommentCard({ comment, onReply, onEdit, onDelete, currentUserId }: CommentCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editBody, setEditBody] = useState(comment.body)
-  const [isLiked, setIsLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
-  const [isLiking, setIsLiking] = useState(false)
+  // Comment likes temporarily disabled until types regenerate
 
   const createdAt = new Date(comment.created_at)
   const relativeTime = formatDistanceToNow(createdAt, { addSuffix: true })
@@ -44,79 +42,9 @@ export function CommentCard({ comment, onReply, onEdit, onDelete, currentUserId 
   const displayName = comment.author.display_name || comment.author.username
   const isOwner = currentUserId === comment.author_id
 
-  // Load like state on mount
-  useEffect(() => {
-    if (!currentUserId) return
-    
-    const loadLikeState = async () => {
-      try {
-        // Check if user has liked this comment
-        const { data: likeData } = await supabase
-          .from('comment_likes')
-          .select('user_id')
-          .eq('comment_id', comment.id)
-          .eq('user_id', currentUserId)
-          .maybeSingle()
+  // Like functionality temporarily disabled until types regenerate
 
-        setIsLiked(!!likeData)
-
-        // Get like count
-        const { count } = await supabase
-          .from('comment_likes')
-          .select('*', { count: 'exact', head: true })
-          .eq('comment_id', comment.id)
-
-        setLikeCount(count || 0)
-      } catch (error) {
-        console.error('Error loading like state:', error)
-      }
-    }
-
-    loadLikeState()
-  }, [comment.id, currentUserId])
-
-  const handleLike = async () => {
-    if (!currentUserId || isLiking) return
-
-    setIsLiking(true)
-    try {
-      if (isLiked) {
-        // Unlike
-        const { error } = await supabase
-          .from('comment_likes')
-          .delete()
-          .eq('comment_id', comment.id)
-          .eq('user_id', currentUserId)
-
-        if (error) throw error
-
-        setIsLiked(false)
-        setLikeCount(prev => Math.max(0, prev - 1))
-      } else {
-        // Like
-        const { error } = await supabase
-          .from('comment_likes')
-          .insert({
-            comment_id: comment.id,
-            user_id: currentUserId
-          })
-
-        if (error) throw error
-
-        setIsLiked(true)
-        setLikeCount(prev => prev + 1)
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update like. Please try again.",
-        variant: "destructive"
-      })
-    } finally {
-      setIsLiking(false)
-    }
-  }
+  // Like functionality temporarily disabled
 
   const handleSaveEdit = () => {
     if (editBody.trim() && onEdit) {
@@ -215,16 +143,7 @@ export function CommentCard({ comment, onReply, onEdit, onDelete, currentUserId 
                   Reply
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLike}
-                  disabled={isLiking || !currentUserId}
-                  className="h-6 px-2 text-xs text-card-foreground/60 hover:text-red-500"
-                >
-                  <Heart className={`h-3 w-3 mr-1 ${isLiked ? 'fill-current text-red-500' : ''}`} />
-                  {likeCount > 0 ? likeCount : 'Like'}
-                </Button>
+                {/* Like functionality temporarily disabled until types regenerate */}
               </div>
             </>
           )}
