@@ -6,6 +6,8 @@ import { searchUsers, searchHashtags, searchPostsFTS, type SearchResult, type Po
 import { sendRequest, acceptRequest, declineRequest, getRelationshipStatus, type Relationship } from '@/services/relationships';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { MobileNav } from '@/components/layout/MobileNav';
 
 type TabType = 'people' | 'tags' | 'posts';
 
@@ -155,8 +157,9 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto">
+      <Sidebar />
+      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+        <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Header */}
         <div className="mb-8">
             <h1 className="text-3xl font-bold text-emerald-50 mb-4">Search</h1>
@@ -330,7 +333,8 @@ export default function SearchPage() {
             )}
           </div>
         </div>
-      </div>
+      </main>
+      <MobileNav />
     </div>
   );
 }
