@@ -16,6 +16,7 @@ import { sharePost, type Post } from '@/lib/posts';
 import PostReactions from '@/components/reactions/PostReactions';
 import { CommentModal } from '@/components/comments/CommentModal';
 import { supabase } from '@/integrations/supabase/client';
+import { renderRichText } from '@/lib/renderRichText';
 
 type MediaItem =
   | { type: "image"; url: string; alt?: string }
@@ -191,7 +192,7 @@ export function PostCard({ post }: PostCardProps) {
           {/* Body text */}
           {post.body ? (
             <div className="px-4 pt-2 text-[15px] leading-6 text-emerald-50/95">
-              {post.body}
+              {renderRichText(post.body)}
             </div>
           ) : null}
 
