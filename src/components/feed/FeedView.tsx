@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { NewPostForm } from './NewPostForm'
 import { PostCard } from './PostCard'
 import { Button } from '@/components/ui/button'
+import { PostCardSkeleton } from '@/components/ui/PostCardSkeleton'
 import { Loader2 } from 'lucide-react'
 import { fetchFeed, type Post } from '@/lib/posts'
 
@@ -56,8 +57,13 @@ export function FeedView() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="space-y-6">
+        <NewPostForm onPostCreated={handleNewPost} />
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <PostCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }
@@ -75,22 +81,31 @@ export function FeedView() {
         ))}
         
         {hasMore && (
-          <div className="flex justify-center py-4">
-            <Button 
-              onClick={loadMore} 
-              disabled={isLoadingMore}
-              variant="outline"
-              className="border-ink-muted text-card-foreground hover:bg-ink-muted/20"
-            >
-              {isLoadingMore ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                'Load more'
-              )}
-            </Button>
+          <div className="space-y-4">
+            <div className="flex justify-center py-4">
+              <Button 
+                onClick={loadMore} 
+                disabled={isLoadingMore}
+                variant="outline"
+                className="border-ink-muted text-card-foreground hover:bg-ink-muted/20"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load more'
+                )}
+              </Button>
+            </div>
+            {isLoadingMore && (
+              <div className="space-y-4">
+                {[...Array(2)].map((_, i) => (
+                  <PostCardSkeleton key={`loading-${i}`} />
+                ))}
+              </div>
+            )}
           </div>
         )}
         

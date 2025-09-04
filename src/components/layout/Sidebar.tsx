@@ -12,7 +12,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react'
-import NotificationsBell from '@/components/notifications/NotificationsBell'
+import { BellMenu } from '@/components/notifications/BellMenu'
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
@@ -73,7 +73,7 @@ export function Sidebar() {
               )
             })}
             <li>
-              <NotificationsBell isActive={location.pathname === '/notifications'} />
+              <BellMenu />
             </li>
           </ul>
         </nav>
