@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 
 export default function GiftModal({ open, onClose }:{ open:boolean; onClose:()=>void }){
-  const [inv, setInv] = useState<any[]>([]);
-  const [q,setQ]=useState(''); const [people,setPeople]=useState<any[]>([]);
+  const [inv, setInv] = useState<Array<{ slug: string; name: string; emoji: string; qty: number }>>([]);
+  const [q,setQ]=useState(''); const [people,setPeople]=useState<Array<{ id: string; display_name?: string; username: string }>>([]);
   const [to,setTo]=useState<string|undefined>(); const [item,setItem]=useState<string|undefined>(); const [qty,setQty]=useState<number>(1);
 
   useEffect(()=>{ 
@@ -28,7 +28,7 @@ export default function GiftModal({ open, onClose }:{ open:boolean; onClose:()=>
         <div className="text-sm font-semibold mb-2">Gift Items</div>
         <input value={q} onChange={e=>search(e.target.value)} placeholder="Search friend…" className="w-full h-9 px-2 rounded bg-white/10"/>
         <div className="mt-2 max-h-28 overflow-auto">
-          {people.map((p:any)=>(
+          {people.map((p: { id: string; display_name?: string; username: string })=>(
             <button key={p.id} onClick={()=>setTo(p.id)} className={"w-full text-left px-2 py-1 rounded " + (to===p.id?'bg-white/10':'hover:bg-white/5')}>
               {p.display_name || p.username}
             </button>

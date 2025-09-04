@@ -4,7 +4,7 @@ import useSWR from 'swr';
 export default function CraftPanel(){
   const { data: inv } = useSWR('/api/game/inventory', (u)=>fetch(u).then(r=>r.json()));
   const { data: rec } = useSWR('/api/game/recipes', (u)=>fetch(u).then(r=>r.json()));
-  const inventory = new Map((inv?.items||[]).map((i:any)=>[i.slug, i.qty]));
+  const inventory = new Map((inv?.items||[]).map((i: { slug: string; qty: number })=>[i.slug, i.qty]));
 
   async function craft(slug:string){
     // Craft functionality disabled for now
@@ -15,10 +15,10 @@ export default function CraftPanel(){
   return (
     <div className="rounded-lg border border-white/10 p-4 space-y-4">
       <div className="text-sm font-semibold">Campfire Crafting</div>
-      {(rec?.items||[]).map((r:any)=>(
+      {(rec?.items||[]).map((r: { slug: string; name: string; ingredients: Array<{ item?: { emoji?: string; name?: string }; item_slug?: string; qty: number }> })=>(
         <div key={r.slug} className="rounded bg-white/5 p-3">
           <div className="text-sm font-medium">{r.name}</div>
-          <div className="text-xs text-white/60 mt-1">Needs: {r.ingredients.map((g:any)=>`${g.item?.emoji||''} ${g.item?.name||g.item_slug}×${g.qty}`).join(', ')}</div>
+          <div className="text-xs text-white/60 mt-1">Needs: {r.ingredients.map((g: { item?: { emoji?: string; name?: string }; item_slug?: string; qty: number })=>`${g.item?.emoji||''} ${g.item?.name||g.item_slug}×${g.qty}`).join(', ')}</div>
           <button onClick={()=>craft(r.slug)} className="mt-2 h-8 px-3 rounded bg-white/10 text-sm">Craft</button>
         </div>
       ))}

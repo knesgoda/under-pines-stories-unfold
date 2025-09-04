@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-function countsToSummary(counts: any) {
+function countsToSummary(counts: Record<string, number> | null) {
   const summary: { emoji: string; count: number }[] = []
   if (!counts) return summary
   for (const key in typeToEmoji) {

@@ -31,7 +31,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     return () => { supabase.removeChannel(channel) }
   }, [postId])
 
-  function countsToSummary(counts: any): Summary {
+  function countsToSummary(counts: Record<string, number> | null): Summary {
     if (!counts) return []
     const res: Summary = []
     

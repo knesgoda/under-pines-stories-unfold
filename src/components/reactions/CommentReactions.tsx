@@ -11,7 +11,7 @@ export default function CommentReactions({ commentId, initialSummary = [] as Sum
   const [summary, setSummary] = useState<Summary>(initialSummary)
   const [open, setOpen] = useState(false)
   const [sheet, setSheet] = useState<{emoji:string}|null>(null)
-  const timer = useRef<any>(null)
+  const timer = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(()=>{ (async()=>{
     const r = await fetch(`/api/comments/${commentId}/react`)

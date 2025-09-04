@@ -7,7 +7,7 @@ export interface Notification {
   post_id?: string;
   comment_id?: string;
   actor_id: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   read_at?: string;
   created_at: string;
   actor?: {
@@ -74,7 +74,7 @@ export async function getNotifications(
 
   // Get actor profiles
   const actorIds = Array.from(new Set(rows?.map(r => r.actor_id) ?? []));
-  let actors: Record<string, any> = {};
+  let actors: Record<string, { id: string; username: string; display_name?: string; avatar_url?: string }> = {};
   
   if (actorIds.length) {
     const { data: profiles } = await supabase
@@ -145,7 +145,7 @@ export async function createNotification(
   options: {
     postId?: string;
     commentId?: string;
-    meta?: Record<string, any>;
+    meta?: Record<string, unknown>;
   } = {}
 ): Promise<boolean> {
   try {

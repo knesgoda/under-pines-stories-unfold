@@ -18,7 +18,7 @@ export default function Pantry(){
         <button onClick={claimDaily} className="h-8 px-3 rounded bg-background-sand text-black text-sm">Claim Daily Kit</button>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
-        {items.map((it:any)=>(
+        {items.map((it: { slug: string; name: string; emoji: string; qty: number })=>(
           <div key={it.slug} className="rounded bg-white/5 p-3">
             <div className="text-2xl">{it.emoji}</div>
             <div className="text-sm mt-1">{it.name}</div>

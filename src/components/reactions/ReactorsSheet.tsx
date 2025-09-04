@@ -8,7 +8,7 @@ export default function ReactorsSheet({
     ? `/api/reactions/post/${targetId}/reactors?emoji=${encodeURIComponent(emoji)}`
     : `/api/reactions/comment/${targetId}/reactors?emoji=${encodeURIComponent(emoji)}`
   const { data } = useSWR(open ? url : null, (u)=>fetch(u,{cache:'no-store'}).then(r=>r.json()))
-  const items: any[] = data?.items || []
+  const items: Array<{ id: string; username: string; display_name?: string; avatar_url?: string }> = data?.items || []
 
   if (!open) return null
 

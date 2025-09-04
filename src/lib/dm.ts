@@ -72,7 +72,7 @@ export async function fetchThreads(type: 'inbox' | 'requests' = 'inbox'): Promis
   const threads: DMThread[] = []
   
   for (const conv of conversations || []) {
-    const members = conv.dm_members as any[]
+    const members = conv.dm_members as Array<{ user_id: string; last_read_at?: string }>
     const otherMember = members.find(m => m.user_id !== user.id)
     const currentMember = members.find(m => m.user_id === user.id)
     
@@ -147,10 +147,10 @@ export async function fetchMessages(conversationId: string, limit = 50): Promise
     body: msg.body,
     created_at: msg.created_at,
     sender: {
-      id: (msg as any).profiles.id,
-      username: (msg as any).profiles.username,
-      display_name: (msg as any).profiles.display_name,
-      avatar_url: (msg as any).profiles.avatar_url
+      id: (msg as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.id,
+      username: (msg as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.username,
+      display_name: (msg as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.display_name,
+      avatar_url: (msg as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.avatar_url
     }
   }))
 }
@@ -194,10 +194,10 @@ export async function sendMessage(conversationId: string, body: string): Promise
     body: data.body,
     created_at: data.created_at,
     sender: {
-      id: (data as any).profiles.id,
-      username: (data as any).profiles.username,
-      display_name: (data as any).profiles.display_name,
-      avatar_url: (data as any).profiles.avatar_url
+      id: (data as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.id,
+      username: (data as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.username,
+      display_name: (data as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.display_name,
+      avatar_url: (data as { profiles: { id: string; username: string; display_name?: string; avatar_url?: string } }).profiles.avatar_url
     }
   }
 }
