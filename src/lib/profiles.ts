@@ -1,11 +1,27 @@
 import { supabase } from "@/integrations/supabase/client"
 
+// Private profile data (includes email) - only visible to the profile owner
 export interface User {
   id: string
   username: string
   display_name?: string
   avatar_url?: string
   email: string
+  bio?: string
+  website?: string
+  hobbies?: string[]
+  interests?: string[]
+  places_lived?: string[]
+  created_at: string
+  updated_at: string
+}
+
+// Public profile data (no email) - visible to other users
+export interface PublicProfile {
+  id: string
+  username: string
+  display_name?: string
+  avatar_url?: string
   bio?: string
   website?: string
   hobbies?: string[]
@@ -33,7 +49,7 @@ export type Relation =
   | 'follows_you'   // they follow you
   | 'mutual'       // both follow
 
-export interface ProfileWithRelation extends User {
+export interface ProfileWithRelation extends PublicProfile {
   relation: Relation
   isPrivate: boolean
   requestId?: string | null
@@ -47,7 +63,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
     .eq('username', username)
     .single()
 
@@ -62,7 +78,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
     }
   }
 
-  // Get privacy settings
+  // Get privacy settings - only accessible if logged in
   const { data: settings } = await supabase
     .from('user_settings')
     .select('is_private')
@@ -158,6 +174,21 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   }
 }
 
+// Get current user's own profile (includes email)
+export async function getCurrentUserProfile(): Promise<User | null> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at, email')
+    .eq('id', user.id)
+    .single()
+
+  if (error) throw error
+  return profile as User
+}
+
 export async function updateProfile(updates: ProfileUpdateData): Promise<User | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
@@ -169,11 +200,11 @@ export async function updateProfile(updates: ProfileUpdateData): Promise<User | 
       updated_at: new Date().toISOString()
     })
     .eq('id', user.id)
-    .select()
+    .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at, email')
     .single()
 
   if (error) throw error
-  return profile
+  return profile as User
 }
 
 export async function uploadAvatar(file: File): Promise<string> {

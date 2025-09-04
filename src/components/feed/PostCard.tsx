@@ -13,6 +13,7 @@ import { MediaGrid } from '@/components/media/MediaGrid'
 import LinkPreviewCard from '@/components/post/LinkPreviewCard'
 import PostReactions from '@/components/reactions/PostReactions'
 import { CommentModal } from '@/components/comments/CommentModal'
+import { supabase } from '@/integrations/supabase/client'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 interface PostCardProps {
@@ -25,6 +26,7 @@ export function PostCard({ post }: PostCardProps) {
   const [isSharing, setIsSharing] = useState(false)
   const [preview, setPreview] = useState<any>(null)
   const [open, setOpen] = useState(false)
+  const [commentCount, setCommentCount] = useState(0)
   
   const createdAt = new Date(post.created_at)
   const zonedTime = toZonedTime(createdAt, 'America/Los_Angeles')
@@ -32,6 +34,27 @@ export function PostCard({ post }: PostCardProps) {
   const absoluteTime = format(zonedTime, 'MMM d, yyyy \'at\' h:mm a zzz', { 
     timeZone: 'America/Los_Angeles' 
   })
+
+  // Load comment count
+  useEffect(() => {
+    const loadCommentCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true })
+          .eq('post_id', post.id)
+          .eq('is_deleted', false)
+        
+        if (!error && count !== null) {
+          setCommentCount(count)
+        }
+      } catch (error) {
+        console.error('Error loading comment count:', error)
+      }
+    }
+    
+    loadCommentCount()
+  }, [post.id])
 
   const handleShare = async () => {
     if (isSharing) return
@@ -183,7 +206,7 @@ export function PostCard({ post }: PostCardProps) {
                 className="flex items-center gap-2 text-card-foreground/60 hover:text-green-500 transition-colors p-2"
               >
                 <MessageCircle className="h-4 w-4 transition-transform hover:scale-110" />
-                <span className="font-medium">{post.comment_count || 0}</span>
+                <span className="font-medium">{commentCount}</span>
               </Button>
             </div>
           </div>
@@ -194,6 +217,25 @@ export function PostCard({ post }: PostCardProps) {
         open={open}
         onClose={() => setOpen(false)}
         postId={post.id}
+        onCommentChange={() => {
+          // Reload comment count when comments change
+          const loadCommentCount = async () => {
+            try {
+              const { count, error } = await supabase
+                .from('comments')
+                .select('*', { count: 'exact', head: true })
+                .eq('post_id', post.id)
+                .eq('is_deleted', false)
+              
+              if (!error && count !== null) {
+                setCommentCount(count)
+              }
+            } catch (error) {
+              console.error('Error loading comment count:', error)
+            }
+          }
+          loadCommentCount()
+        }}
       />
     </Card>
   )

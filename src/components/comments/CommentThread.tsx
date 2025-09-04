@@ -26,9 +26,10 @@ interface Comment {
 
 interface CommentThreadProps {
   postId: string
+  onCommentChange?: () => void
 }
 
-export function CommentThread({ postId }: CommentThreadProps) {
+export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -158,6 +159,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
     try {
       await createComment(body)
       await loadComments()
+      onCommentChange?.() // Notify parent component
       toast({
         title: "Comment posted",
         description: "Your comment has been added"
@@ -180,6 +182,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
     try {
       await createComment(body, replyingTo)
       await loadComments()
+      onCommentChange?.() // Notify parent component
       setReplyingTo(null)
       toast({
         title: "Reply posted",
@@ -210,6 +213,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
       if (error) throw error
 
       await loadComments()
+      onCommentChange?.() // Notify parent component
       toast({
         title: "Comment updated",
         description: "Your comment has been updated"
@@ -237,6 +241,7 @@ export function CommentThread({ postId }: CommentThreadProps) {
       if (error) throw error
 
       await loadComments()
+      onCommentChange?.() // Notify parent component
       toast({
         title: "Comment deleted",
         description: "Your comment has been deleted"

@@ -7,6 +7,7 @@ import { Users, Activity, UserPlus, Flag, TrendingUp } from 'lucide-react'
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Bar, BarChart } from 'recharts'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { AddCommentCount } from './AddCommentCount'
 
 interface MetricsData {
   signups: Array<{ d: string; c: number }>
@@ -238,6 +239,14 @@ export default function AdminDashboard() {
               </p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Database Tools */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Database Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AddCommentCount />
+          </div>
         </div>
 
         {/* Charts */}

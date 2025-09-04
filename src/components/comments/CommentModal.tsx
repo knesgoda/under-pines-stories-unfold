@@ -7,9 +7,10 @@ interface CommentModalProps {
   open: boolean
   onClose: () => void
   postId: string
+  onCommentChange?: () => void
 }
 
-export function CommentModal({ open, onClose, postId }: CommentModalProps) {
+export function CommentModal({ open, onClose, postId, onCommentChange }: CommentModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -17,7 +18,7 @@ export function CommentModal({ open, onClose, postId }: CommentModalProps) {
           <DialogTitle>Comments</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
-          <CommentThread postId={postId} />
+          <CommentThread postId={postId} onCommentChange={onCommentChange} />
         </div>
       </DialogContent>
     </Dialog>
