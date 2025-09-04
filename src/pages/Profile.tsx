@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Settings, MapPin, Heart, Briefcase, Calendar, Globe } from 'lucide-react'
+import { Settings, MapPin, Heart, Briefcase, Calendar, Globe, User, FileText } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getProfileByUsername } from '@/lib/profiles'
+import { getUserPostsByUsername, getUserPostCountByUsername, type PostWithStats } from '@/services/posts'
+import { renderRichText } from '@/lib/renderRichText'
 import type { ProfileWithRelation } from '@/lib/profiles'
 
 export default function Profile() {
@@ -20,6 +22,28 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileWithRelation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [activeTab, setActiveTab] = useState<'about' | 'posts'>('about')
+  const [posts, setPosts] = useState<PostWithStats[]>([])
+  const [postsLoading, setPostsLoading] = useState(false)
+  const [postCount, setPostCount] = useState(0)
+
+  const loadPosts = async () => {
+    if (!username) return
+
+    setPostsLoading(true)
+    try {
+      const [postsData, count] = await Promise.all([
+        getUserPostsByUsername(username, 20),
+        getUserPostCountByUsername(username)
+      ])
+      setPosts(postsData)
+      setPostCount(count)
+    } catch (error) {
+      console.error('Error loading posts:', error)
+    } finally {
+      setPostsLoading(false)
+    }
+  }
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -45,6 +69,12 @@ export default function Profile() {
 
     fetchProfile()
   }, [username])
+
+  useEffect(() => {
+    if (activeTab === 'posts' && username) {
+      loadPosts()
+    }
+  }, [activeTab, username])
 
   if (isLoading) {
     return (
@@ -152,7 +182,40 @@ export default function Profile() {
             </div>
           </div>
 
-          <Card className="bg-card border-ink-muted shadow-soft">
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setActiveTab('about')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'about'
+                  ? 'bg-emerald-800 text-emerald-50'
+                  : 'bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900/70'
+              }`}
+            >
+              <User className="h-4 w-4" />
+              About
+            </button>
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'posts'
+                  ? 'bg-emerald-800 text-emerald-50'
+                  : 'bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900/70'
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              Posts
+              {postCount > 0 && (
+                <span className="px-2 py-0.5 bg-emerald-700/50 text-xs rounded-full">
+                  {postCount}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Content based on active tab */}
+          {activeTab === 'about' ? (
+            <Card className="bg-card border-ink-muted shadow-soft">
             <CardContent className="p-8">
               {profile.bio && (
                 <p className="text-lg mb-6 leading-relaxed text-card-foreground">
@@ -266,6 +329,106 @@ export default function Profile() {
               )}
             </CardContent>
           </Card>
+          ) : (
+            /* Posts Tab */
+            <div className="space-y-4">
+              {postsLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400 mx-auto mb-4"></div>
+                  <p className="text-emerald-300">Loading posts...</p>
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📝</div>
+                  <h3 className="text-xl font-semibold text-emerald-50 mb-2">No posts yet</h3>
+                  <p className="text-emerald-300">
+                    {isOwnProfile 
+                      ? "You haven't posted anything yet. Share your first post!"
+                      : `${profile.display_name || profile.username} hasn't posted anything yet.`
+                    }
+                  </p>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <Card key={post.id} className="bg-emerald-950/50 border border-emerald-800/30">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Link to={`/@${post.author.username}`}>
+                          <img
+                            src={post.author.avatar_url || '/placeholder.svg'}
+                            alt={post.author.username}
+                            className="h-12 w-12 rounded-full object-cover hover:opacity-80 transition-opacity"
+                          />
+                        </Link>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Link
+                              to={`/@${post.author.username}`}
+                              className="text-emerald-50 font-medium hover:text-emerald-300 transition-colors"
+                            >
+                              {post.author.display_name || post.author.username}
+                            </Link>
+                            <span className="text-emerald-400/60">·</span>
+                            <span className="text-sm text-emerald-400/70">
+                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                          
+                          <Link to={`/post/${post.id}`}>
+                            <div className="text-emerald-200 leading-relaxed hover:text-emerald-100 transition-colors">
+                              {renderRichText(post.content)}
+                            </div>
+                          </Link>
+
+                          {/* Media */}
+                          {post.media && post.media.length > 0 && (
+                            <div className="mt-3">
+                              {post.media.map((media, index) => (
+                                <div key={index} className="relative overflow-hidden rounded-2xl border border-emerald-800/40 bg-black/30">
+                                  {media.type === 'image' ? (
+                                    <img 
+                                      className="max-h-[540px] w-full object-cover" 
+                                      src={media.url} 
+                                      alt={media.alt_text || ''} 
+                                    />
+                                  ) : (
+                                    <div className="aspect-video bg-emerald-900/50 flex items-center justify-center">
+                                      <span className="text-emerald-300">🎥 Video</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Stats */}
+                          <div className="flex items-center gap-4 mt-4 text-sm text-emerald-400/70">
+                            {post.reaction_counts.length > 0 && (
+                              <div className="flex items-center gap-1">
+                                <span>Reactions:</span>
+                                {post.reaction_counts.map((rc) => (
+                                  <span key={rc.emoji} className="flex items-center gap-1">
+                                    <span>{rc.emoji}</span>
+                                    <span>{rc.count}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {post.comment_count > 0 && (
+                              <div className="flex items-center gap-1">
+                                <span>💬 {post.comment_count} comments</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </main>
       <MobileNav />
