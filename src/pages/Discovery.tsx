@@ -10,25 +10,25 @@ import { Search, Compass } from 'lucide-react'
 const interests = [
   {
     title: "Art & Photography",
-    image: "/lovable-uploads/3d13f4e4-d8c0-48c5-9898-9e45c0420127.png",
+    image: "/placeholder.svg3d13f4e4-d8c0-48c5-9898-9e45c0420127.png",
     description: "Capture the beauty of nature",
     memberCount: "2.1k members"
   },
   {
     title: "Hiking",
-    image: "/lovable-uploads/3d4b1b28-9c6f-4c29-b562-8266bbdd4184.png", 
+    image: "/placeholder.svg3d4b1b28-9c6f-4c29-b562-8266bbdd4184.png", 
     description: "Trails and outdoor adventures",
     memberCount: "3.4k members"
   },
   {
     title: "Cooking",
-    image: "/lovable-uploads/e1bb5b7d-4237-4311-bcda-208af7ba4130.png",
+    image: "/placeholder.svge1bb5b7d-4237-4311-bcda-208af7ba4130.png",
     description: "Campfire recipes and outdoor cooking",
     memberCount: "1.8k members"
   },
   {
     title: "Books",
-    image: "/lovable-uploads/d420f065-3dc0-48c5-aa56-5238aca58d8e.png",
+    image: "/placeholder.svgd420f065-3dc0-48c5-aa56-5238aca58d8e.png",
     description: "Stories by the firelight",
     memberCount: "956 members"
   }
@@ -37,17 +37,17 @@ const interests = [
 const nearbyLocations = [
   {
     name: "Pacific Northwest",
-    image: "/lovable-uploads/bf7a08d4-aa03-4aee-ac3b-8caaa0a4c9fc.png",
+    image: "/placeholder.svgbf7a08d4-aa03-4aee-ac3b-8caaa0a4c9fc.png",
     description: "Misty forests and mountain trails"
   },
   {
     name: "Rocky Mountains", 
-    image: "/lovable-uploads/3d13f4e4-d8c0-48c5-9898-9e45c0420127.png",
+    image: "/placeholder.svg3d13f4e4-d8c0-48c5-9898-9e45c0420127.png",
     description: "Towering peaks and alpine lakes"
   },
   {
     name: "Coastal Redwoods",
-    image: "/lovable-uploads/3d4b1b28-9c6f-4c29-b562-8266bbdd4184.png",
+    image: "/placeholder.svg3d4b1b28-9c6f-4c29-b562-8266bbdd4184.png",
     description: "Ancient giants and foggy trails"
   }
 ]
@@ -56,14 +56,14 @@ const featuredCreators = [
   {
     name: "Jane Peterson",
     username: "jane_p",
-    avatar: "/lovable-uploads/af5371a5-13cf-445f-8757-a7ed3d74ff98.png",
+    avatar: "/placeholder.svgaf5371a5-13cf-445f-8757-a7ed3d74ff98.png",
     bio: "Nature photographer capturing the essence of wilderness",
     followers: "1.2k"
   },
   {
     name: "Alex Chen",
     username: "alexoutdoors",
-    avatar: "/lovable-uploads/bf7a08d4-aa03-4aee-ac3b-8caaa0a4c9fc.png",
+    avatar: "/placeholder.svgbf7a08d4-aa03-4aee-ac3b-8caaa0a4c9fc.png",
     bio: "Trail guide and outdoor educator",
     followers: "892"
   }
