@@ -70,13 +70,34 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
       if (session) {
         console.log('Loading user reaction for user:', session.user.id)
         
-        // Try both columns to see which one exists
-        const { data: reaction, error } = await supabase
+        // Try to get the user's reaction - check which column exists
+        let reaction = null
+        let error = null
+        
+        // First try the new schema with 'reaction' column
+        const { data: reactionData, error: reactionError } = await supabase
           .from('post_reactions')
-          .select('reaction, emoji')
+          .select('reaction')
           .eq('post_id', postId)
           .eq('user_id', session.user.id)
           .maybeSingle()
+        
+        if (reactionError && reactionError.code === 'PGRST204') {
+          // Column doesn't exist, try the old schema with 'emoji' column
+          console.log('Reaction column not found, trying emoji column...')
+          const { data: emojiData, error: emojiError } = await supabase
+            .from('post_reactions')
+            .select('emoji')
+            .eq('post_id', postId)
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+          
+          reaction = emojiData
+          error = emojiError
+        } else {
+          reaction = reactionData
+          error = reactionError
+        }
         
         console.log('User reaction data:', reaction, 'Error:', error)
         
@@ -139,20 +160,27 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
       const reaction = emojiToType[emoji]
       console.log('Converting emoji to reaction type:', emoji, '->', reaction)
       
-      const { data, error } = await supabase.functions.invoke('reactions/upsert', {
-        body: { post_id: postId, reaction }
-      })
+      // Use direct database operations instead of Edge Function
+      const { data, error } = await supabase
+        .from('post_reactions')
+        .upsert({
+          post_id: postId,
+          user_id: session.user.id,
+          emoji: emoji
+        }, {
+          onConflict: 'post_id,user_id'
+        })
+        .select()
       
-      console.log('Supabase function response:', data, 'Error:', error)
+      console.log('Direct database response:', data, 'Error:', error)
       
       if (error) throw error
-      if (data?.counts) {
-        console.log('Setting summary from function response:', data.counts)
-        setSummary(countsToSummary(data.counts))
-        setUserReaction(emoji)
-        setLastReaction(emoji)
-      }
-      // Refresh data to be sure
+      
+      // Update UI immediately
+      setUserReaction(emoji)
+      setLastReaction(emoji)
+      
+      // Refresh data to get updated counts
       console.log('Refreshing reactions...')
       loadReactions()
     } catch (error) {
@@ -164,15 +192,19 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
     try {
-      const { data, error } = await supabase.functions.invoke('reactions/clear', {
-        body: { post_id: postId }
-      })
+      // Use direct database operations instead of Edge Function
+      const { error } = await supabase
+        .from('post_reactions')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', session.user.id)
+      
       if (error) throw error
-      if (data?.counts) {
-        setSummary(countsToSummary(data.counts))
-        setUserReaction(null)
-      }
-      // Refresh data to be sure
+      
+      // Update UI immediately
+      setUserReaction(null)
+      
+      // Refresh data to get updated counts
       loadReactions()
     } catch (error) {
       console.error('Error clearing reaction:', error)
