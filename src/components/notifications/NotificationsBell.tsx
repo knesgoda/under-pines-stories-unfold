@@ -39,7 +39,7 @@ export default function NotificationsBell({ isActive }: Props) {
         .subscribe()
     }
     init()
-    return () => { if (sub) supabase.removeChannel(sub) }
+    return () => { if (sub) sub.unsubscribe() }
   }, [])
 
   return (

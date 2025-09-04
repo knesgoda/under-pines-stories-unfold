@@ -23,12 +23,12 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
   }, [postId])
 
   useEffect(() => {
-    const channel = supabase.channel(`public:post_reactions:post_id=eq.${postId}`)
+    const subscription = supabase.channel(`public:post_reactions:post_id=eq.${postId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: `post_id=eq.${postId}` }, () => {
         loadReactions()
       })
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+    return () => { subscription.unsubscribe() }
   }, [postId])
 
   function countsToSummary(counts: Record<string, number> | null): Summary {
