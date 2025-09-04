@@ -82,7 +82,7 @@ export default function PostReactions({ postId, initialSummary = [] as Summary }
           .eq('user_id', session.user.id)
           .maybeSingle()
         
-        if (reactionError && reactionError.code === 'PGRST204') {
+        if (reactionError && (reactionError.code === 'PGRST204' || reactionError.code === '42703')) {
           // Column doesn't exist, try the old schema with 'emoji' column
           console.log('Reaction column not found, trying emoji column...')
           const { data: emojiData, error: emojiError } = await supabase
