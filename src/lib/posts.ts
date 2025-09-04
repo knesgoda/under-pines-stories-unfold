@@ -52,7 +52,7 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
       media,
       has_media,
       status,
-      profiles!posts_author_id_fkey (
+      profiles!author_id (
         username,
         display_name,
         avatar_url
@@ -99,7 +99,7 @@ async function fetchAllPosts(cursor?: string): Promise<Post[]> {
       media,
       has_media,
       status,
-      profiles!posts_author_id_fkey (
+      profiles!author_id (
         username,
         display_name,
         avatar_url
@@ -159,7 +159,7 @@ export async function publishPost(postId: string, text: string, media: Post['med
       media,
       has_media,
       status,
-      profiles!posts_author_id_fkey (
+      profiles!author_id (
         username,
         display_name,
         avatar_url
@@ -221,7 +221,7 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
       media,
       has_media,
       status,
-      profiles!posts_author_id_fkey (
+      profiles!author_id (
         username,
         display_name,
         avatar_url

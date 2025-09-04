@@ -25,18 +25,56 @@ export default function NotificationsPage() {
   async function loadMore() {
     if (loading || done) return
     setLoading(true)
-    const qs = new URLSearchParams()
-    if (cursor) qs.set('cursor', cursor)
+    
     const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
-    const res = await fetch(`/api/notifications?${qs.toString()}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      cache: 'no-store'
-    })
-    const json = await res.json()
-    setItems(prev => [...prev, ...json.items])
-    setCursor(json.nextCursor)
-    setDone(!json.nextCursor)
+    if (!session?.user) {
+      setLoading(false)
+      return
+    }
+
+    const before = cursor ? new Date(cursor).toISOString() : new Date().toISOString()
+    const limit = 30
+
+    // Get notifications directly from Supabase
+    const { data: rows, error } = await supabase
+      .from('notifications')
+      .select('id, type, post_id, comment_id, actor_id, created_at, read_at, meta')
+      .eq('user_id', session.user.id)
+      .lt('created_at', before)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('Error loading notifications:', error)
+      setLoading(false)
+      return
+    }
+
+    // Get actor profiles
+    const actorIds = Array.from(new Set(rows?.map(r => r.actor_id) ?? []))
+    let actors: Record<string, any> = {}
+    if (actorIds.length) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', actorIds)
+      actors = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
+    }
+
+    const newItems = (rows ?? []).map(r => ({
+      id: r.id,
+      type: r.type,
+      postId: r.post_id,
+      commentId: r.comment_id,
+      createdAt: r.created_at,
+      readAt: r.read_at,
+      meta: r.meta ?? {},
+      actor: actors[r.actor_id] ?? { id: r.actor_id, username: 'unknown' },
+    }))
+
+    setItems(prev => [...prev, ...newItems])
+    setCursor(newItems.length ? newItems[newItems.length - 1].createdAt : null)
+    setDone(newItems.length < limit)
     setLoading(false)
   }
 
