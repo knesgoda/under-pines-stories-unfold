@@ -78,6 +78,64 @@ export async function createDraftPost(): Promise<string> {
   return data
 }
 
+async function fetchAllPosts(cursor?: string): Promise<Post[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  console.log('Fetching all posts as fallback...')
+
+  // Get all public posts as fallback
+  const { data: posts, error } = await supabase
+    .from('posts')
+    .select(`
+      id,
+      author_id,
+      body,
+      created_at,
+      like_count,
+      share_count,
+      comment_count,
+      is_deleted,
+      media,
+      has_media,
+      status,
+      profiles!posts_author_id_fkey (
+        username,
+        display_name,
+        avatar_url
+      )
+    `)
+    .eq('status', 'published')
+    .eq('is_deleted', false)
+    .lt('created_at', cursor ? new Date(cursor).toISOString() : new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  if (error) {
+    console.error('Error fetching all posts:', error)
+    throw error
+  }
+
+  console.log('Found posts:', posts?.length || 0)
+
+  // Get user's likes for these posts
+  const postIds = posts?.map(p => p.id) || []
+  const { data: userLikes } = await supabase
+    .from('post_likes')
+    .select('post_id')
+    .eq('user_id', user.id)
+    .in('post_id', postIds)
+
+  const likedPostIds = new Set(userLikes?.map(l => l.post_id) || [])
+
+  return (posts || []).map(post => ({
+    ...post,
+    media: post.media as Post['media'],
+    profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
+    liked_by_user: likedPostIds.has(post.id)
+  }))
+}
+
 export async function publishPost(postId: string, text: string, media: Post['media'] = []): Promise<Post> {
   const { data: post, error } = await supabase.rpc('publish_post', {
     p_post_id: postId,
@@ -124,19 +182,30 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
 
-  // Use the feed_following function to get posts from followed users only
+  // Try to get posts from followed users first
   const { data: feedPosts, error } = await supabase.rpc('feed_following', {
     p_user: user.id,
     p_before: cursor ? new Date(cursor).toISOString() : new Date().toISOString(),
     p_limit: 20
   })
 
-  if (error) throw error
-  // Remove game API call since it's not relevant to feed fetching
+  console.log('Feed following result:', { feedPosts, error })
+
+  if (error) {
+    console.error('Error fetching feed:', error)
+    // Fallback to showing all public posts if feed_following fails
+    return await fetchAllPosts(cursor)
+  }
 
   // Get additional data for each post (profiles and likes)
   const postIds = feedPosts?.map(p => p.id) || []
-  if (postIds.length === 0) return []
+  console.log('Post IDs from feed:', postIds)
+  
+  if (postIds.length === 0) {
+    console.log('No posts from followed users, falling back to all posts')
+    // If no posts from followed users, show all public posts as fallback
+    return await fetchAllPosts(cursor)
+  }
 
   const { data: posts, error: postsError } = await supabase
     .from('posts')
