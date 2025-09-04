@@ -14,16 +14,19 @@ export default function NotificationsBell({ isActive }: Props) {
     let sub: ReturnType<typeof supabase.channel> | undefined
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      const res = await fetch('/api/notifications/unread-count', {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        cache: 'no-store'
-      })
-      const json = await res.json().catch(() => ({ count: 0 }))
-      setCount(json.count || 0)
-
       const uid = session?.user?.id
       if (!uid) return
+      
+      // Get unread count directly from Supabase
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', uid)
+        .is('read_at', null)
+      
+      if (!error) {
+        setCount(count || 0)
+      }
       sub = supabase
         .channel(`notifs:${uid}`)
         .on('postgres_changes',

@@ -6,13 +6,19 @@ export default function GiftModal({ open, onClose }:{ open:boolean; onClose:()=>
   const [q,setQ]=useState(''); const [people,setPeople]=useState<any[]>([]);
   const [to,setTo]=useState<string|undefined>(); const [item,setItem]=useState<string|undefined>(); const [qty,setQty]=useState<number>(1);
 
-  useEffect(()=>{ if(open){ fetch('/api/game/inventory').then(r=>r.json()).then(j=>setInv(j.items||[])); } },[open]);
-  async function search(v:string){ setQ(v); const r=await fetch('/api/search/users?q='+encodeURIComponent(v)); setPeople((await r.json()).items||[]); }
+  useEffect(()=>{ 
+    // Game functionality disabled for now
+    // TODO: Implement game features with Supabase Edge Function if needed
+  },[open]);
+  async function search(v:string){ 
+    // User search functionality disabled for now
+    // TODO: Implement user search with Supabase if needed
+  }
   async function send(){
-    if(!to||!item||!qty) return;
-    const r = await fetch('/api/game/gift',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ toUserId: to, itemSlug: item, qty }) });
-    const j = await r.json();
-    alert(j.ok?'Gift sent!':'Gift failed'); onClose();
+    // Gift functionality disabled for now
+    // TODO: Implement gift system with Supabase Edge Function if needed
+    alert('Gift functionality is not available at this time');
+    onClose();
   }
 
   if(!open) return null;

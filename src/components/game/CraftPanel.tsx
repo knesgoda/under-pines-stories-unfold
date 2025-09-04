@@ -7,8 +7,9 @@ export default function CraftPanel(){
   const inventory = new Map((inv?.items||[]).map((i:any)=>[i.slug, i.qty]));
 
   async function craft(slug:string){
-    const r = await fetch('/api/game/craft',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ recipe: slug, times: 1 }) });
-    const j = await r.json(); alert(j.created?.length ? `Crafted ${j.created[0].output_slug} × ${j.created[0].crafted}` : 'Not enough ingredients');
+    // Craft functionality disabled for now
+    // TODO: Implement craft system with Supabase Edge Function if needed
+    alert('Craft functionality is not available at this time');
   }
 
   return (

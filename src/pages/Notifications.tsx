@@ -44,18 +44,16 @@ export default function NotificationsPage() {
   useEffect(() => { loadMore() }, [])
 
   async function markAllRead() {
+    // Mark all notifications as read using direct Supabase update
     const last = items[items.length - 1]?.createdAt || new Date().toISOString()
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
-    await fetch('/api/notifications/read', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ allUpTo: last })
-    })
-    setItems(prev => prev.map(n => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })))
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .lt('created_at', last)
+    
+    if (!error) {
+      setItems(prev => prev.map(n => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })))
+    }
   }
 
   function textFor(n: Notif) {

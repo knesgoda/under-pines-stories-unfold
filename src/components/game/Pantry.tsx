@@ -6,9 +6,8 @@ export default function Pantry(){
   const items = data?.items || [];
 
   async function claimDaily(){
-    const r = await fetch('/api/game/claim/daily', { method:'POST' });
-    const j = await r.json();
-    if (j.awarded?.length) alert('Daily kit: ' + j.awarded.map((a:any)=>`${a.item_slug}×${a.qty}`).join(', '));
+    // Game functionality disabled for now
+    // TODO: Implement game features with Supabase Edge Function if needed
     mutate();
   }
 

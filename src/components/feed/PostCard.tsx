@@ -115,23 +115,9 @@ export function PostCard({ post }: PostCardProps) {
       setPreview(previewCache.get(firstUrl))
       return
     }
-    let cancelled = false
-    fetch('/api/unfurl', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ url: firstUrl })
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled) {
-          previewCache.set(firstUrl, data)
-          setPreview(data)
-        }
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-    }
+    // Link preview functionality disabled for now
+    // TODO: Implement link preview with Supabase Edge Function if needed
+    return () => {}
   }, [firstUrl])
 
   return (

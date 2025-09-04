@@ -7,16 +7,10 @@ export default function DataSettings() {
 
   async function doExport() {
     setBusy(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
     try {
-      const res = await fetch('/api/me/export', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-      })
-      const json = await res.json()
-      if (res.ok) setUrl(json.url)
-      else alert('Export failed')
+      // Data export functionality disabled for now
+      // TODO: Implement data export with Supabase Edge Function if needed
+      alert('Data export is not available at this time')
     } catch {
       alert('Export failed')
     }
@@ -28,19 +22,10 @@ export default function DataSettings() {
     const form = e.target as HTMLFormElement
     const text = (form.elements.namedItem('payload') as HTMLTextAreaElement)?.value.trim()
     if (!text) return
-    const { data: { session } } = await supabase.auth.getSession()
-    const token = session?.access_token
     try {
-      const res = await fetch('/api/me/import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: text
-      })
-      const json = await res.json()
-      alert(json.ok ? 'Import ok' : 'Import failed')
+      // Data import functionality disabled for now
+      // TODO: Implement data import with Supabase Edge Function if needed
+      alert('Data import is not available at this time')
     } catch {
       alert('Import failed')
     }
