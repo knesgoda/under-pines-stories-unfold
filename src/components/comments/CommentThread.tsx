@@ -294,7 +294,7 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : comments.length === 0 ? (
-        <div className="text-center py-8 text-card-foreground/60">
+        <div className="text-center py-8 text-muted-foreground">
           <p>No comments yet. Be the first to comment!</p>
         </div>
       ) : (

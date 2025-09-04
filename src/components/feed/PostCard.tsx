@@ -143,13 +143,13 @@ export function PostCard({ post }: PostCardProps) {
               </Link>
               <Link 
                 to={`/${post.profiles.username}`}
-                className="text-card-foreground/60 hover:text-accent-warm transition-colors"
+                className="text-muted-foreground hover:text-accent-warm transition-colors"
               >
                 @{username}
               </Link>
-              <span className="text-card-foreground/40">•</span>
+              <span className="text-muted-foreground/60">•</span>
               <span 
-                className="text-card-foreground/60 hover:underline cursor-help" 
+                className="text-muted-foreground hover:underline cursor-help" 
                 title={absoluteTime}
               >
                 {relativeTime}
@@ -179,7 +179,7 @@ export function PostCard({ post }: PostCardProps) {
                 size="sm"
                 onClick={handleShare}
                 disabled={isSharing}
-                className="flex items-center gap-2 text-card-foreground/60 hover:text-blue-500 transition-colors p-2"
+                className="flex items-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors p-2"
               >
                 <Share className="h-4 w-4 transition-transform hover:scale-110" />
                 <span className="font-medium">{post.share_count}</span>
@@ -189,7 +189,7 @@ export function PostCard({ post }: PostCardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setOpen(true)}
-                className="flex items-center gap-2 text-card-foreground/60 hover:text-green-500 transition-colors p-2"
+                className="flex items-center gap-2 text-muted-foreground hover:text-green-500 transition-colors p-2"
               >
                 <MessageCircle className="h-4 w-4 transition-transform hover:scale-110" />
                 <span className="font-medium">{commentCount}</span>

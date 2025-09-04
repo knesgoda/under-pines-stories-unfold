@@ -101,7 +101,7 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
                     placeholder="Share something..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="min-h-[80px] resize-none border-none p-0 text-lg placeholder:text-card-foreground/40 focus-visible:ring-0 bg-transparent text-card-foreground"
+                    className="min-h-[80px] resize-none border-none p-0 text-lg placeholder:text-muted-foreground focus-visible:ring-0 bg-transparent text-card-foreground"
                     disabled={isSubmitting}
                   />
                   
@@ -115,7 +115,7 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
                   />
                   
                   <div className="flex items-center justify-between">
-                    <div className={`text-sm ${isOverLimit ? 'text-destructive' : 'text-card-foreground/60'}`}>
+                    <div className={`text-sm ${isOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
                       {charCount}/2500
                       {isOverLimit && (
                         <span className="ml-2 text-destructive">

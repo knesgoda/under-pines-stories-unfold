@@ -17,7 +17,7 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 py-6">
           {/* Beta Banner */}
           <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-6 text-center fade-in">
-            <div className="flex items-center justify-center gap-2 text-accent-foreground">
+            <div className="flex items-center justify-center gap-2 text-foreground">
               <span className="inline-flex items-center gap-2 text-sm font-medium">
                 🧪 <span className="bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-semibold">BETA</span>
                 Welcome to Under Pines, {user?.display_name || user?.username}!
