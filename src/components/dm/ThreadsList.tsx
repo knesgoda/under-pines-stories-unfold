@@ -15,7 +15,7 @@ export default function ThreadsList({ type = 'inbox' }: Props) {
 
   useEffect(() => {
     loadThreads()
-  }, [type, loadThreads])
+  }, [type])
 
   const loadThreads = async () => {
     try {

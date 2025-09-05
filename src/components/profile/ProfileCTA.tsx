@@ -216,7 +216,7 @@ export default function ProfileCTA({
   const handleSendMessage = async () => {
     try {
       setSubmitting(true);
-      const { conversationId } = await startConversation(profileUserId);
+      const conversationId = await startConversation(profileUserId);
       navigate(`/messages/${conversationId}`);
     } catch (error) {
       console.error('Failed to start conversation:', error);

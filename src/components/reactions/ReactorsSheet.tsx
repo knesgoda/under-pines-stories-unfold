@@ -24,11 +24,11 @@ export default function ReactorsSheet({
           {items.map((it, i)=>(
             <div key={i} className="flex items-center gap-3">
               <div className="relative h-9 w-9 rounded-full overflow-hidden bg-white/10">
-                {it.user?.avatar_url && <img src={it.user.avatar_url} alt="" className="w-full h-full object-cover" />}
+                {it.avatar_url && <img src={it.avatar_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="text-sm">
-                <div>{it.user?.display_name || it.user?.username || 'User'}</div>
-                <div className="text-xs text-white/60">{new Date(it.reacted_at).toLocaleString()}</div>
+                <div>{it.display_name || it.username || 'User'}</div>
+                <div className="text-xs text-white/60">Recently</div>
               </div>
             </div>
           ))}

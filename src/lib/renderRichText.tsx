@@ -22,9 +22,9 @@ function splitWithRegex(text: string, re: RegExp) {
 
 export function renderRichText(text: string) {
   // First split on hashtags
-  const parts1 = splitWithRegex(text, TAG_RE).flatMap((p) => {
+  const parts1 = splitWithRegex(text, TAG_RE).flatMap((p): Array<string | { type: "tag"; value: string }> => {
     if (typeof p === "string") return [p];
-    return [{ type: "tag", value: p.value } as const];
+    return [{ type: "tag", value: p.value }];
   });
 
   // Then split each plain string piece on @mentions
@@ -33,11 +33,11 @@ export function renderRichText(text: string) {
     if (typeof p !== "string") {
       finalParts.push(
         <Link
-          key={`tag-${i}-${p.value}`}
-          to={`/tag/${p.value.toLowerCase()}`}
+          key={`tag-${i}-${(p as { value: string }).value}`}
+          to={`/tag/${(p as { value: string }).value.toLowerCase()}`}
           className="text-emerald-300 hover:underline"
         >
-          #{p.value}
+          #{(p as { value: string }).value}
         </Link>
       );
       return;

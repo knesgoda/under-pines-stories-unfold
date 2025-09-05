@@ -86,8 +86,8 @@ export function useRealtimeFeed({
               share_count: 0,
               comment_count: 0,
               is_deleted: false,
-              media: fullPost.media || [],
-              has_media: (fullPost.media && fullPost.media.length > 0) || false,
+              media: Array.isArray(fullPost.media) ? fullPost.media as any[] : [],
+              has_media: Array.isArray(fullPost.media) && fullPost.media.length > 0,
               profiles: {
                 username: fullPost.profiles.username,
                 display_name: fullPost.profiles.display_name,
@@ -142,11 +142,12 @@ export function useRealtimeFeed({
           const reaction = payload.new || payload.old;
           if (!reaction) return;
 
+        if (reaction && typeof reaction === 'object' && 'post_id' in reaction) {
           // Fetch updated reaction counts for the post
           const { data: reactions } = await supabase
             .from('post_reactions')
             .select('emoji')
-            .eq('post_id', reaction.post_id);
+            .eq('post_id', reaction.post_id as string);
 
           if (reactions) {
             const counts: Record<string, number> = {};
@@ -154,8 +155,9 @@ export function useRealtimeFeed({
               counts[r.emoji] = (counts[r.emoji] || 0) + 1;
             });
             
-            onReactionUpdate?.(reaction.post_id, counts);
+            onReactionUpdate?.(reaction.post_id as string, counts);
           }
+        }
         }
       )
       .subscribe();

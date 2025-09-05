@@ -24,7 +24,7 @@ export function BellMenu({ className = '' }: BellMenuProps) {
       try {
         const [count, { notifications: notifs }] = await Promise.all([
           getUnreadCount(user.id),
-          listNotifications({ limit: 30 })
+          listNotifications({ userId: user.id, limit: 30 })
         ]);
         setUnreadCount(count);
         setNotifications(notifs);
@@ -191,9 +191,9 @@ export function BellMenu({ className = '' }: BellMenuProps) {
                             {getNotificationText(notification)}
                           </p>
                           
-                          {notification.post && (
+                          {notification.meta && typeof notification.meta === 'object' && 'content' in notification.meta && (
                             <p className="text-xs text-emerald-300/70 mt-1 truncate">
-                              "{notification.post.content}"
+                              "{String(notification.meta.content)}"
                             </p>
                           )}
                           

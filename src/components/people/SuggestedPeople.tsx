@@ -38,12 +38,6 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
         `)
         .eq('discoverable', true)
         .neq('id', user.id)
-        .not('id', 'in', 
-          supabase
-            .from('relationships')
-            .select('target_user_id')
-            .or(`user_id.eq.${user.id},target_user_id.eq.${user.id}`)
-        )
         .order('created_at', { ascending: false })
         .limit(6);
 

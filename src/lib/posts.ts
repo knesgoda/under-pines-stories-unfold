@@ -66,7 +66,8 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
     ...post,
     media: post.media as Post['media'],
     profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
-    liked_by_user: false
+    liked_by_user: false,
+    comment_count: 0
   }
 }
 
@@ -131,7 +132,8 @@ async function fetchAllPosts(cursor?: string): Promise<Post[]> {
     ...post,
     media: post.media as Post['media'],
     profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
-    liked_by_user: likedPostIds.has(post.id)
+    liked_by_user: likedPostIds.has(post.id),
+    comment_count: 0
   }))
 }
 
@@ -173,7 +175,8 @@ export async function publishPost(postId: string, text: string, media: Post['med
     ...fullPost,
     media: fullPost.media as Post['media'],
     profiles: Array.isArray(fullPost.profiles) ? fullPost.profiles[0] : fullPost.profiles,
-    liked_by_user: false
+    liked_by_user: false,
+    comment_count: 0
   }
 }
 
@@ -237,7 +240,8 @@ export async function fetchFeed(cursor?: string): Promise<Post[]> {
     ...post,
     media: post.media as Post['media'],
     profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
-    liked_by_user: post.post_likes?.some((like: { user_id: string }) => like.user_id === user.id) || false
+    liked_by_user: post.post_likes?.some((like: { user_id: string }) => like.user_id === user.id) || false,
+    comment_count: 0
   }))
 }
 

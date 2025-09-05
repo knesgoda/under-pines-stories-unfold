@@ -40,7 +40,7 @@ export default function NotificationsBell({ isActive }: Props) {
     }
     init()
     return () => { 
-      if (subscription?.unsubscribe) { 
+      if (subscription && typeof subscription === 'object' && 'unsubscribe' in subscription && typeof subscription.unsubscribe === 'function') { 
         subscription.unsubscribe() 
       } 
     }

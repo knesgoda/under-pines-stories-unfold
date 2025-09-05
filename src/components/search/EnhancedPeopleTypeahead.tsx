@@ -49,11 +49,6 @@ export default function EnhancedPeopleTypeahead() {
   const boxRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Load suggestions on mount
-  useEffect(() => {
-    loadSuggestions()
-  }, [loadSuggestions])
-
   const loadSuggestions = useCallback(async () => {
     try {
       const response = await fetch('https://rxlrwephzfsmzspyjsdd.supabase.co/functions/v1/suggestions?limit=8', {

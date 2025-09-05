@@ -16,16 +16,8 @@ export function useUnread() {
       const unreadNotifs = await getUnreadNotificationCount();
       setNotifCount(unreadNotifs);
 
-      // Get unread DMs count (if dm_messages table exists)
-      const { count: dmCount, error: dmError } = await supabase
-        .from('dm_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('recipient_id', session.user.id)
-        .is('read_at', null);
-
-      if (!dmError) {
-        setDmCount(dmCount || 0);
-      }
+      // DMs count is disabled for now due to schema issues
+      setDmCount(0);
     };
 
     fetchCounts();
