@@ -27,8 +27,8 @@ export function Navigation({ onAuthClick }: NavigationProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-8 h-8 rounded-full overflow-hidden group-hover:pine-glow transition-smooth">
-                            <img
-                src="/logo.jpeg"
+            <img
+                src="/lovable-uploads/1dcbdae2-1d4b-4db9-9b61-ff2f7de1ff1d.png"
                 alt="Under Pines Logo"
                 className="w-full h-full object-cover"
               />
