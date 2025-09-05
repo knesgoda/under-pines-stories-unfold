@@ -50,15 +50,15 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
 
       // Load relationship statuses
       const relationshipPromises = (data || []).map(async (person) => {
-        const relationship = await getRelationshipStatus(user.id, person.id);
+        const relationship = await getRelationshipStatus(person.id);
         return { userId: person.id, relationship };
       });
 
       const relationshipResults = await Promise.all(relationshipPromises);
       const relationshipMap = new Map<string, RelationshipState>();
       relationshipResults.forEach(({ userId, relationship }) => {
-        if (relationship) {
-          relationshipMap.set(userId, relationship);
+        if (relationship?.state) {
+          relationshipMap.set(userId, relationship.state);
         }
       });
 
@@ -77,7 +77,7 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
   const handleSendRequest = async (targetUserId: string) => {
     if (!user?.id) return;
 
-    const success = await sendRequest(user.id, targetUserId);
+    const success = await sendRequest(targetUserId);
     if (success) {
       setRelationships(prev => new Map(prev.set(targetUserId, 'requested')));
     }
@@ -86,7 +86,7 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
   const handleAcceptRequest = async (requesterId: string) => {
     if (!user?.id) return;
 
-    const success = await acceptRequest(user.id, requesterId);
+    const success = await acceptRequest(requesterId);
     if (success) {
       setRelationships(prev => new Map(prev.set(requesterId, 'accepted')));
     }
@@ -95,7 +95,7 @@ export function SuggestedPeople({ className = '' }: { className?: string }) {
   const handleDeclineRequest = async (requesterId: string) => {
     if (!user?.id) return;
 
-    const success = await declineRequest(user.id, requesterId);
+    const success = await declineRequest(requesterId);
     if (success) {
       setRelationships(prev => {
         const newMap = new Map(prev);

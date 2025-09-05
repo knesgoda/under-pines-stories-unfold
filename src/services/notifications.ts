@@ -31,18 +31,8 @@ export interface NotificationListResult {
  * Get unread notification count for a user
  */
 export async function getUnreadCount(userId: string): Promise<number> {
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .is('read_at', null);
-
-  if (error) {
-    console.error('Error fetching unread count:', error);
-    return 0;
-  }
-
-  return count || 0;
+  // Notifications are currently disabled
+  return 0;
 }
 
 /**
@@ -59,62 +49,15 @@ export async function listNotifications({
   limit?: number;
   type?: string;
 }): Promise<NotificationListResult> {
-  let query = supabase
-    .from('notifications')
-    .select(`
-      *,
-      actor:profiles!notifications_actor_id_fkey(
-        id,
-        username,
-        display_name,
-        avatar_url
-      )
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit + 1);
-
-  if (type) {
-    query = query.eq('type', type);
-  }
-
-  if (cursor) {
-    query = query.lt('created_at', cursor);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching notifications:', error);
-    return { notifications: [], hasMore: false };
-  }
-
-  const notifications = data || [];
-  const hasMore = notifications.length > limit;
-  const result = hasMore ? notifications.slice(0, limit) : notifications;
-  const nextCursor = hasMore ? result[result.length - 1]?.created_at : undefined;
-
-  return {
-    notifications: result as NotificationWithActor[],
-    hasMore,
-    nextCursor
-  };
+  // Notifications are currently disabled
+  return { notifications: [], hasMore: false };
 }
 
 /**
  * Mark notifications as read
  */
 export async function markAsRead(notificationIds: string[]): Promise<boolean> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .in('id', notificationIds);
-
-  if (error) {
-    console.error('Error marking notifications as read:', error);
-    return false;
-  }
-
+  // Notifications are currently disabled
   return true;
 }
 
@@ -122,17 +65,7 @@ export async function markAsRead(notificationIds: string[]): Promise<boolean> {
  * Mark all notifications as read for a user
  */
 export async function markAllAsRead(userId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('user_id', userId)
-    .is('read_at', null);
-
-  if (error) {
-    console.error('Error marking all notifications as read:', error);
-    return false;
-  }
-
+  // Notifications are currently disabled
   return true;
 }
 
@@ -149,22 +82,7 @@ export async function createNotification(
     meta?: Record<string, unknown>;
   } = {}
 ): Promise<boolean> {
-  const { error } = await supabase
-    .from('notifications')
-    .insert({
-      user_id: userId,
-      type,
-      actor_id: actorId,
-      post_id: options.postId,
-      comment_id: options.commentId,
-      meta: options.meta || {}
-    });
-
-  if (error) {
-    console.error('Error creating notification:', error);
-    return false;
-  }
-
+  // Notifications are currently disabled
   return true;
 }
 
@@ -175,23 +93,6 @@ export function subscribeToNotifications(
   userId: string,
   callback: (notification: Notification) => void
 ): () => void {
-  const subscription = supabase
-    .channel(`notifications:${userId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`
-      },
-      (payload) => {
-        callback(payload.new as Notification);
-      }
-    )
-    .subscribe();
-
-  return () => {
-    subscription.unsubscribe();
-  };
+  // Notifications are currently disabled
+  return () => {};
 }

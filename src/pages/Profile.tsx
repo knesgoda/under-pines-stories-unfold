@@ -38,7 +38,16 @@ export default function Profile() {
     share_count: 0, // Not tracked in current system
     comment_count: postWithStats.comment_count,
     is_deleted: false,
-    media: postWithStats.media || [],
+    media: (postWithStats.media || []).map(m => ({
+      type: m.type,
+      url: m.url,
+      width: 800,
+      height: 600,
+      bytes: 0,
+      alt_text: m.alt_text,
+      poster_url: m.poster_url,
+      duration: undefined
+    })),
     has_media: (postWithStats.media && postWithStats.media.length > 0) || false,
     profiles: {
       username: postWithStats.author.username,

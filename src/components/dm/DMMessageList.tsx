@@ -53,16 +53,16 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
   useEffect(() => {
     if (!dmId || !user?.id) return;
 
-    const unsubscribe = subscribeToDM(dmId, (message) => {
+    subscribeToDM(dmId, (message) => {
       setMessages(prev => [...prev, message]);
       
       // Mark as read if it's not from the current user
-      if (message.author_id !== user.id) {
+      if (message.sender_id !== user.id) {
         markAsRead(dmId, user.id);
       }
+    }).then(unsubscribe => {
+      return unsubscribe;
     });
-
-    return unsubscribe;
   }, [dmId, user?.id]);
 
   // Mark messages as read when component mounts
@@ -110,7 +110,7 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
       {/* Messages */}
       <div className="p-4 space-y-4">
         {messages.map((message) => {
-          const isOwn = message.author_id === user.id;
+          const isOwn = message.sender_id === user.id;
           
           return (
             <div

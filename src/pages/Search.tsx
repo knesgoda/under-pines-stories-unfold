@@ -41,24 +41,8 @@ export default function SearchPage() {
       setTags(tagsResults);
       setPosts(postsResults);
 
-      // Load relationship statuses for people
-      if (user && peopleResults.length > 0) {
-        const relationshipPromises = peopleResults.map(async (person) => {
-          const relationship = await getRelationshipStatus(person.id);
-          return { userId: person.id, relationship };
-        });
-
-        const relationshipResults = await Promise.all(relationshipPromises);
-        const relationshipMap = new Map<string, Relationship>();
-        
-        relationshipResults.forEach(({ userId, relationship }) => {
-          if (relationship) {
-            relationshipMap.set(userId, relationship);
-          }
-        });
-
-        setRelationships(relationshipMap);
-      }
+      // Relationships are currently disabled
+      setRelationships(new Map());
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -75,37 +59,18 @@ export default function SearchPage() {
   }, [query, search]);
 
   const handleSendRequest = async (targetUserId: string) => {
-    if (!user) return;
-
-    const success = await sendRequest(targetUserId);
-    if (success) {
-      // Update relationship status
-      const relationship = await getRelationshipStatus(targetUserId);
-      if (relationship) {
-        setRelationships(prev => new Map(prev).set(targetUserId, relationship));
-      }
-    }
+    // Relationships are currently disabled
+    return;
   };
 
   const handleAcceptRequest = async (userId: string) => {
-    const success = await acceptRequest(userId);
-    if (success) {
-      const relationship = await getRelationshipStatus(userId);
-      if (relationship) {
-        setRelationships(prev => new Map(prev).set(userId, relationship));
-      }
-    }
+    // Relationships are currently disabled
+    return;
   };
 
   const handleDeclineRequest = async (userId: string) => {
-    const success = await declineRequest(userId);
-    if (success) {
-      setRelationships(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(userId);
-        return newMap;
-      });
-    }
+    // Relationships are currently disabled
+    return;
   };
 
   const getRelationshipButton = (person: SearchResult) => {
@@ -125,28 +90,27 @@ export default function SearchPage() {
       );
     }
 
-    switch (relationship.state) {
-      case 'requested':
-        return (
-          <span className="px-3 py-1.5 bg-emerald-900/50 text-emerald-300 rounded-lg text-sm">
-            Request sent
-          </span>
-        );
-      case 'accepted':
-        return (
-          <span className="px-3 py-1.5 bg-emerald-800/50 text-emerald-200 rounded-lg text-sm">
-            Friends
-          </span>
-        );
-      case 'blocked':
-        return (
-          <span className="px-3 py-1.5 bg-red-900/50 text-red-300 rounded-lg text-sm">
-            Blocked
-          </span>
-        );
-      default:
-        return null;
+    if (relationship.state === 'requested') {
+      return (
+        <span className="px-3 py-1.5 bg-emerald-900/50 text-emerald-300 rounded-lg text-sm">
+          Request sent
+        </span>
+      );
+    } else if (relationship.state === 'accepted') {
+      return (
+        <span className="px-3 py-1.5 bg-emerald-800/50 text-emerald-200 rounded-lg text-sm">
+          Friends
+        </span>
+      );
+    } else if (relationship.state === 'blocked') {
+      return (
+        <span className="px-3 py-1.5 bg-red-900/50 text-red-300 rounded-lg text-sm">
+          Blocked
+        </span>
+      );
     }
+    
+    return null;
   };
 
   const tabs = [
@@ -322,7 +286,7 @@ export default function SearchPage() {
                             </div>
                           </div>
                           <p className="text-emerald-200 line-clamp-3">
-                            {post.content}
+                            {post.body || 'No content available'}
                           </p>
                         </Link>
                       ))

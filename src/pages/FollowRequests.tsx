@@ -84,9 +84,9 @@ export default function FollowRequests() {
       
       let success = false;
       if (action === 'accept') {
-        success = await acceptRequest(user.id, requestId)
+        success = await acceptRequest(requestId)
       } else if (action === 'decline') {
-        success = await declineRequest(user.id, requestId)
+        success = await declineRequest(requestId)
       }
       
       if (success) {

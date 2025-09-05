@@ -27,19 +27,8 @@ export async function searchUsersPrefix(q: string): Promise<SearchResult[]> {
 }
 
 export async function searchTagsPrefix(q: string): Promise<SearchResult[]> {
-  if (!q) return [];
-  const { data, error } = await supabase
-    .from("hashtags")
-    .select("id, tag, uses_count")
-    .ilike("tag", `${q}%`)
-    .order("uses_count", { ascending: false })
-    .limit(8);
-  if (error) { console.error(error); return []; }
-  return (data || []).map((r) => ({
-    id: r.id,
-    label: `#${r.tag}`,
-    sub: `${r.uses_count} uses`,
-  }));
+  // Hashtags feature is currently disabled
+  return [];
 }
 
 export interface PostSearchResult {
@@ -110,23 +99,6 @@ export async function searchUsers(q: string, limit = 20): Promise<SearchResult[]
 }
 
 export async function searchHashtags(q: string, limit = 20): Promise<SearchResult[]> {
-  if (!q.trim()) return [];
-  
-  const { data, error } = await supabase
-    .from("hashtags")
-    .select("id, tag, uses_count")
-    .ilike("tag", `%${q}%`)
-    .order("uses_count", { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error searching hashtags:', error);
-    return [];
-  }
-
-  return (data || []).map((r) => ({
-    id: r.id,
-    label: r.tag,
-    sub: `${r.uses_count} uses`,
-  }));
+  // Hashtags feature is currently disabled
+  return [];
 }

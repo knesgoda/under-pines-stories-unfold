@@ -99,9 +99,10 @@ export async function getUserPosts(userId: string, limit = 20, offset = 0): Prom
   // Combine data
   return data.map(post => ({
     ...post,
+    media: Array.isArray(post.media) ? post.media : [],
     reaction_counts: reactionCountsByPost.get(post.id) || [],
     comment_count: commentCountsByPost.get(post.id) || 0
-  }));
+  })) as PostWithStats[];
 }
 
 /**
