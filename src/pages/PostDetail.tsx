@@ -53,7 +53,8 @@ export default function PostDetail() {
         const formattedPost: Post = {
           ...postData,
           media: postData.media as Post['media'],
-          liked_by_user: likedByUser
+          liked_by_user: likedByUser,
+          comment_count: 0
         }
 
         setPost(formattedPost)

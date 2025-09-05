@@ -1,209 +1,129 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { MobileNav } from '@/components/layout/MobileNav';
-import { PostCard } from '@/components/feed/PostCard';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, AtSign } from 'lucide-react';
-import type { Post } from '@/lib/posts';
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { PostCard } from '@/components/feed/PostCard'
+import { useAuth } from '@/contexts/AuthContext'
+import type { Post } from '@/lib/posts'
+import { supabase } from '@/integrations/supabase/client'
 
 export default function MentionTimeline() {
-  const { username } = useParams<{ username: string }>();
-  const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [userProfile, setUserProfile] = useState<{ id: string; username: string; display_name?: string; avatar_url?: string } | null>(null);
-
-  const loadPosts = async (reset = false) => {
-    if (!username) return;
-
-    const currentOffset = reset ? 0 : offset;
-    setIsLoading(true);
-
-    try {
-      // First, get the user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url')
-        .eq('username', username)
-        .single();
-
-      if (!profile) {
-        setPosts([]);
-        setHasMore(false);
-        return;
-      }
-
-      setUserProfile(profile);
-
-      // Get posts that mention this user
-      const { data, error } = await supabase
-        .from('posts')
-        .select(`
-          id,
-          body,
-          created_at,
-          author_id,
-          media,
-          profiles!posts_author_id_fkey(
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq('visibility', 'public')
-        .in('id', 
-          supabase
-            .from('post_mentions')
-            .select('post_id')
-            .eq('mentioned_user_id', profile.id)
-        )
-        .order('created_at', { ascending: false })
-        .range(currentOffset, currentOffset + 19);
-
-      if (error) {
-        console.error('Error loading mention posts:', error);
-        return;
-      }
-
-      const formattedPosts: Post[] = (data || []).map(post => ({
-        id: post.id,
-        author_id: post.author_id,
-        body: post.body,
-        created_at: post.created_at,
-        like_count: 0, // Will be loaded separately
-        share_count: 0,
-        comment_count: 0, // Will be loaded separately
-        is_deleted: false,
-        media: post.media || [],
-        has_media: (post.media && post.media.length > 0) || false,
-        profiles: {
-          username: post.profiles.username,
-          display_name: post.profiles.display_name,
-          avatar_url: post.profiles.avatar_url
-        },
-        liked_by_user: false // Will be determined by PostCard
-      }));
-
-      if (reset) {
-        setPosts(formattedPosts);
-        setOffset(20);
-      } else {
-        setPosts(prev => [...prev, ...formattedPosts]);
-        setOffset(prev => prev + 20);
-      }
-
-      setHasMore(formattedPosts.length === 20);
-    } catch (error) {
-      console.error('Error loading mention posts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { username } = useParams<{ username: string }>()
+  const { user } = useAuth()
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (username) {
-      loadPosts(true);
-    }
-  }, [username, loadPosts]);
+    async function loadMentionPosts() {
+      if (!username) return
 
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      loadPosts(false);
-    }
-  };
+      try {
+        setLoading(true)
+        setError(null)
 
-  if (!username) {
+        // Search for mentions in post body content since mention tables don't exist
+        const { data: posts, error: postsError } = await supabase
+          .from('posts')
+          .select(`
+            id,
+            author_id,
+            body,
+            created_at,
+            like_count,
+            share_count,
+            is_deleted,
+            media,
+            has_media,
+            profiles!posts_author_id_fkey (
+              username,
+              display_name,
+              avatar_url
+            )
+          `)
+          .ilike('body', `%@${username}%`)
+          .eq('status', 'published')
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false })
+          .limit(50)
+
+        if (postsError) {
+          throw postsError
+        }
+
+        const formattedPosts: Post[] = posts?.map(post => ({
+          ...post,
+          media: Array.isArray(post.media) ? post.media as any[] : [],
+          has_media: Array.isArray(post.media) && post.media.length > 0,
+          profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
+          liked_by_user: false,
+          comment_count: 0
+        })) || []
+
+        setPosts(formattedPosts)
+      } catch (err) {
+        console.error('Error loading mention posts:', err)
+        setError('Failed to load posts mentioning this user')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadMentionPosts()
+  }, [username])
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Sidebar />
-        <main className="ml-0 md:ml-60 pb-20 md:pb-0">
-          <div className="max-w-4xl mx-auto px-4 py-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-emerald-50 mb-4">User not found</h1>
-              <p className="text-emerald-300">The user you're looking for doesn't exist.</p>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="max-w-2xl mx-auto p-4">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-32 bg-muted rounded"></div>
+              ))}
             </div>
           </div>
-        </main>
-        <MobileNav />
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-4 mb-4">
-              <Link
-                to="/search"
-                className="p-2 rounded-full hover:bg-emerald-900/50 text-emerald-100/90 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-emerald-800/50 flex items-center justify-center">
-                  <AtSign className="h-5 w-5 text-emerald-300" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-emerald-50">
-                    @{username}
-                  </h1>
-                  <p className="text-emerald-300/70">
-                    Posts mentioning {userProfile?.display_name || username}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Posts */}
-          <div className="space-y-4">
-            {isLoading && posts.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400 mx-auto mb-4"></div>
-                <p className="text-emerald-300">Loading posts...</p>
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-8">
-                <AtSign className="h-16 w-16 text-emerald-400/50 mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-emerald-50 mb-2">
-                  No mentions found
-                </h2>
-                <p className="text-emerald-300/70">
-                  No posts have mentioned @{username} yet.
-                </p>
-              </div>
-            ) : (
-              <>
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-
-                {/* Load More */}
-                {hasMore && (
-                  <div className="text-center py-4">
-                    <button
-                      onClick={handleLoadMore}
-                      disabled={isLoading}
-                      className="px-6 py-2 bg-emerald-800/50 hover:bg-emerald-800/70 text-emerald-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? 'Loading...' : 'Load more posts'}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-bold">Mentions of @{username}</h1>
         </div>
-      </main>
-      <MobileNav />
+
+        {error && (
+          <div className="bg-destructive/10 text-destructive p-4 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        {posts.length === 0 && !loading && (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No mentions found for @{username}</p>
+            <p className="text-sm mt-2">This user hasn't been mentioned in any posts yet.</p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {posts.map(post => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+            />
+          ))}
+        </div>
+      </div>
     </div>
-  );
+  )
 }
