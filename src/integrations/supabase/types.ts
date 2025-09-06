@@ -556,9 +556,10 @@ export type Database = {
       }
     }
     Views: {
-      v_friends: {
+      v_mutual_follows: {
         Row: {
           friend_id: string | null
+          friendship_started: string | null
           user_id: string | null
         }
         Relationships: [
@@ -661,6 +662,21 @@ export type Database = {
           username: string
         }[]
       }
+      get_safe_public_profile: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          discoverable: boolean
+          display_name: string
+          hobbies: string[]
+          id: string
+          interests: string[]
+          places_lived: string[]
+          username: string
+        }[]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
@@ -748,6 +764,10 @@ export type Database = {
       upsert_post_reaction: {
         Args: { p_post_id: string; p_reaction: string }
         Returns: undefined
+      }
+      validate_user_content: {
+        Args: { content: string; max_length?: number }
+        Returns: boolean
       }
     }
     Enums: {
