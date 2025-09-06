@@ -5,6 +5,7 @@ import { createDraftPost, publishPost, type Post } from '@/lib/posts'
 import { MediaPicker } from '@/components/media/MediaPicker'
 import { uploadImage, uploadVideo, type MediaItem } from '@/lib/media'
 import PostComposer from '@/components/PostComposer'
+import { validateFormInput, rateLimiter } from '@/lib/security'
 
 interface NewPostFormProps {
   onPostCreated: (post: Post) => void
@@ -20,6 +21,33 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
 
   const handleSubmit = async () => {
     if (!content.trim() || content.length > 2500) return
+
+    // Rate limiting check
+    const userId = user?.id || 'anonymous';
+    if (!rateLimiter.isAllowed(`post-${userId}`, 5, 300000)) { // 5 posts per 5 minutes
+      toast({
+        title: "Too many posts",
+        description: "Please wait a few minutes before posting again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate and sanitize input
+    const validation = validateFormInput(content, {
+      maxLength: 2500,
+      minLength: 1,
+      required: true
+    });
+
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid input",
+        description: validation.error,
+        variant: "destructive"
+      });
+      return;
+    }
 
     setIsSubmitting(true)
 
@@ -42,7 +70,7 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
       }
       
       // Phase 3: Publish post with media data
-      const newPost = await publishPost(postId, content.trim(), media)
+      const newPost = await publishPost(postId, validation.sanitized, media)
       
       onPostCreated(newPost)
       setContent('')

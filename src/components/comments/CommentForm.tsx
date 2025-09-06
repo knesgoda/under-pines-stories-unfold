@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/AuthContext'
+import { validateFormInput, rateLimiter } from '@/lib/security'
+import { toast } from '@/hooks/use-toast'
 
 interface CommentFormProps {
   onSubmit: (body: string) => Promise<void>
@@ -22,12 +24,44 @@ export function CommentForm({ onSubmit, placeholder = "Write a comment...", isRe
     e.preventDefault()
     if (!body.trim() || isSubmitting) return
 
+    // Rate limiting check
+    const userId = user?.id || 'anonymous';
+    if (!rateLimiter.isAllowed(`comment-${userId}`, 10, 60000)) {
+      toast({
+        title: "Too many attempts",
+        description: "Please wait a moment before commenting again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate and sanitize input
+    const validation = validateFormInput(body, {
+      maxLength: 1000,
+      minLength: 1,
+      required: true
+    });
+
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid input",
+        description: validation.error,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true)
     try {
-      await onSubmit(body.trim())
+      await onSubmit(validation.sanitized)
       setBody('')
     } catch (error) {
       console.error('Error submitting comment:', error)
+      toast({
+        title: "Error",
+        description: "Failed to submit comment. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false)
     }

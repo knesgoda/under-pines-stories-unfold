@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import DOMPurify from "dompurify";
 
 const TAG_RE = /#([A-Za-z0-9_]{2,64})/g;
 const AT_RE  = /@([A-Za-z0-9_]{2,32})/g;
@@ -21,8 +22,15 @@ function splitWithRegex(text: string, re: RegExp) {
 }
 
 export function renderRichText(text: string) {
+  // Sanitize the input text to prevent XSS attacks
+  const sanitizedText = DOMPurify.sanitize(text, { 
+    ALLOWED_TAGS: [], 
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true 
+  });
+
   // First split on hashtags
-  const parts1 = splitWithRegex(text, TAG_RE).flatMap((p): Array<string | { type: "tag"; value: string }> => {
+  const parts1 = splitWithRegex(sanitizedText, TAG_RE).flatMap((p): Array<string | { type: "tag"; value: string }> => {
     if (typeof p === "string") return [p];
     return [{ type: "tag", value: p.value }];
   });
