@@ -22,6 +22,7 @@ export interface PublicProfile {
   username: string
   display_name?: string
   avatar_url?: string
+  profile_cover_url?: string
   bio?: string
   website?: string
   hobbies?: string[]
@@ -56,6 +57,7 @@ export interface ProfileWithRelation extends PublicProfile {
   isIncomingRequest?: boolean
   followerCount?: number
   followingCount?: number
+  pinned_post_ids?: string[]
 }
 
 export async function getProfileByUsername(username: string): Promise<ProfileWithRelation | null> {
@@ -63,7 +65,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
+    .select('id, username, display_name, avatar_url, profile_cover_url, pinned_post_ids, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
     .eq('username', username)
     .maybeSingle()
 
