@@ -10,9 +10,10 @@ import {
   MessageCircle,
   Bookmark,
   Settings,
-  LogOut
+  LogOut,
+  Bell
 } from 'lucide-react'
-import { BellMenu } from '@/components/notifications/BellMenu'
+import { useUnread } from '@/components/nav/useUnread'
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
@@ -20,12 +21,14 @@ const navigation = [
   { name: 'Requests', href: '/requests', icon: Users },
   { name: 'Discovery', href: '/discovery', icon: Search },
   { name: 'Messages', href: '/messages', icon: MessageCircle },
+  { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'Saved', href: '/saved', icon: Bookmark },
 ]
 
 export function Sidebar() {
   const location = useLocation()
   const { user } = useAuth()
+  const { notifCount } = useUnread()
 
   if (!user) return null
 
@@ -67,14 +70,16 @@ export function Sidebar() {
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span>{item.name}</span>
+                    <span className="flex-1">{item.name}</span>
+                    {item.name === 'Notifications' && notifCount > 0 && (
+                      <span className="ml-auto inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full bg-accent-warm text-bg-dark text-xs font-semibold px-1">
+                        {notifCount > 99 ? '99+' : notifCount}
+                      </span>
+                    )}
                   </Link>
                 </li>
               )
             })}
-            <li>
-              <BellMenu />
-            </li>
           </ul>
         </nav>
 

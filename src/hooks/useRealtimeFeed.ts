@@ -86,7 +86,7 @@ export function useRealtimeFeed({
               share_count: 0,
               comment_count: 0,
               is_deleted: false,
-              media: Array.isArray(fullPost.media) ? fullPost.media as any[] : [],
+              media: Array.isArray(fullPost.media) ? (fullPost.media as Post['media']) : [],
               has_media: Array.isArray(fullPost.media) && fullPost.media.length > 0,
               profiles: {
                 username: fullPost.profiles.username,

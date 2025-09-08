@@ -54,7 +54,7 @@ export default function HashtagPage() {
 
         const formattedPosts: Post[] = posts?.map(post => ({
           ...post,
-          media: Array.isArray(post.media) ? post.media as any[] : [],
+          media: Array.isArray(post.media) ? (post.media as Post['media']) : [],
           has_media: Array.isArray(post.media) && post.media.length > 0,
           profiles: Array.isArray(post.profiles) ? post.profiles[0] : post.profiles,
           liked_by_user: false,

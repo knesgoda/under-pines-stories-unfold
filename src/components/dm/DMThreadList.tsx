@@ -30,7 +30,7 @@ export function DMThreadList({ className = '' }: DMThreadListProps) {
 
   useEffect(() => {
     loadThreads();
-  }, [user?.id, loadThreads]);
+  }, [user?.id]);
 
   const getOtherMembers = (thread: DMThread) => {
     return thread.members.filter(member => member.user_id !== user?.id);

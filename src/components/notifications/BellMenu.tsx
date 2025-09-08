@@ -148,7 +148,7 @@ export function BellMenu({ className = '' }: BellMenuProps) {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-2 w-80 bg-emerald-950/95 border border-emerald-800/40 rounded-2xl shadow-xl backdrop-blur z-20">
+          <div className="absolute right-2 top-full mt-2 w-[min(20rem,calc(100vw-2rem))] sm:w-80 bg-emerald-950/95 border border-emerald-800/40 rounded-2xl shadow-xl backdrop-blur z-20">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-emerald-800/40">
               <h3 className="text-lg font-semibold text-emerald-50">Notifications</h3>
