@@ -19,13 +19,15 @@ export function ProfileHeader({ profile, isOwnProfile }: Props) {
     listHighlights(profile.id).then(setHighlights)
   }, [profile.id])
   return (
-    <div className="relative rounded-lg overflow-hidden mb-12 md:mb-16 border border-emerald-800/40">
-      <div className="h-48 md:h-64 w-full bg-emerald-900/30">
-        <img src={coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
+    <div className="relative rounded-lg mb-12 md:mb-16 border border-emerald-800/40">
+      <div className="rounded-lg overflow-hidden">
+        <div className="h-48 md:h-64 w-full bg-emerald-900/30">
+          <img src={coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
+        </div>
       </div>
-      <div className="absolute -bottom-8 left-6 flex items-end gap-4">
-        <div className="h-24 w-24 md:h-28 md:w-28 rounded-full ring-2 ring-emerald-600 bg-emerald-900/60 backdrop-blur overflow-hidden shadow-lg">
-          <img src={profile.avatar_url || '/placeholder.svg'} alt={profile.display_name || profile.username} className="w-full h-full object-cover object-center" />
+      <div className="absolute -bottom-10 left-6 flex items-end gap-4">
+        <div className="relative h-28 w-28 md:h-32 md:w-32 rounded-full ring-2 ring-emerald-600 bg-emerald-900/60 backdrop-blur shadow-lg">
+          <img src={profile.avatar_url || '/placeholder.svg'} alt={profile.display_name || profile.username} className="absolute inset-0 w-full h-full rounded-full object-contain" />
         </div>
         <div className="pb-2">
           <h1 className="text-2xl md:text-3xl font-semibold text-emerald-50">{profile.display_name || profile.username}</h1>
