@@ -17,7 +17,8 @@ export default function Notifications() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState<NotificationWithActor[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'likes' | 'comments' | 'follows' | 'mentions'>('all')
+  type Filter = 'all' | 'likes' | 'comments' | 'follows' | 'mentions'
+  const [filter, setFilter] = useState<Filter>('all')
 
   const loadNotifications = async (cursor?: string) => {
     if (!user) return
@@ -39,6 +40,7 @@ export default function Notifications() {
 
   useEffect(() => {
     loadNotifications()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, filter])
 
   const handleMarkAsRead = async (notificationIds?: string[]) => {
@@ -125,7 +127,7 @@ export default function Notifications() {
           )}
         </div>
 
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as any)} className="mb-6">
+        <Tabs value={filter} onValueChange={(value: string) => setFilter(value as Filter)} className="mb-6">
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="likes">Likes</TabsTrigger>

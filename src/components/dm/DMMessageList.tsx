@@ -62,7 +62,11 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
     });
 
     return () => {
-      try { unsubscribe(); } catch {}
+      try {
+        unsubscribe();
+      } catch (e) {
+        // no-op
+      }
     };
   }, [dmId, user?.id]);
 

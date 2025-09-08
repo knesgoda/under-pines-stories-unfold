@@ -7,7 +7,7 @@ export interface Notification {
   actor_id?: string
   post_id?: string
   comment_id?: string
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
   read_at?: string
   created_at: string
 }
@@ -26,7 +26,7 @@ export async function getUnreadNotificationCount(): Promise<number> {
   return 0;
 }
 
-export async function getNotifications(userId: string, limit = 20, offset = 0): Promise<any[]> {
+export async function getNotifications(userId: string, limit = 20, offset = 0): Promise<NotificationWithActor[]> {
   // Notifications are currently disabled
   return [];
 }
@@ -42,7 +42,7 @@ export async function createNotification(
   actorId?: string,
   postId?: string,
   commentId?: string,
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
 ): Promise<void> {
   // Notifications are currently disabled
   return;
