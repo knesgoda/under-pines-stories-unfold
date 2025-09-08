@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, MessageCircle, Users } from 'lucide-react';
 
 export default function Messages() {
-  const { id } = useParams<{ id: string }>();
+  const { conversationId } = useParams<{ conversationId: string }>();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,7 +32,7 @@ export default function Messages() {
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
-              {id && (
+              {conversationId && (
                 <Link
                   to="/messages"
                   className="p-2 rounded-full hover:bg-emerald-900/50 text-emerald-100/90 hover:text-white transition-colors"
@@ -49,12 +49,12 @@ export default function Messages() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
             {/* Threads List */}
-            <div className={`${id ? 'hidden lg:block' : ''}`}>
+            <div className={`${conversationId ? 'hidden lg:block' : ''}`}>
               <DMThreadList />
             </div>
 
             {/* Messages View */}
-            {id ? (
+            {conversationId ? (
               <div className="lg:col-span-2 flex flex-col bg-emerald-950/50 border border-emerald-800/40 rounded-2xl overflow-hidden">
                 {/* Messages Header */}
                 <div className="p-4 border-b border-emerald-800/40 bg-emerald-950/70">
@@ -74,10 +74,10 @@ export default function Messages() {
                 </div>
 
                 {/* Messages List */}
-                <DMMessageList dmId={id} />
+                <DMMessageList dmId={conversationId} />
 
                 {/* Message Composer */}
-                <DMComposer dmId={id} />
+                <DMComposer dmId={conversationId} />
               </div>
             ) : (
               <div className="lg:col-span-2 flex items-center justify-center bg-emerald-950/50 border border-emerald-800/40 rounded-2xl">

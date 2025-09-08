@@ -43,7 +43,8 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
 
   useEffect(() => {
     loadMessages();
-  }, [dmId, loadMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dmId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -53,16 +54,16 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
   useEffect(() => {
     if (!dmId || !user?.id) return;
 
-    subscribeToDM(dmId, (message) => {
+    const unsubscribe = subscribeToDM(dmId, (message) => {
       setMessages(prev => [...prev, message]);
-      
-      // Mark as read if it's not from the current user
       if (message.sender_id !== user.id) {
         markAsRead(dmId, user.id);
       }
-    }).then(unsubscribe => {
-      return unsubscribe;
     });
+
+    return () => {
+      try { unsubscribe(); } catch {}
+    };
   }, [dmId, user?.id]);
 
   // Mark messages as read when component mounts

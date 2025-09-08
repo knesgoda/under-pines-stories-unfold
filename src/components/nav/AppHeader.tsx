@@ -24,8 +24,9 @@ export default function AppHeader() {
             />
           </div>
         )}
-        <Link to="/notifications" className="relative inline-flex items-center justify-center h-9 w-9 rounded-md hover:bg-white/10">
+        <Link to="/notifications" className="relative inline-flex items-center gap-2 h-9 px-3 rounded-md hover:bg-white/10">
           <BellIcon />
+          <span className="hidden sm:inline text-sm">Notifications</span>
           {notifCount > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent-warm text-black text-[11px] leading-[18px] text-center">
               {notifCount > 99 ? '99+' : notifCount}
