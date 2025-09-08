@@ -19,7 +19,7 @@ export function ProfileHeader({ profile, isOwnProfile }: Props) {
     listHighlights(profile.id).then(setHighlights)
   }, [profile.id])
   return (
-    <div className="relative rounded-lg overflow-hidden mb-6 border border-emerald-800/40">
+    <div className="relative rounded-lg overflow-hidden mb-12 md:mb-16 border border-emerald-800/40">
       <div className="h-48 md:h-64 w-full bg-emerald-900/30">
         <img src={coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
       </div>
