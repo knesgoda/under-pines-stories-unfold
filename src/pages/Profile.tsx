@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { AvatarUpload } from '@/components/profile/AvatarUpload'
+import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import ProfileCTA from '@/components/profile/ProfileCTA'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +24,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileWithRelation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [activeTab, setActiveTab] = useState<'about' | 'posts'>('about')
+  const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'media' | 'mentions'>('about')
+  const [gridMode, setGridMode] = useState<'list' | 'grid'>('list')
   const [posts, setPosts] = useState<PostWithStats[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
   const [postCount, setPostCount] = useState(0)
@@ -156,64 +158,11 @@ export default function Profile() {
       <Sidebar />
       <main className="ml-0 md:ml-60 pb-20 md:pb-0">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* Cover Image */}
-          <div className="relative h-48 md:h-64 bg-gradient-sunset rounded-lg mb-6 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-bg-pine/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-end gap-6">
-                <div className="relative">
-                  <AvatarUpload
-                    avatarUrl={profile.avatar_url}
-                    displayName={profile.display_name}
-                    username={profile.username}
-                    onAvatarChange={() => {}}
-                    canEdit={false}
-                  />
-                </div>
-                
-                <div className="flex-1 pb-4">
-                  <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                    <div>
-                      <h1 className="text-3xl font-semibold text-text-light">
-                        {profile.display_name || profile.username}
-                      </h1>
-                      <p className="text-text-light/80 text-lg">
-                        @{profile.username}
-                      </p>
-                    </div>
-                    
-                    {isOwnProfile ? (
-                      <Link to="/settings/profile">
-                        <Button variant="secondary" className="gap-2 bg-bg-panel text-bg-dark hover:bg-bg-panel/90">
-                          <Settings className="h-4 w-4" />
-                          Edit Profile
-                        </Button>
-                      </Link>
-                    ) : (
-                      <ProfileCTA
-                        profileUserId={profile.id}
-                        relation={profile.relation}
-                        isPrivate={profile.isPrivate}
-                        requestId={profile.requestId}
-                        isIncomingRequest={profile.isIncomingRequest}
-                        onRelationChange={() => {
-                          // Refresh profile data when relation changes
-                          if (username) {
-                            getProfileByUsername(username).then(profileData => {
-                              if (profileData) setProfile(profileData)
-                            })
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Header */}
+          <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex flex-wrap items-center gap-2 mb-6">
             <button
               onClick={() => setActiveTab('about')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -241,6 +190,33 @@ export default function Profile() {
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('media')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'media'
+                  ? 'bg-emerald-800 text-emerald-50'
+                  : 'bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900/70'
+              }`}
+            >
+              Media
+            </button>
+            <button
+              onClick={() => setActiveTab('mentions')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'mentions'
+                  ? 'bg-emerald-800 text-emerald-50'
+                  : 'bg-emerald-900/50 text-emerald-300 hover:bg-emerald-900/70'
+              }`}
+            >
+              Mentions
+            </button>
+
+            {activeTab === 'posts' && (
+              <div className="ml-auto flex items-center gap-2">
+                <Button variant={gridMode === 'list' ? 'default' : 'secondary'} size="sm" onClick={() => setGridMode('list')}>List</Button>
+                <Button variant={gridMode === 'grid' ? 'default' : 'secondary'} size="sm" onClick={() => setGridMode('grid')}>Grid</Button>
+              </div>
+            )}
           </div>
 
           {/* Content based on active tab */}
@@ -359,9 +335,9 @@ export default function Profile() {
               )}
             </CardContent>
           </Card>
-          ) : (
+          ) : activeTab === 'posts' ? (
             /* Posts Tab */
-            <div className="space-y-4">
+            <div className={gridMode === 'grid' ? 'grid grid-cols-3 gap-2' : 'space-y-4'}>
               {postsLoading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400 mx-auto mb-4"></div>
@@ -380,9 +356,29 @@ export default function Profile() {
                 </div>
               ) : (
                 posts.map((post) => (
-                  <PostCard key={post.id} post={convertToPostCard(post)} />
+                  gridMode === 'grid' ? (
+                    <img key={post.id} src={(post.media?.[0]?.url) || '/placeholder.svg'} alt="Post media" className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <PostCard key={post.id} post={convertToPostCard(post)} />
+                  )
                 ))
               )}
+            </div>
+          ) : activeTab === 'media' ? (
+            <div className="grid grid-cols-3 gap-2">
+              {postsLoading ? (
+                <div className="col-span-3 text-center py-12 text-emerald-300">Loading media…</div>
+              ) : posts.filter(p => (p.media?.length || 0) > 0).length === 0 ? (
+                <div className="col-span-3 text-center py-12 text-emerald-300">No media yet</div>
+              ) : (
+                posts.filter(p => (p.media?.length || 0) > 0).map(p => (
+                  <img key={p.id} src={p.media![0].url} alt="Media" className="w-full h-full object-cover rounded-lg" />
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 text-emerald-300">
+              View mentions at /@{profile.username}
             </div>
           )}
         </div>
