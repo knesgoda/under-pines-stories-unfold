@@ -24,8 +24,8 @@ export function ProfileHeader({ profile, isOwnProfile }: Props) {
         <img src={coverUrl} alt="Cover" className="w-full h-full object-cover opacity-80" />
       </div>
       <div className="absolute -bottom-8 left-6 flex items-end gap-4">
-        <div className="h-20 w-20 md:h-24 md:w-24 rounded-full ring-2 ring-emerald-600 overflow-hidden shadow-lg">
-          <img src={profile.avatar_url || '/placeholder.svg'} alt={profile.display_name || profile.username} className="w-full h-full object-cover" />
+        <div className="h-24 w-24 md:h-28 md:w-28 rounded-full ring-2 ring-emerald-600 bg-emerald-900/60 backdrop-blur overflow-hidden shadow-lg">
+          <img src={profile.avatar_url || '/placeholder.svg'} alt={profile.display_name || profile.username} className="w-full h-full object-cover object-center" />
         </div>
         <div className="pb-2">
           <h1 className="text-2xl md:text-3xl font-semibold text-emerald-50">{profile.display_name || profile.username}</h1>
@@ -35,7 +35,7 @@ export function ProfileHeader({ profile, isOwnProfile }: Props) {
       <div className="absolute top-3 right-3">
         {isOwnProfile ? (
           <Link to="/settings/profile">
-            <Button variant="secondary" className="gap-2 bg-bg-panel text-bg-dark hover:bg-bg-panel/90">
+            <Button variant="secondary" className="gap-2 bg-emerald-300 text-emerald-950 hover:bg-emerald-200">
               <Settings className="h-4 w-4" /> Edit Profile
             </Button>
           </Link>

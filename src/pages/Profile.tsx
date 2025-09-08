@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -59,7 +59,7 @@ export default function Profile() {
     liked_by_user: false // Will be determined by PostCard component
   })
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     if (!username) return
 
     setPostsLoading(true)
@@ -75,7 +75,7 @@ export default function Profile() {
     } finally {
       setPostsLoading(false)
     }
-  }
+  }, [username])
 
   useEffect(() => {
     const fetchProfile = async () => {
