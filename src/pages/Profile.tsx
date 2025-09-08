@@ -220,6 +220,18 @@ export default function Profile() {
           </div>
 
           {/* Content based on active tab */}
+          {/* Pinned posts */}
+          {profile.pinned_post_ids && profile.pinned_post_ids.length > 0 && activeTab === 'posts' && (
+            <div className="mb-6 space-y-2">
+              <div className="text-sm text-emerald-300">Pinned</div>
+              <div className="space-y-4">
+                {posts.filter(p => profile.pinned_post_ids!.includes(p.id)).map(p => (
+                  <PostCard key={`pin-${p.id}`} post={convertToPostCard(p)} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'about' ? (
             <Card className="bg-card border-ink-muted shadow-soft">
             <CardContent className="p-8">
