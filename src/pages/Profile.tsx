@@ -162,7 +162,7 @@ export default function Profile() {
           <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
+          <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-6 mb-6">
             <button
               onClick={() => setActiveTab('about')}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
