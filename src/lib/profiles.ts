@@ -65,7 +65,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, profile_cover_url, pinned_post_ids, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
+    .select('*') // select all to be resilient if optional columns aren't present yet
     .eq('username', username)
     .maybeSingle()
 
