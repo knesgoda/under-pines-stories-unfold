@@ -6,9 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface MediaUploadRequest {
-  file: File;
-  type: 'image' | 'video';
+// Enhanced file validation with magic number checking
+const FILE_SIGNATURES = {
+  'image/jpeg': [0xFF, 0xD8, 0xFF],
+  'image/png': [0x89, 0x50, 0x4E, 0x47],
+  'image/gif': [0x47, 0x49, 0x46],
+  'image/webp': [0x52, 0x49, 0x46, 0x46],
+  'video/mp4': [0x00, 0x00, 0x00, 0x20, 0x66, 0x74, 0x79, 0x70],
+  'video/webm': [0x1A, 0x45, 0xDF, 0xA3],
+}
+
+function validateFileSignature(buffer: ArrayBuffer, mimeType: string): boolean {
+  const signature = FILE_SIGNATURES[mimeType as keyof typeof FILE_SIGNATURES];
+  if (!signature) return false;
+  
+  const bytes = new Uint8Array(buffer);
+  return signature.every((byte, index) => bytes[index] === byte);
 }
 
 serve(async (req) => {
@@ -75,6 +88,23 @@ serve(async (req) => {
       )
     }
 
+    // Enhanced validation: Check file signature
+    try {
+      const buffer = await file.arrayBuffer();
+      if (!validateFileSignature(buffer, file.type)) {
+        return new Response(
+          JSON.stringify({ error: 'File signature does not match declared type' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch (error) {
+      console.error('File signature validation error:', error);
+      return new Response(
+        JSON.stringify({ error: 'File validation failed' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Generate unique filename
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -110,10 +140,6 @@ serve(async (req) => {
     let thumbnailUrl = null
     if (type === 'image') {
       // Use Supabase Image Transform for thumbnail
-      const thumbnailPath = `media/thumbnails/${fileName}`
-      
-      // For now, we'll use the same URL with transform parameters
-      // In a real implementation, you'd create a proper thumbnail
       thumbnailUrl = `${publicUrl}?width=300&height=300&resize=cover&quality=80`
     }
 

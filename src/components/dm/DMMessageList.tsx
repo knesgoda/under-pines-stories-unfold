@@ -54,18 +54,28 @@ export function DMMessageList({ dmId, className = '' }: DMMessageListProps) {
   useEffect(() => {
     if (!dmId || !user?.id) return;
 
-    const unsubscribe = subscribeToDM(dmId, (message) => {
-      setMessages(prev => [...prev, message]);
-      if (message.sender_id !== user.id) {
-        markAsRead(dmId, user.id);
-      }
-    });
+    let unsubscribePromise: Promise<() => void>;
+    
+    const setupSubscription = async () => {
+      unsubscribePromise = subscribeToDM(dmId, (message) => {
+        setMessages(prev => [...prev, message]);
+        if (message.sender_id !== user.id) {
+          markAsRead(dmId, user.id);
+        }
+      });
+    };
+
+    setupSubscription();
 
     return () => {
-      try {
-        unsubscribe();
-      } catch (e) {
-        // no-op
+      if (unsubscribePromise) {
+        unsubscribePromise.then(unsubscribe => {
+          if (typeof unsubscribe === 'function') {
+            unsubscribe();
+          }
+        }).catch(() => {
+          // Handle any errors silently
+        });
       }
     };
   }, [dmId, user?.id]);

@@ -643,6 +643,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_post_like_count: {
+        Args: { p_post_id: string }
+        Returns: number
+      }
       get_post_reaction_summary: {
         Args: { p_post_id: string }
         Returns: Json
@@ -732,6 +736,14 @@ export type Database = {
       upsert_post_reaction: {
         Args: { p_post_id: string; p_reaction: string }
         Returns: undefined
+      }
+      user_liked_post: {
+        Args: { p_post_id: string }
+        Returns: boolean
+      }
+      user_post_reaction: {
+        Args: { p_post_id: string }
+        Returns: string
       }
       validate_user_content: {
         Args: { content: string; max_length?: number }

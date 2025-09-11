@@ -22,7 +22,6 @@ export interface PublicProfile {
   username: string
   display_name?: string
   avatar_url?: string
-  profile_cover_url?: string
   bio?: string
   website?: string
   hobbies?: string[]
@@ -65,7 +64,7 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, profile_cover_url, pinned_post_ids, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
+    .select('id, username, display_name, avatar_url, bio, hobbies, interests, places_lived, discoverable, created_at, updated_at')
     .eq('username', username)
     .maybeSingle()
 
@@ -74,7 +73,16 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   // If no current user, return basic profile
   if (!currentUser) {
     return {
-      ...profile,
+      id: profile.id,
+      username: profile.username,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      hobbies: profile.hobbies,
+      interests: profile.interests,
+      places_lived: profile.places_lived,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
       relation: 'none',
       isPrivate: false
     }
@@ -104,7 +112,16 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   // If it's the current user's profile
   if (currentUser.id === profile.id) {
     return {
-      ...profile,
+      id: profile.id,
+      username: profile.username,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      bio: profile.bio,
+      hobbies: profile.hobbies,
+      interests: profile.interests,
+      places_lived: profile.places_lived,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
       relation: 'self',
       isPrivate,
       followerCount: followerCount || 0,
@@ -166,7 +183,16 @@ export async function getProfileByUsername(username: string): Promise<ProfileWit
   }
 
   return {
-    ...profile,
+    id: profile.id,
+    username: profile.username,
+    display_name: profile.display_name,
+    avatar_url: profile.avatar_url,
+    bio: profile.bio,
+    hobbies: profile.hobbies,
+    interests: profile.interests,
+    places_lived: profile.places_lived,
+    created_at: profile.created_at,
+    updated_at: profile.updated_at,
     relation,
     isPrivate,
     requestId,
