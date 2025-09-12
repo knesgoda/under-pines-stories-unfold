@@ -19,6 +19,8 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
   const [uploadedMedia, setUploadedMedia] = useState<MediaItem[]>([])
 
+  console.log('NewPostForm render - user:', user?.id, 'username:', user?.username)
+
   const handleSubmit = async () => {
     if (!content.trim() || content.length > 2500) return
 
@@ -96,7 +98,12 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
     }
   }
 
-  if (!user) return null
+  if (!user) {
+    console.log('NewPostForm: No user, returning null')
+    return null
+  }
+
+  console.log('NewPostForm: Rendering form for user', user.username)
 
   const charCount = content.length
   const isOverLimit = charCount > 2500
