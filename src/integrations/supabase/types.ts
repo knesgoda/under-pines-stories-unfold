@@ -217,6 +217,71 @@ export type Database = {
           },
         ]
       }
+      ember_views: {
+        Row: {
+          ember_id: string
+          id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          ember_id: string
+          id?: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          ember_id?: string
+          id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ember_views_ember_id_fkey"
+            columns: ["ember_id"]
+            isOneToOne: false
+            referencedRelation: "embers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      embers: {
+        Row: {
+          author_id: string
+          content_ref: string
+          content_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          meta: Json | null
+          status: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          content_ref: string
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          meta?: Json | null
+          status?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          content_ref?: string
+          content_type?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          meta?: Json | null
+          status?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       follow_requests: {
         Row: {
           created_at: string | null
@@ -589,6 +654,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      create_ember_from_post: {
+        Args: { p_post_id: string; p_visibility?: string }
+        Returns: string
+      }
       create_notification: {
         Args: {
           p_actor: string
@@ -681,8 +750,29 @@ export type Database = {
           username: string
         }[]
       }
+      get_user_embers: {
+        Args: { p_limit?: number }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_id: string
+          author_username: string
+          content_ref: string
+          content_type: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_viewed: boolean
+          meta: Json
+          visibility: string
+        }[]
+      }
       is_profile_discoverable: {
         Args: { profile_user_id: string }
+        Returns: boolean
+      }
+      mark_ember_viewed: {
+        Args: { p_ember_id: string }
         Returns: boolean
       }
       metrics_snapshot: {

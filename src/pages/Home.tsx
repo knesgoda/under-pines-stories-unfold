@@ -1,5 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { FeedView } from '@/components/feed/FeedView'
+import { EmberStrip } from '@/components/embers/EmberStrip'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
 
@@ -11,9 +12,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <EmberStrip />
       <Sidebar />
       
-      <main className="ml-0 md:ml-60 pb-20 md:pb-0">
+      <main className="ml-0 md:ml-60 pb-20 md:pb-0 pt-16">
         <div className="max-w-2xl mx-auto px-4 py-6">
           {/* Beta Banner */}
           <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-6 text-center fade-in">
