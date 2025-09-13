@@ -22,7 +22,7 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
   console.log('NewPostForm render - user:', user?.id, 'username:', user?.username)
 
   const handleSubmit = async () => {
-    if (!content.trim() || content.length > 2500) return
+    if ((content.trim().length === 0 && selectedFiles.length === 0) || content.length > 2500) return
 
     // Rate limiting check
     const userId = user?.id || 'anonymous';
@@ -38,8 +38,8 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
     // Validate and sanitize input
     const validation = validateFormInput(content, {
       maxLength: 2500,
-      minLength: 1,
-      required: true
+      minLength: selectedFiles.length > 0 ? 0 : 1,
+      required: selectedFiles.length > 0 ? false : true
     });
 
     if (!validation.isValid) {
@@ -120,7 +120,7 @@ export function NewPostForm({ onPostCreated }: NewPostFormProps) {
         onAddVideo={() => setMediaType('video')}
         onSubmit={handleSubmit}
         maxChars={2500}
-        disabled={isSubmitting}
+        disabled={isSubmitting || isEmpty}
       />
       
       {mediaType && (
