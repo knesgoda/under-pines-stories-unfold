@@ -39,7 +39,7 @@ export function EmberParticle({ ember, onClick, style }: EmberParticleProps) {
 
   return (
     <motion.button
-      className="relative flex items-center gap-2 p-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-sm border border-amber-500/30 hover:border-amber-500/50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+      className="relative flex items-center gap-3 p-3 rounded-full bg-gradient-to-r from-amber-400/30 to-orange-400/30 dark:from-amber-600/20 dark:to-orange-600/20 backdrop-blur-sm border-2 border-amber-400/50 dark:border-amber-500/40 hover:border-amber-500/70 dark:hover:border-amber-400/60 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50 shadow-lg hover:shadow-amber-500/25"
       style={{
         ...style,
         opacity: brightness,
@@ -69,7 +69,7 @@ export function EmberParticle({ ember, onClick, style }: EmberParticleProps) {
     >
       {/* Ember glow effect */}
       <motion.div
-        className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/30 to-orange-400/30"
+        className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-300/40 to-orange-300/40 dark:from-amber-500/30 dark:to-orange-500/30"
         animate={{
           opacity: [0.3, 0.6, 0.3],
         }}
@@ -81,16 +81,16 @@ export function EmberParticle({ ember, onClick, style }: EmberParticleProps) {
       />
 
       {/* Author avatar */}
-      <Avatar className="h-6 w-6 border border-amber-500/50">
+      <Avatar className="h-8 w-8 border-2 border-amber-400 dark:border-amber-500 shadow-sm">
         <AvatarImage src={ember.author_avatar_url} alt={ember.author_display_name} />
-        <AvatarFallback className="text-xs bg-amber-500/20 text-amber-100">
+        <AvatarFallback className="text-sm bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 font-semibold">
           {(ember.author_display_name || ember.author_username)?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
       {/* Ember content indicator */}
       <motion.div
-        className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
+        className="w-3 h-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 shadow-md"
         animate={{
           scale: [1, 1.2, 1],
         }}
@@ -103,11 +103,11 @@ export function EmberParticle({ ember, onClick, style }: EmberParticleProps) {
 
       {/* Viewed indicator */}
       {ember.is_viewed && (
-        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-green-400" />
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-green-400 shadow-md" />
       )}
 
       {/* Time remaining tooltip */}
-      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+      <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 px-3 py-2 bg-amber-900/90 dark:bg-amber-100/90 text-amber-100 dark:text-amber-900 text-sm font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg border border-amber-600/50 dark:border-amber-300/50">
         {timeLeft}
       </div>
     </motion.button>
