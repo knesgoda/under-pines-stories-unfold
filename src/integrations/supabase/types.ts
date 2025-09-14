@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_rewards: {
+        Row: {
+          activity_type: string
+          id: string
+          items_earned: Json
+          rewarded_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          id?: string
+          items_earned?: Json
+          rewarded_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          id?: string
+          items_earned?: Json
+          rewarded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       beta_testers: {
         Row: {
           invited_at: string | null
@@ -55,6 +79,33 @@ export type Database = {
           blocked_id?: string
           blocker_id?: string
           created_at?: string | null
+        }
+        Relationships: []
+      }
+      campfire_circles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_members: number | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_members?: number | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_members?: number | null
+          name?: string
         }
         Relationships: []
       }
@@ -336,6 +387,39 @@ export type Database = {
           },
         ]
       }
+      items: {
+        Row: {
+          created_at: string
+          description: string | null
+          emoji: string
+          id: string
+          name: string
+          rarity: string
+          slug: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          emoji: string
+          id?: string
+          name: string
+          rarity?: string
+          slug: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          emoji?: string
+          id?: string
+          name?: string
+          rarity?: string
+          slug?: string
+          type?: string
+        }
+        Relationships: []
+      }
       mutes: {
         Row: {
           created_at: string | null
@@ -535,6 +619,83 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_ingredients: {
+        Row: {
+          id: string
+          item_slug: string
+          quantity_needed: number
+          recipe_slug: string
+        }
+        Insert: {
+          id?: string
+          item_slug: string
+          quantity_needed?: number
+          recipe_slug: string
+        }
+        Update: {
+          id?: string
+          item_slug?: string
+          quantity_needed?: number
+          recipe_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_ingredients_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_slug_fkey"
+            columns: ["recipe_slug"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          requires_campfire: boolean
+          requires_fire: boolean
+          result_item_slug: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          requires_campfire?: boolean
+          requires_fire?: boolean
+          result_item_slug: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          requires_campfire?: boolean
+          requires_fire?: boolean
+          result_item_slug?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_result_item_slug_fkey"
+            columns: ["result_item_slug"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       reports: {
         Row: {
           comment_id: string | null
@@ -580,6 +741,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_inventory: {
+        Row: {
+          id: string
+          item_slug: string
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_slug: string
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_slug?: string
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_slug_fkey"
+            columns: ["item_slug"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["slug"]
           },
         ]
       }
