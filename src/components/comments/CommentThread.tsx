@@ -105,6 +105,21 @@ export function CommentThread({ postId, onCommentChange }: CommentThreadProps) {
 
     console.log('Comment created successfully:', data)
 
+    // Award ingredients for creating a comment
+    try {
+      const { data: rewardResult } = await supabase.functions.invoke('game-reward', {
+        body: { activityType: 'comment_create' }
+      });
+      if (rewardResult?.awarded?.length > 0) {
+        // Import awardToast dynamically to avoid circular dependencies
+        import('@/components/game/awardToast').then(({ awardToast }) => {
+          awardToast(rewardResult.awarded);
+        });
+      }
+    } catch (rewardError) {
+      console.error('Error awarding comment reward:', rewardError);
+    }
+
     // Create notifications
     try {
       const excerpt = body.slice(0, 120)

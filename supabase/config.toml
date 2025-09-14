@@ -14,3 +14,18 @@ verify_jwt = true
 
 [functions.search-people]
 verify_jwt = true
+
+[functions.game-reward]
+verify_jwt = true
+
+[functions.game-inventory]
+verify_jwt = true
+
+[functions.game-craft]
+verify_jwt = true
+
+[functions.game-recipes]
+verify_jwt = false
+
+[functions.game-gift]
+verify_jwt = true

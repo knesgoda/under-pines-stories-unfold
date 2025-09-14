@@ -62,6 +62,18 @@ export async function createPost(text: string, media: Post['media'] = []): Promi
 
   if (error) throw error
 
+  // Award ingredients for creating a post
+  try {
+    const { data: rewardResult } = await supabase.functions.invoke('game-reward', {
+      body: { activityType: 'post_create' }
+    });
+    if (rewardResult?.awarded?.length > 0) {
+      awardToast(rewardResult.awarded);
+    }
+  } catch (rewardError) {
+    console.error('Error awarding post creation reward:', rewardError);
+  }
+
   return {
     ...post,
     media: post.media as Post['media'],
@@ -285,6 +297,18 @@ export async function toggleLike(postId: string): Promise<{ like_count: number; 
 
     if (insertError) throw insertError
 
+    // Award ingredients for liking a post
+    try {
+      const { data: rewardResult } = await supabase.functions.invoke('game-reward', {
+        body: { activityType: 'post_like' }
+      });
+      if (rewardResult?.awarded?.length > 0) {
+        awardToast(rewardResult.awarded);
+      }
+    } catch (rewardError) {
+      console.error('Error awarding like reward:', rewardError);
+    }
+
     // Get updated post
     const { data: post, error: postError } = await supabase
       .from('posts')
@@ -319,4 +343,16 @@ export async function sharePost(postId: string): Promise<void> {
     .eq('id', postId)
 
   if (error) throw error
+
+  // Award ingredients for sharing a post
+  try {
+    const { data: rewardResult } = await supabase.functions.invoke('game-reward', {
+      body: { activityType: 'post_share' }
+    });
+    if (rewardResult?.awarded?.length > 0) {
+      awardToast(rewardResult.awarded);
+    }
+  } catch (rewardError) {
+    console.error('Error awarding share reward:', rewardError);
+  }
 }

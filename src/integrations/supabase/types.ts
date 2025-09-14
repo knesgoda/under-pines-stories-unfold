@@ -960,6 +960,10 @@ export type Database = {
           visibility: string
         }[]
       }
+      increment_inventory: {
+        Args: { p_item_slug: string; p_quantity?: number; p_user_id: string }
+        Returns: undefined
+      }
       is_profile_discoverable: {
         Args: { profile_user_id: string }
         Returns: boolean
